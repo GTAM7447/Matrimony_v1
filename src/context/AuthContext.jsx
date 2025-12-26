@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   // LOGIN
   const login = async (username, password) => {
     try {
-      const res = await axios.post("https://mttlprv1.digiledge.info", {
+      const res = await axios.post("https://mttlprv1.digiledge.info/jwt/login", {
         username,
         password,
       });
