@@ -60,6 +60,7 @@ const Step4FamilyBackground = ({
   );
 
   const [validationErrors, setValidationErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   // LOAD DATA FROM GET API - Only run once
   useEffect(() => {
@@ -155,17 +156,26 @@ const Step4FamilyBackground = ({
     if (!value || value.toString().trim() === "") {
       err = "This field is required";
     } else {
-      if (["fathersName", "mothersName", "mamaSurname", "relativeSurnames"].includes(name)) {
-        if (!/^[A-Za-z\s\-\.']+$/.test(value)) return "Only alphabets, spaces, hyphens, dots and apostrophes allowed";
-      }
-
-      if (["fatherOccupation", "motherOccupation"].includes(name)) {
-        if (!/^[A-Za-z\s\-\.']+$/.test(value)) return "Only alphabets, spaces, hyphens, dots and apostrophes allowed";
-      }
-
-      if (["parentResiding", "mamaPlace", "familyWealth"].includes(name)) {
-        if (!/^[A-Za-z0-9\s\-\.\,]+$/.test(value))
-          return "Only letters, numbers, spaces, commas, dots and hyphens allowed";
+      // All text fields should only contain alphabets and spaces
+      const alphabetOnlyRegex = /^[A-Za-z\s]+$/;
+      
+      // Fields that must contain only alphabets and spaces
+      const textFields = [
+        "fathersName",
+        "fatherOccupation",
+        "mothersName",
+        "motherOccupation",
+        "parentResiding",
+        "mamaSurname",
+        "mamaPlace",
+        "familyWealth",
+        "relativeSurnames"
+      ];
+      
+      if (textFields.includes(name)) {
+        if (!alphabetOnlyRegex.test(value)) {
+          err = "Only alphabets (A-Z, a-z) and spaces allowed";
+        }
       }
 
       if (name === "interCasteInFamily") {
@@ -173,18 +183,20 @@ const Step4FamilyBackground = ({
       }
 
       if (["brothers", "marriedBrothers", "sisters", "marriedSisters"].includes(name)) {
-        if (!/^(None|[0-9]+)$/.test(value)) return "Please select a valid number or None";
-      }
+  if (!/^[0-9]+$/.test(value)) return "Please select a valid number";
+}
+
     }
-    setValidationErrors((prev) => ({ ...prev, [name]: err }));
+    return err;
   };
 
   const parseFormNumber = (value) => {
-    if (!value || value === "None") return 0;
-    if (value === "6+") return 6;
-    const num = parseInt(value, 10);
-    return isNaN(num) ? 0 : num;
-  };
+  if (!value) return 0;
+  if (value === "6+") return 6;
+  const num = parseInt(value, 10);
+  return isNaN(num) ? 0 : num;
+};
+
 
   const validateAllFields = () => {
     // Clear previous validation errors
@@ -195,6 +207,11 @@ const Step4FamilyBackground = ({
       const value = formData[key] || "";
       if (!value || value.toString().trim() === "") {
         newErrors[key] = "This field is required";
+      } else {
+        const error = validateField(key, value);
+        if (error) {
+          newErrors[key] = error;
+        }
       }
     });
 
@@ -214,61 +231,68 @@ const Step4FamilyBackground = ({
       newErrors.marriedSisters = `Married sisters (${marriedSistersCount}) cannot exceed total sisters (${sistersCount})`;
     }
 
-    // If married brothers is "None" but we have brothers, show error
-    if (formData.marriedBrothers === "None" && brothersCount > 0) {
-      newErrors.marriedBrothers = "Please select a number for married brothers";
-    }
-
-    // If married sisters is "None" but we have sisters, show error
-    if (formData.marriedSisters === "None" && sistersCount > 0) {
-      newErrors.marriedSisters = "Please select a number for married sisters";
-    }
-
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
     const updatedData = { ...formData, [name]: value };
     
     // Auto-reset married brothers/sisters when total is set to None or 0
-    if (name === "brothers") {
-      if (value === "None" || value === "0") {
-        updatedData.marriedBrothers = "None";
-      } else if (parseFormNumber(updatedData.marriedBrothers) > parseFormNumber(value)) {
-        // If married brothers exceed new total, reset it
-        updatedData.marriedBrothers = "0";
-      }
-    }
-    
-    if (name === "sisters") {
-      if (value === "None" || value === "0") {
-        updatedData.marriedSisters = "None";
-      } else if (parseFormNumber(updatedData.marriedSisters) > parseFormNumber(value)) {
-        // If married sisters exceed new total, reset it
-        updatedData.marriedSisters = "0";
-      }
-    }
+   if (name === "brothers") {
+  if (value === "0") {
+    updatedData.marriedBrothers = "0";
+  } else if (parseFormNumber(updatedData.marriedBrothers) > parseFormNumber(value)) {
+    updatedData.marriedBrothers = "0";
+  }
+}
+
+if (name === "sisters") {
+  if (value === "0") {
+    updatedData.marriedSisters = "0";
+  } else if (parseFormNumber(updatedData.marriedSisters) > parseFormNumber(value)) {
+    updatedData.marriedSisters = "0";
+  }
+}
+
     
     setFormData(updatedData);
     setData(updatedData);
     
     // Clear messages when user starts typing
     if (errorMessage) setErrorMessage("");
+    
+    // Validate the field
+    const error = validateField(name, value);
+    setValidationErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    // Validate the field on blur
+    const error = validateField(name, value);
+    setValidationErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const prepareApiData = () => {
     // Convert Yes/No → boolean
     const interCasteBool = formData.interCasteInFamily === "Yes";
 
-    // Convert string numbers → number
-    const parseNumber = (value) => {
-      if (!value || value === "None") return 0;
-      if (value === "6+") return 6;
-      const num = parseInt(value, 10);
-      return isNaN(num) ? 0 : num;
-    };
+   const parseNumber = (value) => {
+  if (!value) return 0;
+  if (value === "6+") return 6;
+  const num = parseInt(value, 10);
+  return isNaN(num) ? 0 : num;
+};
+
 
     const brothersCount = parseNumber(formData.brothers);
     const marriedBrothersCount = parseNumber(formData.marriedBrothers);
@@ -292,7 +316,7 @@ const Step4FamilyBackground = ({
       relativeSurnames: (formData.relativeSurnames || "").trim(),
     };
 
-    //PATCH requires version - ALWAYS include it if hasExistingFamily is true
+    //PATCH requires version
     if (hasExistingFamily) {
       // Use the version from state or default to 0
       apiData.version = version !== null && version !== undefined ? version : 0;
@@ -307,6 +331,13 @@ const Step4FamilyBackground = ({
     console.log("=== FAMILY FORM SUBMISSION STARTED ===");
     console.log("Has existing family:", hasExistingFamily);
     console.log("Current version:", version);
+
+    // Mark all fields as touched when trying to submit
+    const allTouched = {};
+    requiredKeys.forEach(key => {
+      allTouched[key] = true;
+    });
+    setTouchedFields(allTouched);
 
     // Check all required fields are filled
     const missingFields = requiredKeys.filter(
@@ -422,14 +453,27 @@ const Step4FamilyBackground = ({
     }
   };
 
-  const fieldStyle = {
-    backgroundColor: "#FF8C4405",
-    border: "1px solid #8180801c",
-    borderRadius: "6px",
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 400,
-    color: "#646565ff",
-    padding: "14px 12px",
+  const getFieldStyle = (fieldName) => {
+    const baseStyle = {
+      backgroundColor: "#FF8C4405",
+      border: "1px solid #8180801c",
+      borderRadius: "6px",
+      fontFamily: "'Inter', sans-serif",
+      fontWeight: 400,
+      color: "#646565ff",
+      padding: "14px 12px",
+    };
+
+    // If field has been touched and has validation error, show red border
+    if (touchedFields[fieldName] && validationErrors[fieldName]) {
+      return {
+        ...baseStyle,
+        border: "1px solid #ef4444",
+        backgroundColor: "#fef2f2",
+      };
+    }
+
+    return baseStyle;
   };
 
   const labelStyle = {
@@ -439,47 +483,50 @@ const Step4FamilyBackground = ({
     marginBottom: "4px",
   };
 
-  // Generate options for married brothers based on selected brothers
-  const getMarriedBrothersOptions = () => {
-    const brothersValue = formData.brothers || "";
-    if (!brothersValue || brothersValue === "None") {
-      return [<option key="none" value="None">None</option>];
-    }
-    
-    const maxBrothers = brothersValue === "6+" ? 6 : parseInt(brothersValue);
-    const options = [];
-    
-    // Always include "None" option
-    options.push(<option key="none" value="None">None</option>);
-    
-    // Add numbers from 0 to maxBrothers
-    for (let i = 0; i <= maxBrothers; i++) {
-      options.push(<option key={i} value={i}>{i}</option>);
-    }
-    
-    return options;
-  };
+const getMarriedBrothersOptions = () => {
+  const brothersValue = formData.brothers || "";
+
+  if (!brothersValue || brothersValue === "0") {
+    return [];
+  }
+
+  const maxBrothers = brothersValue === "6+" ? 6 : parseInt(brothersValue, 10);
+  const options = [];
+
+  for (let i = 0; i <= maxBrothers; i++) {
+    options.push(
+      <option key={i} value={i}>
+        {i}
+      </option>
+    );
+  }
+
+  return options;
+};
+
 
   // Generate options for married sisters based on selected sisters
-  const getMarriedSistersOptions = () => {
-    const sistersValue = formData.sisters || "";
-    if (!sistersValue || sistersValue === "None") {
-      return [<option key="none" value="None">None</option>];
-    }
-    
-    const maxSisters = sistersValue === "6+" ? 6 : parseInt(sistersValue);
-    const options = [];
-    
-    // Always include "None" option
-    options.push(<option key="none" value="None">None</option>);
-    
-    // Add numbers from 0 to maxSisters
-    for (let i = 0; i <= maxSisters; i++) {
-      options.push(<option key={i} value={i}>{i}</option>);
-    }
-    
-    return options;
-  };
+const getMarriedSistersOptions = () => {
+  const sistersValue = formData.sisters || "";
+
+  if (!sistersValue || sistersValue === "0") {
+    return [];
+  }
+
+  const maxSisters = sistersValue === "6+" ? 6 : parseInt(sistersValue, 10);
+  const options = [];
+
+  for (let i = 0; i <= maxSisters; i++) {
+    options.push(
+      <option key={i} value={i}>
+        {i}
+      </option>
+    );
+  }
+
+  return options;
+};
+
 
   // Check authentication first
   const token = localStorage.getItem("token");
@@ -594,13 +641,14 @@ const Step4FamilyBackground = ({
               name="fathersName"
               value={formData.fathersName || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Father's Name"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("fathersName")}
               maxLength={50}
             />
-            {validationErrors.fathersName && (
-              <p className="text-red-500 text-xs">{validationErrors.fathersName}</p>
+            {touchedFields.fathersName && validationErrors.fathersName && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.fathersName}</p>
             )}
           </div>
 
@@ -613,13 +661,14 @@ const Step4FamilyBackground = ({
               name="fatherOccupation"
               value={formData.fatherOccupation || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Father Occupation"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("fatherOccupation")}
               maxLength={50}
             />
-            {validationErrors.fatherOccupation && (
-              <p className="text-red-500 text-xs">{validationErrors.fatherOccupation}</p>
+            {touchedFields.fatherOccupation && validationErrors.fatherOccupation && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.fatherOccupation}</p>
             )}
           </div>
 
@@ -632,13 +681,14 @@ const Step4FamilyBackground = ({
               name="mothersName"
               value={formData.mothersName || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Mother's Name"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("mothersName")}
               maxLength={50}
             />
-            {validationErrors.mothersName && (
-              <p className="text-red-500 text-xs">{validationErrors.mothersName}</p>
+            {touchedFields.mothersName && validationErrors.mothersName && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.mothersName}</p>
             )}
           </div>
 
@@ -651,13 +701,14 @@ const Step4FamilyBackground = ({
               name="motherOccupation"
               value={formData.motherOccupation || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Mother Occupation"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("motherOccupation")}
               maxLength={50}
             />
-            {validationErrors.motherOccupation && (
-              <p className="text-red-500 text-xs">{validationErrors.motherOccupation}</p>
+            {touchedFields.motherOccupation && validationErrors.motherOccupation && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.motherOccupation}</p>
             )}
           </div>
 
@@ -669,8 +720,9 @@ const Step4FamilyBackground = ({
               name="brothers"
               value={formData.brothers || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("brothers")}
             >
               <option value="">Select</option>
               <option value="0">0</option>
@@ -681,8 +733,8 @@ const Step4FamilyBackground = ({
               <option value="5">5</option>
               <option value="6+">6+</option>
             </select>
-            {validationErrors.brothers && (
-              <p className="text-red-500 text-xs">{validationErrors.brothers}</p>
+            {touchedFields.brothers && validationErrors.brothers && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.brothers}</p>
             )}
           </div>
 
@@ -694,15 +746,16 @@ const Step4FamilyBackground = ({
               name="marriedBrothers"
               value={formData.marriedBrothers || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("marriedBrothers")}
               disabled={!formData.brothers}
             >
               <option value="">Select</option>
               {getMarriedBrothersOptions()}
             </select>
-            {validationErrors.marriedBrothers && (
-              <p className="text-red-500 text-xs">{validationErrors.marriedBrothers}</p>
+            {touchedFields.marriedBrothers && validationErrors.marriedBrothers && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.marriedBrothers}</p>
             )}
           </div>
 
@@ -714,8 +767,9 @@ const Step4FamilyBackground = ({
               name="sisters"
               value={formData.sisters || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("sisters")}
             >
               <option value="">Select</option>
               <option value="0">0</option>
@@ -726,8 +780,8 @@ const Step4FamilyBackground = ({
               <option value="5">5</option>
               <option value="6+">6+</option>
             </select>
-            {validationErrors.sisters && (
-              <p className="text-red-500 text-xs">{validationErrors.sisters}</p>
+            {touchedFields.sisters && validationErrors.sisters && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.sisters}</p>
             )}
           </div>
 
@@ -739,15 +793,16 @@ const Step4FamilyBackground = ({
               name="marriedSisters"
               value={formData.marriedSisters || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
-              disabled={!formData.sisters || formData.sisters === "None"}
+              style={getFieldStyle("marriedSisters")}
+              disabled={!formData.sisters || formData.sisters === "0"}
             >
               <option value="">Select</option>
               {getMarriedSistersOptions()}
             </select>
-            {validationErrors.marriedSisters && (
-              <p className="text-red-500 text-xs">{validationErrors.marriedSisters}</p>
+            {touchedFields.marriedSisters && validationErrors.marriedSisters && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.marriedSisters}</p>
             )}
           </div>
 
@@ -759,15 +814,16 @@ const Step4FamilyBackground = ({
               name="interCasteInFamily"
               value={formData.interCasteInFamily || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("interCasteInFamily")}
             >
               <option value="">Select</option>
               <option value="Yes">Yes</option>
               <option value="No">No</option>
             </select>
-            {validationErrors.interCasteInFamily && (
-              <p className="text-red-500 text-xs">{validationErrors.interCasteInFamily}</p>
+            {touchedFields.interCasteInFamily && validationErrors.interCasteInFamily && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.interCasteInFamily}</p>
             )}
           </div>
 
@@ -780,13 +836,14 @@ const Step4FamilyBackground = ({
               name="parentResiding"
               value={formData.parentResiding || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter parent residing location"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("parentResiding")}
               maxLength={100}
             />
-            {validationErrors.parentResiding && (
-              <p className="text-red-500 text-xs">{validationErrors.parentResiding}</p>
+            {touchedFields.parentResiding && validationErrors.parentResiding && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.parentResiding}</p>
             )}
           </div>
 
@@ -799,13 +856,14 @@ const Step4FamilyBackground = ({
               name="mamaSurname"
               value={formData.mamaSurname || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Mama Surname"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("mamaSurname")}
               maxLength={50}
             />
-            {validationErrors.mamaSurname && (
-              <p className="text-red-500 text-xs">{validationErrors.mamaSurname}</p>
+            {touchedFields.mamaSurname && validationErrors.mamaSurname && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.mamaSurname}</p>
             )}
           </div>
 
@@ -818,13 +876,14 @@ const Step4FamilyBackground = ({
               name="mamaPlace"
               value={formData.mamaPlace || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Mama Place"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("mamaPlace")}
               maxLength={100}
             />
-            {validationErrors.mamaPlace && (
-              <p className="text-red-500 text-xs">{validationErrors.mamaPlace}</p>
+            {touchedFields.mamaPlace && validationErrors.mamaPlace && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.mamaPlace}</p>
             )}
           </div>
 
@@ -837,13 +896,14 @@ const Step4FamilyBackground = ({
               name="familyWealth"
               value={formData.familyWealth || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Family Wealth details"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("familyWealth")}
               maxLength={100}
             />
-            {validationErrors.familyWealth && (
-              <p className="text-red-500 text-xs">{validationErrors.familyWealth}</p>
+            {touchedFields.familyWealth && validationErrors.familyWealth && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.familyWealth}</p>
             )}
           </div>
 
@@ -856,13 +916,14 @@ const Step4FamilyBackground = ({
               name="relativeSurnames"
               value={formData.relativeSurnames || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Relative Surnames (comma separated)"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("relativeSurnames")}
               maxLength={200}
             />
-            {validationErrors.relativeSurnames && (
-              <p className="text-red-500 text-xs">{validationErrors.relativeSurnames}</p>
+            {touchedFields.relativeSurnames && validationErrors.relativeSurnames && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.relativeSurnames}</p>
             )}
           </div>
         </form>

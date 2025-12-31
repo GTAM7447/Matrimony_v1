@@ -140,13 +140,28 @@ const Step5PartnerExpectations = ({
     if (requiredKeys.includes(name) && (!value || value.toString().trim() === "")) {
       err = "This field is required";
     } else if (value && value.toString().trim() !== "") {
-      // Specific validations
-      if (name === "partnerEducation") {
-        if (!/^[A-Za-z\s\-\.&]+$/.test(value)) {
-          err = "Only letters, spaces, hyphens, dots, and ampersand allowed";
+      // Alphabet-only validation for text fields
+      const alphabetOnlyRegex = /^[A-Za-z\s]+$/;
+      
+      // Fields that should only contain alphabets and spaces
+      const textFields = [
+        "partnerCaste",
+        "partnerEducation",
+        "cityLivingIn",
+        "stateLivingIn",
+        "partnerSubCaste",
+        "partnerMotherTongue",
+        "partnerOccupation",
+        "partnerAdditionalPreferences"
+      ];
+      
+      if (textFields.includes(name)) {
+        if (!alphabetOnlyRegex.test(value)) {
+          err = "Only alphabets (A-Z, a-z) and spaces allowed";
         }
       }
-      
+
+      // Age range validation
       if (name === "ageRange") {
         if (!/^\d{1,2}-\d{1,2}$/.test(value)) {
           err = "Age range must be in format 'min-max' (e.g., '25-35')";
@@ -161,6 +176,7 @@ const Step5PartnerExpectations = ({
         }
       }
 
+      // Height range validation
       if (name === "heightRange") {
         if (value.length < 3 || value.length > 50) {
           err = "Height range should be 3-50 characters";
@@ -172,24 +188,11 @@ const Step5PartnerExpectations = ({
         }
       }
 
+      // Income validation
       if (name === "partnerIncome") {
         const income = parseInt(value);
         if (isNaN(income) || income < 100000 || income > 50000000) {
           err = "Income should be between ₹1,00,000 and ₹5,00,00,000";
-        }
-      }
-
-      if (name === "cityLivingIn") {
-        if (!/^[A-Za-z\s\-\.]+$/.test(value)) {
-          err = "Only alphabets, spaces, hyphens and dots allowed";
-        } else if (value.trim().length < 2) {
-          err = "City name must be at least 2 characters";
-        }
-      }
-
-      if (name === "partnerCaste") {
-        if (!/^[A-Za-z\s\-]+$/.test(value)) {
-          err = "Only alphabets, spaces and hyphens allowed";
         }
       }
     }
@@ -285,27 +288,27 @@ const Step5PartnerExpectations = ({
       const apiData = prepareApiData();
       console.log("Sending to API...");
       
-     let response;
+      let response;
 
-if (hasExistingPartner) {
-  console.log("Using PATCH to update existing partner preferences");
-  response = await updatePartnerPreference(apiData).unwrap();
-} else {
-  console.log("Using POST to create new partner preferences");
-  response = await createPartnerPreference(apiData).unwrap();
-}
+      if (hasExistingPartner) {
+        console.log("Using PATCH to update existing partner preferences");
+        response = await updatePartnerPreference(apiData).unwrap();
+      } else {
+        console.log("Using POST to create new partner preferences");
+        response = await createPartnerPreference(apiData).unwrap();
+      }
 
-console.log("API Response:", response);
+      console.log("API Response:", response);
 
-//unwrap() guarantees success
-setSuccessMessage(
-  hasExistingPartner
-    ? "Partner preferences updated successfully!"
-    : "Partner preferences created successfully!"
-);
+      //unwrap() guarantees success
+      setSuccessMessage(
+        hasExistingPartner
+          ? "Partner preferences updated successfully!"
+          : "Partner preferences created successfully!"
+      );
 
-// MOVE TO NEXT STEP IMMEDIATELY
-nextStep();
+      // MOVE TO NEXT STEP IMMEDIATELY
+      nextStep();
 
     } catch (error) {
       console.error("API Error:", error);
@@ -540,6 +543,7 @@ nextStep();
               style={fieldStyle}
               maxLength={50}
             />
+            {validationErrors.partnerSubCaste && <p className="text-red-500 text-xs mt-1">{validationErrors.partnerSubCaste}</p>}
           </div>
 
           {/* EDUCATION */}
@@ -593,6 +597,7 @@ nextStep();
               style={fieldStyle}
               maxLength={100}
             />
+            {validationErrors.partnerOccupation && <p className="text-red-500 text-xs mt-1">{validationErrors.partnerOccupation}</p>}
           </div>
 
           {/* INCOME */}
@@ -662,6 +667,7 @@ nextStep();
               style={fieldStyle}
               maxLength={50}
             />
+            {validationErrors.stateLivingIn && <p className="text-red-500 text-xs mt-1">{validationErrors.stateLivingIn}</p>}
           </div>
 
           {/* EATING HABITS */}
@@ -771,6 +777,7 @@ nextStep();
               style={fieldStyle}
               maxLength={50}
             />
+            {validationErrors.partnerMotherTongue && <p className="text-red-500 text-xs mt-1">{validationErrors.partnerMotherTongue}</p>}
           </div>
 
           {/* ADDITIONAL PREFERENCES (Optional) */}
@@ -786,6 +793,7 @@ nextStep();
               rows={3}
               maxLength={500}
             />
+            {validationErrors.partnerAdditionalPreferences && <p className="text-red-500 text-xs mt-1">{validationErrors.partnerAdditionalPreferences}</p>}
           </div>
         </form>
       </div>

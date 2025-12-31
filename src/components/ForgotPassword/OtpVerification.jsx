@@ -4,7 +4,7 @@ import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineExclamation, AiOutlineCheckCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import image from "../../assets/ForgotPassword/sideImageBackground.webp";
-import bgImage from "../../assets/home/BgFrame.png";
+import bgImage from "../../assets/home/Bgframe.png";
 
 export default function OtpVerification() {
   const navigate = useNavigate();
