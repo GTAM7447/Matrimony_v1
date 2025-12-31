@@ -1,7 +1,7 @@
 import React from "react";
-import storyImage1 from "../../assets/SuccessStories/story1.jpg";
+import storyImage1 from "../../assets/SuccessStories/Story1.jpg";
 import storyImage2 from "../../assets/SuccessStories/story2.jpg";
- 
+
 const SuccessStoriesSubpage = () => {
     const stories = [
         {
@@ -23,7 +23,7 @@ const SuccessStoriesSubpage = () => {
             image: storyImage2
         }
     ];
- 
+
     return (
         <section className="bg-[#F6F6F6] min-h-screen py-16 px-6 sm:px-12 lg:px-20 font-[Inter]">
             <div className="max-w-7xl mx-auto">
@@ -36,7 +36,7 @@ const SuccessStoriesSubpage = () => {
                         Real stories from couples who found their perfect match
                     </p>
                 </div>
- 
+
                 {/* Stories - Single column layout */}
                 <div className="flex flex-col gap-12">
                     {stories.map((story) => (
@@ -50,10 +50,10 @@ const SuccessStoriesSubpage = () => {
                                         className="w-full h-64 lg:h-full object-cover"
                                     />
                                 </div>
- 
+
                                 {/* Content Section - Right Side */}
                                 <div className="lg:w-3/5 p-6">
- 
+
                                     {/* Profile Info */}
                                     <div className="mb-4">
                                         <h2 className="text-xl font-bold text-gray-800">{story.name}</h2>
@@ -83,19 +83,19 @@ const SuccessStoriesSubpage = () => {
                                             {story.location}
                                         </div>
                                     </div>
- 
+
                                     {/* Quote */}
                                     <blockquote className="text-gray-700 italic font-semibold text-lg sm:text-xl leading-relaxed mb-4 border-l-4 border-orange-500 pl-4 py-1">
                                         {story.quote.split(" ").slice(0, Math.ceil(story.quote.split(" ").length / 3)).join(" ")}<br />
                                         {story.quote.split(" ").slice(Math.ceil(story.quote.split(" ").length / 3)).join(" ")}
                                     </blockquote>
- 
- 
+
+
                                     {/* Description */}
                                     <p className="text-gray-600 mb-6 leading-relaxed">
                                         {story.description}
                                     </p>
- 
+
                                     {/* View Story Button */}
                                     <button className="bg-orange-500 text-white py-3 px-8 rounded-lg font-semibold hover:bg-orange-600 transition-colors duration-300">
                                         View the Story
@@ -109,6 +109,5 @@ const SuccessStoriesSubpage = () => {
         </section>
     );
 };
- 
+
 export default SuccessStoriesSubpage;
- 
