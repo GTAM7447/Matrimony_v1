@@ -73,10 +73,13 @@ function App() {
             <Route path="/emptyBiodata" element={<BiodataTemplate data={emptyBiodata} />} />
             <Route path="/SuccessModal" element={<SuccessModal />} />
              <Route path="/LogoutPanel" element={<LogoutPanel />} />
-            <Route path="/OthersEmptyBiodataPage" element={<OthersEmptyBiodataPage />} />
+            <Route
+  path="/profile/:profileId"
+  element={<OthersEmptyBiodataPage />}
+/>
+
             <Route path="/PublicBiodataPage" element={<PublicBiodataPage />} />
             <Route path="/my-profile" element={<MyProfilePage />} />
-
 
           </Route>
 

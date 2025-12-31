@@ -1,5 +1,7 @@
 import { X, User, LogOut } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import React, { useMemo, useCallback } from "react";
+
 import { useNavigate } from "react-router-dom";
 import {
   useGetOwnProfileQuery,
@@ -17,29 +19,64 @@ const LogoutPanel = ({
   onClose,
   sentCount = 0,
   receivedCount = 0,
+  profile,
+  photoData,
 }) => {
+
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const { data: profileResponse } = useGetOwnProfileQuery();
-  const { data: photoResponse } = useGetProfilePhotoQuery();
 
-  const profilePic = toImageUrl(photoResponse?.data?.fileData);
 
-  const profileData = profileResponse?.data;
-
+  const profileData = profile;
   const p = profileData?.userProfile || {};
   const e = profileData?.educationAndProfession || {};
 
-  const fullName =
-    `${p.firstName || ""} ${p.middleName || ""} ${p.lastName || ""}`
-      .replace(/\s+/g, " ")
-      .trim() || "Your Name";
 
-  const education =
-    e.education ||
-    e.degree ||
-    "Education details not added";
+  const profilePic = useMemo(
+    () => toImageUrl(photoData?.fileData),
+    [photoData?.fileData]
+  );
+
+  const fullName = useMemo(() => {
+    return (
+      `${p.firstName || ""} ${p.middleName || ""} ${p.lastName || ""}`
+        .replace(/\s+/g, " ")
+        .trim() || "Your Name"
+    );
+  }, [p.firstName, p.middleName, p.lastName]);
+
+  const education = useMemo(() => {
+    return e.education || e.degree || "Education details not added";
+  }, [e.education, e.degree]);
+
+
+const handleViewProfile = useCallback(() => {
+  navigate("/ViewProfilePage");
+
+  requestAnimationFrame(() => {
+    onClose();
+  });
+}, [navigate, onClose]);
+
+
+const handleViewRequests = useCallback(() => {
+  navigate("/RequestsPage");
+
+  requestAnimationFrame(() => {
+    onClose();
+  });
+}, [navigate, onClose]);
+
+
+const handleLogout = useCallback(() => {
+  onClose();
+
+  requestAnimationFrame(() => {
+    logout(); // clears token + RTK cache
+  });
+}, [logout, onClose]);
+
 
   return (
     <>
@@ -93,22 +130,21 @@ const LogoutPanel = ({
               </div>
 
               <h3 className="text-[16px] font-semibold text-gray-900">
-                {fullName}
+                {profile ? fullName : "Loading..."}
               </h3>
+
 
               <p className="text-[12px] text-gray-600 text-center leading-tight">
                 {education}
               </p>
 
               <button
-                onClick={() => {
-                  onClose();
-                  navigate("/ViewProfilePage");
-                }}
-                className="text-[13px] text-orange-500 mt-1 font-semibold"
+                onClick={handleViewProfile}
+                className="mt-1 text-[13px] text-orange-500 font-semibold hover:underline"
               >
                 View & Update Profile
               </button>
+
             </div>
 
             {/* REQUEST COUNTS */}
@@ -127,12 +163,12 @@ const LogoutPanel = ({
                   </p>
 
                   {/* VIEW ALL */}
-                  <a
-                    href="/RequestsPage"
-                    className="text-[11px] text-orange-500 mt-1 inline-block hover:underline"
+                  <button
+                    onClick={handleViewRequests}
+                    className="text-[11px] text-orange-500 mt-1 inline-block hover:underline font-medium"
                   >
                     View All
-                  </a>
+                  </button>
                 </div>
 
                 <div className="w-px bg-gray-300 mx-2"></div>
@@ -146,12 +182,16 @@ const LogoutPanel = ({
                   </p>
 
                   {/* VIEW ALL */}
-                  <a
-                    href="#"
+                  <button
+                    onClick={() => {
+                      onClose();
+                      navigate("/#"); // or correct route
+                    }}
                     className="text-[11px] text-orange-500 mt-1 inline-block hover:underline"
                   >
                     View All
-                  </a>
+                  </button>
+
                 </div>
               </div>
 
@@ -167,14 +207,8 @@ const LogoutPanel = ({
 
             {/* LOGOUT */}
             <div className="pb-2">
-              <button
-                onClick={() => {
-                  logout();
-                  onClose();
-                  window.location.reload();
-                }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500 text-white text-[13px]"
-              >
+              <button onClick={handleLogout}>
+
                 <LogOut size={14} />
                 Logout
               </button>
@@ -187,4 +221,4 @@ const LogoutPanel = ({
   );
 };
 
-export default LogoutPanel;
+export default React.memo(LogoutPanel);
