@@ -4,7 +4,7 @@ import { BsShieldCheck } from "react-icons/bs";
 import { AiOutlineExclamation, AiOutlineCheckCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import image from "../../assets/ForgotPassword/sideImageBackground.webp";
-import bgImage from "../../assets/home/Bgframe.png";
+import bgImage from "../../assets/home/BgFrame.png";
 
 export default function OtpVerification() {
   const navigate = useNavigate();
@@ -203,9 +203,8 @@ function Feature({ icon, title, text, orangeWhite }) {
   return (
     <div className="flex items-start gap-3">
       <div
-        className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border ${
-          orangeWhite ? "bg-white border-white" : "bg-white"
-        }`}
+        className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border ${orangeWhite ? "bg-white border-white" : "bg-white"
+          }`}
       >
         {React.cloneElement(icon, {
           className: "w-5 h-5 text-[#f68527]",
