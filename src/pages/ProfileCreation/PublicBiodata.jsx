@@ -3,9 +3,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-/* ------------------------------------------
-   EMPTY BIODATA
------------------------------------------- */
+/* EMPTY BIODATA */
 export const publicEmptyBiodata = {
   // PERSONAL
   lastName: "",

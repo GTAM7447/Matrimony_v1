@@ -1,23 +1,29 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BackgroundSignIn from "../assets/SignIn/BackgroundSignIn.jpg";
-import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (errorMessage) setErrorMessage("");
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSignIn = async (e) => {
@@ -30,7 +36,7 @@ const SignIn = () => {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setErrorMessage("Please enter a valid email address.");
+      setErrorMessage("Enter valid email address.");
       return;
     }
 
@@ -38,16 +44,40 @@ const SignIn = () => {
     setErrorMessage("");
 
     try {
-      const result = await login(formData.email, formData.password);
+      const res = await axios.post(
+        "https://mttlprv1.digiledge.info/jwt/login",
+        {
+          email: formData.email.trim(),
+          password: formData.password.trim(),
+        }
+      );
 
-      if (result.success) {
-        navigate("/create-profile");
+      const token =
+        res?.data?.token ||
+        res?.data?.accessToken ||
+        res?.data?.data?.token;
+
+      if (!token) {
+        throw new Error("No token returned.");
+      }
+
+      // FIXED — Save correctly
+      localStorage.setItem("authToken", token);
+
+      const decoded = jwtDecode(token);
+      const roles = decoded?.authorities || [];
+
+      // Redirect by role
+      if (roles.includes("ROLE_ADMIN")) {
+        navigate("/admin/create-profile", { replace: true });
       } else {
-        setErrorMessage(result.message);
+        navigate("/create-profile", { replace: true });
       }
     } catch (error) {
-      console.error("SignIn error:", error);
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      const msg =
+        error?.response?.data?.message ||
+        "Invalid credentials. Try again.";
+      setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
@@ -55,127 +85,131 @@ const SignIn = () => {
 
   return (
     <div
-      className="relative min-h-screen flex items-center justify-center lg:justify-end lg:items-start font-[Inter] overflow-hidden lg:pt-15 px-4 sm:px-6 py-8"
+      className="relative min-h-screen flex items-center justify-center lg:justify-end lg:items-start font-[Inter] overflow-hidden lg:pt-20 px-4 sm:px-6 py-8"
       style={{
         backgroundImage: `url(${BackgroundSignIn})`,
         backgroundSize: "cover",
-        backgroundPosition: "calc(50% - 88px) center", // <-- SHIFTED LEFT BY 18PX (FINAL)
+        backgroundPosition: "calc(50% - 88px) center",
         backgroundRepeat: "no-repeat",
       }}
     >
-
-      {/* BLACK GRADIENT FADE (left → right) */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/70 to-black"></div>
 
-      {/* SIGN IN BOX */}
-      <div
-        className="relative z-10 bg-white shadow-2xl rounded-2xl p-6 sm:p-8 lg:p-10 w-full max-w-sm sm:max-w-md mx-auto lg:mx-16 transition-all duration-300"
-        style={{ minHeight: "470px", maxWidth: "400px" }}
-      >
-        <h2 className="text-center text-2xl sm:text-3xl font-semibold text-orange-500 mb-6">
-          Sign In
-        </h2>
+     <div
+  className="
+    relative z-10
+    bg-white
+    shadow-lg
+    rounded-xl
+    p-6 sm:p-8
+    w-full
+    max-w-sm sm:max-w-md
+    mx-auto
+    lg:mx-20
+    border border-gray-200
+  "
+  style={{
+    minHeight: "410px",
+    maxWidth: "420px",
+    boxShadow: "0px 8px 28px rgba(0,0,0,0.12)",
+  }}
+>
+  <h2 className="text-center text-2xl sm:text-3xl font-semibold text-orange-500 mb-3">
+    Sign In
+  </h2>
 
-        {errorMessage && (
-          <p className="text-center text-red-600 text-sm mb-3 font-medium bg-red-50 py-2 rounded-md">
-            {errorMessage}
-          </p>
-        )}
+  {errorMessage && (
+    <p className="text-center text-red-600 text-sm mb-3 font-medium bg-red-50 py-2 rounded-md">
+      {errorMessage}
+    </p>
+  )}
 
-        <form onSubmit={handleSignIn}>
-          {/* Email */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email ID :
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="email@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all duration-300"
-              disabled={isLoading}
-            />
-          </div>
+  <form onSubmit={handleSignIn}>
+    {/* Email */}
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Email ID :
+      </label>
+      <input
+        type="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        placeholder="email@example.com"
+        className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+        disabled={isLoading}
+      />
+    </div>
 
-          {/* Password */}
-          <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password :
-            </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all duration-300"
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="text-right mb-3">
-            <Link
-              to="/forgot"
-              className="text-sm text-orange-500 hover:text-orange-600 transition-colors duration-300"
-            >
-              Forgot Password?
-            </Link>
-          </div>
-
-          <p className="text-xs text-gray-500 mb-5 text-center leading-snug">
-            *By signing in, I agree to the Terms & Conditions and Privacy Policy
-          </p>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full ${
-              isLoading
-                ? "bg-orange-400 cursor-not-allowed"
-                : "bg-orange-500 hover:bg-orange-600"
-            } text-white py-2.5 rounded-md transition-all duration-300 text-sm sm:text-base flex items-center justify-center`}
-          >
-            {isLoading ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Signing In...
-              </>
-            ) : (
-              "Sign In"
-            )}
-          </button>
-        </form>
-
-        <div className="text-center mt-3">
-          <Link
-            to="/signup"
-            className="inline-block w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-md transition-all duration-300 text-sm sm:text-base"
-          >
-            Sign Up
-          </Link>
-        </div>
+    {/* Password */}
+    <div className="mb-1">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Password :
+      </label>
+      <div className="relative">
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Enter your password"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 pr-10"
+          disabled={isLoading}
+        />
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={togglePasswordVisibility}
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+        >
+          {showPassword ? "⊘" : "👁"}
+        </button>
       </div>
+    </div>
+
+    {/* Forgot Password */}
+    <div className="flex justify-end mt-1 mb-3">
+      <Link to="/forgot" className="text-xs text-orange-500 hover:underline">
+        Forgot Password
+      </Link>
+    </div>
+
+    <button
+      type="submit"
+      disabled={isLoading}
+      className={`w-full ${
+        isLoading
+          ? "bg-orange-400 cursor-not-allowed"
+          : "bg-orange-500 hover:bg-orange-600"
+      } text-white py-2.5 rounded-md`}
+    >
+      {isLoading ? "Signing In..." : "Sign In"}
+    </button>
+  </form>
+
+  {/* SignUp */}
+  <div className="text-center mt-3">
+    <Link
+      to="/signup"
+      className="inline-block w-full bg-orange-500 hover:bg-orange-600 text-white py-2.5 rounded-md font-medium text-sm"
+    >
+      Sign Up
+    </Link>
+  </div>
+
+    {/* Terms */}
+  <p className="text-[11px] text-gray-500 text-center mt-3 px-3 leading-tight">
+    *By clicking Sign In, I agree to the{" "}
+    <span className="text-orange-500 cursor-pointer hover:underline">
+      T&amp;C
+    </span>{" "}
+    and{" "}
+    <span className="text-orange-500 cursor-pointer hover:underline">
+      Privacy Policy
+    </span>
+  </p>
+</div>
+
     </div>
   );
 };

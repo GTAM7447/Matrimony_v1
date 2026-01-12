@@ -815,14 +815,13 @@
 
 
 
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Stepper from "./Stepper";
 import { City } from "country-state-city";
 import {
   useCreateHoroscopeDetailsMutation,
   useGetHoroscopeDetailsQuery,
-  useUpdateHoroscopeDetailsMutation
+  useUpdateHoroscopeDetailsMutation,
 } from "../../context/createProfile";
 
 const Step2HoroscopeDetails = ({
@@ -834,6 +833,9 @@ const Step2HoroscopeDetails = ({
   step,
   completedStep,
 }) => {
+  const autoNextRef = useRef(false);
+  const apiLoadedRef = useRef(false);
+
   const [districts, setDistricts] = useState([]);
   const [formData, setFormData] = useState(data || {});
   const [isLoading, setIsLoading] = useState(false);
@@ -841,23 +843,22 @@ const Step2HoroscopeDetails = ({
   const [successMessage, setSuccessMessage] = useState("");
   const [hasExistingHoroscope, setHasExistingHoroscope] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [version, setVersion] = useState(0); // For optimistic locking
+  const [version, setVersion] = useState(0);
 
-  // RTK Query hooks
   const [createHoroscopeDetails] = useCreateHoroscopeDetailsMutation();
   const [updateHoroscopeDetails] = useUpdateHoroscopeDetailsMutation();
 
-  // GET API hook - Auto fetches on mount
   const {
-    data: horoscopeApiResponse,
+    data: res,
     isLoading: isFetching,
     error: horoscopeError,
     isSuccess,
-    isError,
-    refetch
+    refetch,
   } = useGetHoroscopeDetailsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+
+  const apiData = res?.data;
 
   const requiredKeys = [
     "dob",
@@ -879,97 +880,72 @@ const Step2HoroscopeDetails = ({
 
   const [validationErrors, setValidationErrors] = useState({});
 
-  // LOAD DATA FROM GET API
+  // AUTO-NEXT LOGIC: Load data from API and auto-navigate if step is sequential
   useEffect(() => {
-    if (horoscopeApiResponse?.data && !dataLoaded) {
-      console.log("Horoscope fetch response:", horoscopeApiResponse);
+    if (!isSuccess || !apiData) return;
+    if (apiLoadedRef.current) return;
 
-      const horoscopeData = horoscopeApiResponse.data;
-      setHasExistingHoroscope(true);
-      setVersion(horoscopeData.version || 0);
+    apiLoadedRef.current = true;
 
-      // Format date for input field
-      const formatDateForInput = (dateString) => {
-        if (!dateString) return "";
-        try {
-          // Handle both Date object and string
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) return "";
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        } catch (error) {
-          console.error("Error parsing date:", error);
-          return "";
-        }
-      };
+    const horoscopeData = apiData;
+    setHasExistingHoroscope(true);
+    setVersion(horoscopeData.version || 0);
 
-      // Transform backend data to form format
-      const transformedData = {
-        dob: formatDateForInput(horoscopeData.dob),
-        time: horoscopeData.time || "",
-        birthPlace: horoscopeData.birthPlace || "",
-        rashi: horoscopeData.rashi || "",
-        nakshatra: horoscopeData.nakshatra || "",
-        charan: horoscopeData.charan || "",
-        nadi: horoscopeData.nadi || "",
-        gan: horoscopeData.gan || "",
-        mangal: horoscopeData.mangal || "",
-        gotra: horoscopeData.gotra || "",
-        devak: horoscopeData.devak || "",
-      };
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return "";
+      const d = new Date(dateString);
+      return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
+    };
 
-      console.log("Horoscope form data populated:", transformedData);
+    const transformedData = {
+      dob: formatDateForInput(horoscopeData.dob),
+      time: horoscopeData.time || "",
+      birthPlace: horoscopeData.birthPlace || "",
+      rashi: horoscopeData.rashi || "",
+      nakshatra: horoscopeData.nakshatra || "",
+      charan: horoscopeData.charan || "",
+      nadi: horoscopeData.nadi || "",
+      gan: horoscopeData.gan || "",
+      mangal: horoscopeData.mangal || "",
+      gotra: horoscopeData.gotra || "",
+      devak: horoscopeData.devak || "",
+    };
 
-      setFormData(transformedData);
-      setData(transformedData);
-      setDataLoaded(true);
+    // ✅ ALWAYS load data
+    setFormData(transformedData);
+    setData(transformedData);
+    setDataLoaded(true);
 
-      setSuccessMessage("Horoscope details loaded successfully");
-      setTimeout(() => setSuccessMessage(""), 3000);
+    // ✅ auto-next only once and only in sequence
+    if (
+      !autoNextRef.current &&
+      Object.keys(transformedData).length > 0 &&
+      step === completedStep + 1
+    ) {
+      autoNextRef.current = true;
+      setTimeout(() => {
+        console.log("Auto-navigating to next step...");
+        nextStep();
+      }, 0);
     }
-  }, [horoscopeApiResponse, dataLoaded, setData]);
 
-  // Handle 404 - No horoscope found (new user)
+    setSuccessMessage("Horoscope details loaded successfully");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }, [isSuccess, apiData, step, completedStep, nextStep, setData]);
+
+  // 404 = new user
   useEffect(() => {
     if (horoscopeError?.status === 404 && !dataLoaded) {
-      console.log("No horoscope found - new user");
+      apiLoadedRef.current = true;
       setHasExistingHoroscope(false);
       setDataLoaded(true);
-      setSuccessMessage("Please create your horoscope details");
+      setSuccessMessage("No existing horoscope found. Please create a new one.");
       setTimeout(() => setSuccessMessage(""), 3000);
     }
   }, [horoscopeError, dataLoaded]);
 
-  // Handle other errors
+  // districts
   useEffect(() => {
-    if (horoscopeError && horoscopeError.status !== 404 && !dataLoaded) {
-      console.log("Horoscope fetch error:", horoscopeError);
-      
-      if (horoscopeError.status === 401 || horoscopeError.status === 403) {
-  // setErrorMessage("Session expired. Please login again.");
-  setDataLoaded(true);
-} else {
-        // setErrorMessage("Failed to load horoscope data");
-      }
-      setDataLoaded(true);
-    }
-  }, [horoscopeError, dataLoaded]);
-
-  // Check if GET returns empty data
-  useEffect(() => {
-    if (isSuccess && !horoscopeApiResponse?.data && !dataLoaded) {
-      console.log("No horoscope data - new user");
-      setHasExistingHoroscope(false);
-      setDataLoaded(true);
-      setSuccessMessage("Please create your horoscope details");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    }
-  }, [isSuccess, horoscopeApiResponse, dataLoaded]);
-
-  useEffect(() => {
-    // For birth place districts
     const cities = City.getCitiesOfState("IN", "MH");
     setDistricts(cities);
   }, []);
@@ -978,226 +954,76 @@ const Step2HoroscopeDetails = ({
     let err = "";
     if (!value || value.toString().trim() === "") {
       err = "This field is required";
-    } else {
-      if (name === "dob" && value) {
-        const selected = new Date(value);
-        const today = new Date();
-        const minAllowed = new Date();
-        minAllowed.setFullYear(today.getFullYear() - 18);
-
-        if (selected > minAllowed) {
-          err = "You must be at least 18 years old";
-        }
-      }
-      
-      if (name === "time" && !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
-        err = "Enter valid time in HH:MM format (24-hour)";
-      }
     }
     setValidationErrors((prev) => ({ ...prev, [name]: err }));
   };
 
-  const validateAllFields = () => {
-    requiredKeys.forEach((key) => validateField(key, formData[key] || ""));
-    return !Object.values(validationErrors).some((err) => err);
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const updatedData = { ...formData, [name]: value };
-    setFormData(updatedData);
-    setData(updatedData);
+    const updated = { ...formData, [name]: value };
+    setFormData(updated);
+    setData(updated);
     validateField(name, value);
-
-    // Clear messages when user starts typing
     if (errorMessage) setErrorMessage("");
   };
 
   const prepareApiData = () => {
-    console.log("=== PREPARING HOROSCOPE API DATA ===");
-    console.log("Current form data:", formData);
+    const dob = formData.dob
+      ? new Date(formData.dob).toISOString().split("T")[0]
+      : "";
 
-    // Check all required fields
-    const missingFields = requiredKeys.filter(key => !formData[key] || formData[key].toString().trim() === "");
-    console.log("Missing required fields:", missingFields);
+    const base = {
+      dob,
+      time: formData.time?.trim(),
+      birthPlace: formData.birthPlace?.trim(),
+      rashi: formData.rashi?.trim(),
+      nakshatra: formData.nakshatra?.trim(),
+      charan: formData.charan?.trim(),
+      nadi: formData.nadi?.trim(),
+      gan: formData.gan?.trim(),
+      mangal: formData.mangal?.trim(),
+      gotra: formData.gotra?.trim(),
+      devak: formData.devak?.trim(),
+    };
 
-    // Format date for API - According to your DTO
-    let dobFormatted = "";
-    if (formData.dob) {
-      const dateObj = new Date(formData.dob);
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const day = String(dateObj.getDate()).padStart(2, '0');
-      dobFormatted = `${year}-${month}-${day}`;
-      console.log("DOB formatted:", dobFormatted);
-    }
-
-    // Prepare API data according to HoroscopeCreateRequest DTO
-    let apiData;
-    
-    if (hasExistingHoroscope) {
-      // For PATCH (update) - needs version for optimistic locking
-      apiData = {
-        dob: dobFormatted,
-        time: (formData.time || "").trim(),
-        birthPlace: (formData.birthPlace || "").trim(),
-        rashi: (formData.rashi || "").trim(),
-        nakshatra: (formData.nakshatra || "").trim(),
-        charan: (formData.charan || "").trim(),
-        nadi: (formData.nadi || "").trim(),
-        gan: (formData.gan || "").trim(),
-        mangal: (formData.mangal || "").trim(),
-        gotra: (formData.gotra || "").trim(),
-        devak: (formData.devak || "").trim(),
-        version: version // Include version for optimistic locking
-      };
-      console.log("PATCH Data (with version):", apiData);
-    } else {
-      // For POST (create)
-      apiData = {
-        dob: dobFormatted,
-        time: (formData.time || "").trim(),
-        birthPlace: (formData.birthPlace || "").trim(),
-        rashi: (formData.rashi || "").trim(),
-        nakshatra: (formData.nakshatra || "").trim(),
-        charan: (formData.charan || "").trim(),
-        nadi: (formData.nadi || "").trim(),
-        gan: (formData.gan || "").trim(),
-        mangal: (formData.mangal || "").trim(),
-        gotra: (formData.gotra || "").trim(),
-        devak: (formData.devak || "").trim()
-      };
-      console.log("POST Data:", apiData);
-    }
-
-    console.log("=== FINAL API DATA ===");
-    console.log("JSON:", JSON.stringify(apiData, null, 2));
-
-    return apiData;
+    return hasExistingHoroscope ? { ...base, version } : base;
   };
 
   const handleNextClick = async () => {
-    console.log("=== HOROSCOPE FORM SUBMISSION STARTED ===");
-
-    // Check all required fields are filled
-    const missingFields = requiredKeys.filter(
-      (key) => !formData[key] || formData[key].toString().trim() === ""
-    );
-
-    if (missingFields.length > 0) {
-      setErrorMessage(`Please fill all required fields: ${missingFields.join(", ")}`);
-      console.log("Missing fields:", missingFields);
+    if (!isFormValid) {
+      setErrorMessage("Please fill all required fields");
       return;
     }
-
-    if (!validateAllFields()) {
-      setErrorMessage("Please fix all validation errors");
-      console.log("Validation errors:", validationErrors);
-      return;
-    }
-
 
     try {
       setIsLoading(true);
       setErrorMessage("");
       setSuccessMessage("");
 
-      // Prepare API data according to backend DTO
       const apiData = prepareApiData();
-      console.log("Sending horoscope data to API...");
-
-      let response;
 
       if (hasExistingHoroscope) {
-        console.log("Using PATCH to update existing horoscope");
-        response = await updateHoroscopeDetails(apiData).unwrap();
-      } else {
-        console.log("Using POST to create new horoscope");
-        response = await createHoroscopeDetails(apiData).unwrap();
-      }
-
-      console.log("API Response:", response);
-
-      // Check response based on your backend structure
-      if (response && response.data) {
-        // Success - response contains data
-        setVersion(response.data.version || 0); // Update version
-        
-        setSuccessMessage(
-          hasExistingHoroscope
-            ? "Horoscope details updated successfully!"
-            : "Horoscope details created successfully!"
-        );
-
-        // Refetch to get latest data
-        await refetch();
-
-        // Move to next step after 1.5 seconds
-        setTimeout(() => {
-          nextStep();
-        }, 1500);
-      } else {
-        // Response without data structure
-        // setErrorMessage(response?.message || "Failed to save horoscope details");
-      }
-    } catch (error) {
-      console.error("=== API ERROR DETAILS ===");
-      console.error("Error status:", error.status);
-      console.error("Error data:", error.data);
-      console.error("Full error:", error);
-
-      let errorMsg = "Failed to save horoscope details. Please try again.";
-
-      // Handle different error formats from your backend
-      if (error.data) {
-        const errorData = error.data;
-        
-        // Handle Spring Boot validation errors
-        if (errorData.errors) {
-          const validationErrors = Object.entries(errorData.errors)
-            .map(([field, messages]) => {
-              if (Array.isArray(messages)) {
-                return `${field}: ${messages.join(', ')}`;
-              }
-              return `${field}: ${messages}`;
-            })
-            .join(', ');
-          errorMsg = `Validation errors: ${validationErrors}`;
-        } 
-        // Handle your ResponseDto error structure
-        else if (errorData.message) {
-          errorMsg = errorData.message;
+        const response = await updateHoroscopeDetails(apiData).unwrap();
+        if (response?.data?.version !== undefined) {
+          setVersion(response.data.version);
         }
-        // Handle Spring Boot error structure
-        else if (errorData.title) {
-          errorMsg = errorData.title;
-          if (errorData.detail) {
-            errorMsg += `: ${errorData.detail}`;
-          }
-        }
-      } else if (error.status === 400) {
-        errorMsg = "Invalid data. Please check all fields are correct.";
-      } else if (error.status === 401 || error.status === 403) {
-        // errorMsg = "Session expired. Please login again.";
-        localStorage.removeItem("token");
-        setTimeout(() => {
-          window.location.href = "/signin";
-        }, 2000);
-      } else if (error.status === 409) {
-        errorMsg = "Horoscope already exists for this user.";
-      } else if (error.status === 404) {
-        errorMsg = "Horoscope not found. Please refresh and try again.";
-      } else if (error.status === 500) {
-        errorMsg = "Server error. Please try again later.";
+        setSuccessMessage("Horoscope details updated successfully!");
+      } else {
+        await createHoroscopeDetails(apiData).unwrap();
+        setHasExistingHoroscope(true);
+        setSuccessMessage("Horoscope details created successfully!");
       }
 
-      setErrorMessage(errorMsg);
+      await refetch();
       
-      // If optimistic lock failure, refresh data
-      if (error.status === 409 || error.status === 412) {
-        await refetch();
-        setErrorMessage("Please refresh the page and try again.");
-      }
+      // Navigate to next step after successful save
+      setTimeout(() => {
+        nextStep();
+      }, 500);
+      
+    } catch (error) {
+      console.error("Horoscope save error:", error);
+      setErrorMessage("Failed to save horoscope details. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -1205,6 +1031,7 @@ const Step2HoroscopeDetails = ({
 
   const fieldStyle = {
     backgroundColor: "#FF8C4405",
+    border: "1px solid #8180801c",
     borderRadius: "6px",
     fontFamily: "'Inter', sans-serif",
     fontWeight: 400,
@@ -1219,31 +1046,15 @@ const Step2HoroscopeDetails = ({
     marginBottom: "4px",
   };
 
-  // Check authentication first
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("authToken");
+
   if (!token) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
-        <div
-          className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl overflow-x-auto"
-          style={{ backgroundColor: "#FF8C4426" }}
-        >
-          <Stepper
-            step={step}
-            completedStep={completedStep}
-            goToStep={goToStep}
-          />
-        </div>
-        <div
-          className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center"
-          style={{ backgroundColor: "#FF8C4405" }}
-        >
-          <div className="text-red-500 text-lg mb-4">
-            Authentication Required
-          </div>
-          <p className="text-gray-600 mb-6">
-            Please login to access your horoscope data.
-          </p>
+        <Stepper step={step} completedStep={completedStep} goToStep={goToStep} />
+        <div className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center" style={{ backgroundColor: "#FF8C4405" }}>
+          <div className="text-red-500 text-lg mb-4">Authentication Required</div>
+          <p className="text-gray-600 mb-6">Please login to access your profile data.</p>
           <button
             onClick={() => (window.location.href = "/signin")}
             className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
@@ -1255,24 +1066,11 @@ const Step2HoroscopeDetails = ({
     );
   }
 
-  // Show loading state ONLY when initially fetching
   if (isFetching && !dataLoaded) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
-        <div
-          className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl overflow-x-auto"
-          style={{ backgroundColor: "#FF8C4426" }}
-        >
-          <Stepper
-            step={step}
-            completedStep={completedStep}
-            goToStep={goToStep}
-          />
-        </div>
-        <div
-          className="flex justify-center items-center h-64"
-          style={{ backgroundColor: "#FF8C4405" }}
-        >
+        <Stepper step={step} completedStep={completedStep} goToStep={goToStep} />
+        <div className="flex justify-center items-center h-64" style={{ backgroundColor: "#FF8C4405" }}>
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
           <span className="ml-3">Loading horoscope data...</span>
         </div>
@@ -1303,39 +1101,28 @@ const Step2HoroscopeDetails = ({
         {successMessage && (
           <div
             className={`mb-6 p-3 rounded-md ${hasExistingHoroscope
-                ? "bg-green-50 border border-green-200 text-green-600"
-                : "bg-blue-50 border border-blue-200 text-blue-600"
+              ? "bg-green-50 border border-green-200 text-green-600"
+              : "bg-blue-50 border border-blue-200 text-blue-600"
               }`}
           >
-            <div className="flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <p className="text-sm">{successMessage}</p>
-            </div>
+            <p className="text-sm text-center">{successMessage}</p>
           </div>
         )}
 
         {errorMessage && (
           <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-md">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 mr-2 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <p className="text-red-600 text-sm">{errorMessage}</p>
-            </div>
+            <p className="text-red-600 text-sm text-center">{errorMessage}</p>
           </div>
         )}
 
-        <h3 className="text-center text-orange-400 font-[Inter] font-semibold uppercase mb-8 tracking-wide text-xl">
+        <h3 className="text-center text-orange-400 font-semibold uppercase mb-8 text-xl">
           Horoscope Details
         </h3>
 
-        {/* FORM GRID */}
         <form className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm text-gray-700">
-          {/* BIRTH DATE */}
+          {/* DATE OF BIRTH */}
           <div>
-            <label style={labelStyle}>Birth Date <span style={{ color: "red" }}>*</span></label>
+            <label style={labelStyle}>Date of Birth <span style={{ color: "red" }}>*</span></label>
             <input
               required
               type="date"
@@ -1343,37 +1130,27 @@ const Step2HoroscopeDetails = ({
               value={formData.dob || ""}
               onChange={handleChange}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.dob ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-              max={new Date().toISOString().split("T")[0]}
+              style={fieldStyle}
             />
             {validationErrors.dob && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.dob}</p>
+              <p className="text-red-500 text-xs">{validationErrors.dob}</p>
             )}
           </div>
 
-          {/* BIRTH TIME */}
+          {/* TIME OF BIRTH */}
           <div>
-            <label style={labelStyle}>Birth Time <span style={{ color: "red" }}>*</span></label>
+            <label style={labelStyle}>Time of Birth <span style={{ color: "red" }}>*</span></label>
             <input
               required
-              type="text"
+              type="time"
               name="time"
               value={formData.time || ""}
               onChange={handleChange}
-              placeholder="HH:MM (24-hour format)"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.time ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-              pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-              title="Enter time in 24-hour format (e.g., 14:30)"
+              style={fieldStyle}
             />
             {validationErrors.time && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.time}</p>
+              <p className="text-red-500 text-xs">{validationErrors.time}</p>
             )}
           </div>
 
@@ -1386,225 +1163,161 @@ const Step2HoroscopeDetails = ({
               value={formData.birthPlace || ""}
               onChange={handleChange}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none truncate"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.birthPlace ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={fieldStyle}
             >
-              <option value="">Select District</option>
-              {districts.map((d) => (
-                <option key={d.name} value={d.name}>
-                  {d.name}
+              <option value="">Select Birth Place</option>
+              {districts.map((district, index) => (
+                <option key={index} value={district.name}>
+                  {district.name}
                 </option>
               ))}
             </select>
             {validationErrors.birthPlace && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.birthPlace}</p>
+              <p className="text-red-500 text-xs">{validationErrors.birthPlace}</p>
             )}
           </div>
 
           {/* RASHI */}
           <div>
             <label style={labelStyle}>Rashi <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="rashi"
               value={formData.rashi || ""}
               onChange={handleChange}
+              placeholder="Enter Rashi"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.rashi ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Rashi</option>
-              {[
-                "Mesh", "Vrishabh", "Mithun", "Karka", "Simha", "Kanya", 
-                "Tula", "Vrishchik", "Dhanu", "Makar", "Kumbh", "Meen"
-              ].map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.rashi && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.rashi}</p>
+              <p className="text-red-500 text-xs">{validationErrors.rashi}</p>
             )}
           </div>
 
           {/* NAKSHATRA */}
           <div>
             <label style={labelStyle}>Nakshatra <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="nakshatra"
               value={formData.nakshatra || ""}
               onChange={handleChange}
+              placeholder="Enter Nakshatra"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.nakshatra ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Nakshatra</option>
-              {[
-                "Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya",
-                "Ashlesha","Magha","Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati",
-                "Vishakha","Anuradha","Jyeshtha","Mula","Purva Ashadha","Uttara Ashadha",
-                "Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"
-              ].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.nakshatra && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.nakshatra}</p>
+              <p className="text-red-500 text-xs">{validationErrors.nakshatra}</p>
             )}
           </div>
 
           {/* CHARAN */}
           <div>
             <label style={labelStyle}>Charan <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="charan"
               value={formData.charan || ""}
               onChange={handleChange}
+              placeholder="Enter Charan"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.charan ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Charan</option>
-              {["1","2","3","4"].map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.charan && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.charan}</p>
+              <p className="text-red-500 text-xs">{validationErrors.charan}</p>
             )}
           </div>
 
           {/* NADI */}
           <div>
             <label style={labelStyle}>Nadi <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="nadi"
               value={formData.nadi || ""}
               onChange={handleChange}
+              placeholder="Enter Nadi"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.nadi ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Nadi</option>
-              <option value="Adi">Adi</option>
-              <option value="Madhya">Madhya</option>
-              <option value="Antya">Antya</option>
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.nadi && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.nadi}</p>
+              <p className="text-red-500 text-xs">{validationErrors.nadi}</p>
             )}
           </div>
 
           {/* GAN */}
           <div>
             <label style={labelStyle}>Gan <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="gan"
               value={formData.gan || ""}
               onChange={handleChange}
+              placeholder="Enter Gan"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.gan ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Gan</option>
-              <option value="Dev">Dev</option>
-              <option value="Manushya">Manushya</option>
-              <option value="Rakshas">Rakshas</option>
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.gan && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.gan}</p>
+              <p className="text-red-500 text-xs">{validationErrors.gan}</p>
             )}
           </div>
 
           {/* MANGAL */}
           <div>
             <label style={labelStyle}>Mangal <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="mangal"
               value={formData.mangal || ""}
               onChange={handleChange}
+              placeholder="Enter Mangal"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.mangal ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Mangal</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.mangal && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.mangal}</p>
+              <p className="text-red-500 text-xs">{validationErrors.mangal}</p>
             )}
           </div>
 
           {/* GOTRA */}
           <div>
             <label style={labelStyle}>Gotra <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="gotra"
               value={formData.gotra || ""}
               onChange={handleChange}
+              placeholder="Enter Gotra"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.gotra ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Gotra</option>
-              {[
-                "Kashyap","Bharadwaj","Vashishtha","Jamadagni","Atri",
-                "Vishvamitra","Gautam","Agastya","Shandilya","Kaushik"
-              ].map((g) => (
-                <option key={g} value={g}>{g}</option>
-              ))}
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.gotra && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.gotra}</p>
+              <p className="text-red-500 text-xs">{validationErrors.gotra}</p>
             )}
           </div>
 
           {/* DEVAK */}
           <div>
             <label style={labelStyle}>Devak <span style={{ color: "red" }}>*</span></label>
-            <select
+            <input
               required
+              type="text"
               name="devak"
               value={formData.devak || ""}
               onChange={handleChange}
+              placeholder="Enter Devak"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.devak ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
-            >
-              <option value="">Select Devak</option>
-              {[
-                "Audumbar","Vata","Peepal","Bel","Umbar","Palas",
-                "Rui","Khair","Shami","Banyan"
-              ].map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+              style={fieldStyle}
+            />
             {validationErrors.devak && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.devak}</p>
+              <p className="text-red-500 text-xs">{validationErrors.devak}</p>
             )}
           </div>
         </form>
@@ -1618,19 +1331,21 @@ const Step2HoroscopeDetails = ({
         <button
           type="button"
           onClick={prevStep}
-          className="bg-white text-orange-600 px-10 py-3 rounded-xl cursor-pointer border border-orange-500 hover:bg-orange-50 transition-colors duration-200"
+          className="bg-white text-orange-600 px-10 py-3 rounded-xl border border-orange-500 hover:bg-orange-50"
           disabled={isLoading}
         >
           Previous
         </button>
+
         <button
           type="button"
           disabled={!isFormValid || isLoading}
           onClick={handleNextClick}
-          className={`px-10 py-3 rounded-xl text-white flex items-center justify-center transition-colors duration-200 ${isFormValid && !isLoading
+          className={`px-10 py-3 rounded-xl text-white flex items-center justify-center ${
+            isFormValid && !isLoading
               ? "bg-orange-400 hover:bg-orange-500"
               : "bg-gray-400 cursor-not-allowed"
-            }`}
+          }`}
         >
           {isLoading ? (
             <>

@@ -9,8 +9,6 @@ import {
 } from "../../context/profileApi";
 import defaultProfileImg from "../../assets/DefaultImage/AvtarImg.avif";
 
-
-// SAME helper
 const toImageUrl = (fileData) =>
   fileData ? `data:image/jpeg;base64,${fileData}` : defaultProfileImg;
 
@@ -25,8 +23,6 @@ const LogoutPanel = ({
 
   const { logout } = useAuth();
   const navigate = useNavigate();
-
-
 
   const profileData = profile;
   const p = profileData?.userProfile || {};
@@ -73,9 +69,15 @@ const handleLogout = useCallback(() => {
   onClose();
 
   requestAnimationFrame(() => {
-    logout(); // clears token + RTK cache
+    logout();
+
+    // Force hard refresh after logout 
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   });
 }, [logout, onClose]);
+
 
 
   return (

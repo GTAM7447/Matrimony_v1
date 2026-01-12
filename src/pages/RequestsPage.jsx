@@ -177,6 +177,8 @@
 
 
 
+
+
 import React, { useState, useMemo } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -187,14 +189,53 @@ import MyAccountSidebar from "../components/MyAccountSidebar/MyAccountSidebar";
 
 import {
   useGetSentInterestsQuery,
-  useGetPublicProfileByIdQuery,
+  useGetPublicProfileByIdV2Query,
 } from "../context/profileApi";
+
+/* ============================= */
+/* INNER ITEM COMPONENT ONLY */
+/* ============================= */
+const RenderRequestItem = ({ interest }) => {
+  const { data, isLoading } = useGetPublicProfileByIdV2Query(
+    interest.toUserProfileId,
+    {
+      refetchOnMountOrArgChange: false,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
+  );
+
+  if (isLoading || !data?.data) return null;
+
+  const d = data.data;
+
+  return (
+    <RequestCard
+      item={{
+        id: interest.interestId,
+        profileId: interest.toUserProfileId,
+        status: "Pending",
+        name: d.firstName,
+        age: d.age,
+        gender: d.gender,
+        religion: d.religion,
+        caste: d.caste,
+        height: d.height,
+        city: d.currentCity,
+        maritalStatus: d.maritalStatus,
+        hasProfilePhoto: d.hasProfilePhoto,
+        profilePhotoBase64: d.profilePhotoBase64,
+        profilePhotoContentType: d.profilePhotoContentType,
+      }}
+    />
+  );
+};
 
 const RequestsPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
 
-  /*  SENT INTERESTS  */
+  /* SENT INTERESTS */
   const { data: sentResponse } = useGetSentInterestsQuery();
 
   const sentInterests = useMemo(
@@ -202,51 +243,21 @@ const RequestsPage = () => {
     [sentResponse]
   );
 
-  /*  FILTER VALID PROFILE IDS  */
+  /* FILTER VALID PROFILE IDS */
   const profileRequests = useMemo(
-    () => sentInterests.filter(i => i.toUserCompleteProfileId),
+    () => sentInterests.filter((i) => i.toUserProfileId),
     [sentInterests]
   );
 
-  /*  RENDER REQUEST CARDS  */
-  const renderedRequests = profileRequests.map((interest) => {
-    const { data, isLoading } = useGetPublicProfileByIdQuery(
-      interest.toUserCompleteProfileId,
-      {
-        refetchOnMountOrArgChange: false,
-        refetchOnFocus: false,
-        refetchOnReconnect: false,
-      }
-    );
+  /* SAME renderedRequests LOGIC (NO HOOK HERE NOW) */
+  const renderedRequests = profileRequests.map((interest) => (
+    <RenderRequestItem
+      key={interest.interestId}
+      interest={interest}
+    />
+  ));
 
-    if (isLoading || !data?.data) return null;
-
-    const d = data.data;
-
-    return (
-      <RequestCard
-        key={interest.interestId}
-        item={{
-          id: interest.interestId,
-          profileId: interest.toUserCompleteProfileId,
-          status: "Pending",
-          name: d.firstName,
-          age: d.age,
-          gender: d.gender,
-          religion: d.religion,
-          caste: d.caste,
-          height: d.height,
-          city: d.currentCity,
-          maritalStatus: d.maritalStatus,
-          hasProfilePhoto: d.hasProfilePhoto,
-          profilePhotoBase64: d.profilePhotoBase64,
-          profilePhotoContentType: d.profilePhotoContentType,
-        }}
-      />
-    );
-  });
-
-  /*  UI  */
+  /* UI */
   return (
     <div className="flex bg-gray-50 min-h-screen relative">
 
@@ -324,11 +335,12 @@ const RequestsPage = () => {
               </p>
             )}
 
-            {profileRequests.length > 0 && renderedRequests.filter(Boolean).length === 0 && (
-              <p className="text-center text-gray-500">
-                Loading pending requests...
-              </p>
-            )}
+            {profileRequests.length > 0 &&
+              renderedRequests.filter(Boolean).length === 0 && (
+                <p className="text-center text-gray-500">
+                  Loading pending requests...
+                </p>
+              )}
 
             <div className="space-y-6">
               {renderedRequests}

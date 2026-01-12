@@ -1,4 +1,3 @@
-
 // import React, { useEffect, useState } from "react";
 // import Stepper from "./Stepper";
 // import {
@@ -22,6 +21,8 @@
 //   const [successMessage, setSuccessMessage] = useState("");
 //   const [hasExistingEducation, setHasExistingEducation] = useState(false);
 //   const [dataLoaded, setDataLoaded] = useState(false);
+//   const [showRequiredAlert, setShowRequiredAlert] = useState(false);
+//   const [missingFieldsList, setMissingFieldsList] = useState([]);
 
 //   // RTK Query hooks
 //   const [createEducationDetails] = useCreateEducationDetailsMutation();
@@ -86,6 +87,19 @@
 //     "occupation",
 //     "incomePerYear",
 //   ];
+
+//   // Field display names for better error messages
+//   const fieldDisplayNames = {
+//     education: "Education Level",
+//     degree: "Degree / Specialization",
+//     occupation: "Occupation",
+//     incomePerYear: "Annual Income",
+//     occupationDetails: "Occupation Details",
+//     experienceYears: "Experience Years",
+//     companyName: "Company Name",
+//     workLocation: "Work Location",
+//     additionalDetails: "Additional Details"
+//   };
 
 //   // Income-experience validation rule (from backend)
 //   const validateIncomeWithExperience = (income, experience) => {
@@ -234,6 +248,33 @@
 //         err = "Company name cannot exceed 200 characters";
 //       }
       
+//       // ALPHABETS-ONLY VALIDATION for text fields
+//       if (["degree", "occupation", "companyName", "workLocation"].includes(name)) {
+//         // Allow alphabets, spaces, dots, commas, apostrophes, hyphens, and parentheses
+//         const regex = /^[A-Za-z\s.,'()\-&]+$/;
+//         if (!regex.test(value)) {
+//           err = "Only alphabets, spaces, and basic punctuation (. , ' - & ( )) are allowed";
+//         }
+//       }
+      
+//       // OCCUPATION DETAILS - ONLY ALPHABETS (no numbers or special punctuation)
+//       if (name === "occupationDetails") {
+//         // Only alphabets and spaces allowed
+//         const regex = /^[A-Za-z\s]+$/;
+//         if (!regex.test(value)) {
+//           err = "Only alphabets and spaces are allowed";
+//         }
+//       }
+      
+//       // For additionalDetails, allow more characters but still restrict special symbols
+//       if (name === "additionalDetails") {
+//         // Allow alphabets, numbers, spaces, and common punctuation
+//         const regex = /^[A-Za-z0-9\s.,'()\-&!?;:"]+$/;
+//         if (!regex.test(value)) {
+//           err = "Only alphabets, numbers, spaces, and basic punctuation are allowed";
+//         }
+//       }
+      
 //       // Numeric validations
 //       if (name === "incomePerYear") {
 //         const incomeNum = parseInt(value);
@@ -307,12 +348,44 @@
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
-//     const updatedData = { ...formData, [name]: value };
-//     setFormData(updatedData);
-//     setData(updatedData);
-//     validateField(name, value);
+    
+//     // Special handling for alphabets-only fields
+//     if (["degree", "occupation", "companyName", "workLocation"].includes(name)) {
+//       // Allow only alphabets, spaces, and basic punctuation
+//       const filteredValue = value.replace(/[^A-Za-z\s.,'()\-&]/g, '');
+//       const updatedData = { ...formData, [name]: filteredValue };
+//       setFormData(updatedData);
+//       setData(updatedData);
+//       validateField(name, filteredValue);
+//     } 
+//     // For occupationDetails - ONLY ALPHABETS AND SPACES
+//     else if (name === "occupationDetails") {
+//       // Only allow alphabets and spaces
+//       const filteredValue = value.replace(/[^A-Za-z\s]/g, '');
+//       const updatedData = { ...formData, [name]: filteredValue };
+//       setFormData(updatedData);
+//       setData(updatedData);
+//       validateField(name, filteredValue);
+//     }
+//     // For additionalDetails
+//     else if (name === "additionalDetails") {
+//       // Allow alphabets, numbers, spaces, and common punctuation
+//       const filteredValue = value.replace(/[^A-Za-z0-9\s.,'()\-&!?;:"]/g, '');
+//       const updatedData = { ...formData, [name]: filteredValue };
+//       setFormData(updatedData);
+//       setData(updatedData);
+//       validateField(name, filteredValue);
+//     }
+//     // For other fields
+//     else {
+//       const updatedData = { ...formData, [name]: value };
+//       setFormData(updatedData);
+//       setData(updatedData);
+//       validateField(name, value);
+//     }
 
 //     if (errorMessage) setErrorMessage("");
+//     if (showRequiredAlert) setShowRequiredAlert(false);
 //   };
 
 //   const prepareApiData = () => {
@@ -348,20 +421,38 @@
 //     return apiData;
 //   };
 
+//   // Check for missing fields and show alert
+//   const checkMissingFields = () => {
+//     const missingFields = requiredKeys.filter(
+//       (key) => !formData[key] || formData[key].toString().trim() === ""
+//     );
+
+//     if (missingFields.length > 0) {
+//       const missingFieldNames = missingFields.map(field => fieldDisplayNames[field] || field);
+//       setMissingFieldsList(missingFieldNames);
+//       setShowRequiredAlert(true);
+      
+//       // Scroll to the alert
+//       setTimeout(() => {
+//         const alertElement = document.getElementById("required-fields-alert");
+//         if (alertElement) {
+//           alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//         }
+//       }, 100);
+      
+//       return false;
+//     }
+//     return true;
+//   };
+
 //   // Handle form submission - FIXED VERSION
 //   const handleNextClick = async () => {
 //     console.log("=== EDUCATION FORM SUBMISSION STARTED ===");
 //     console.log("nextStep function available:", typeof nextStep === 'function');
 //     console.log("nextStep function:", nextStep);
 
-//     // Check all required fields are filled
-//     const missingFields = requiredKeys.filter(
-//       (key) => !formData[key] || formData[key].toString().trim() === ""
-//     );
-
-//     if (missingFields.length > 0) {
-//       setErrorMessage(`Please fill all required fields: ${missingFields.join(", ")}`);
-//       console.log("Missing fields:", missingFields);
+//     // Check for missing fields first
+//     if (!checkMissingFields()) {
 //       return;
 //     }
 
@@ -369,6 +460,36 @@
 //     if (formData.education && !validEducationOptions.includes(formData.education)) {
 //       setErrorMessage("Please select a recognized qualification from the dropdown list");
 //       return;
+//     }
+
+//     // Validate alphabets-only for text fields
+//     const alphabetFields = ["degree", "occupation", "companyName", "workLocation"];
+//     for (const field of alphabetFields) {
+//       if (formData[field] && formData[field].trim() !== "") {
+//         const regex = /^[A-Za-z\s.,'()\-&]+$/;
+//         if (!regex.test(formData[field])) {
+//           setErrorMessage(`${fieldDisplayNames[field]} can only contain alphabets, spaces, and basic punctuation (. , ' - & ( ))`);
+//           return;
+//         }
+//       }
+//     }
+
+//     // Validate occupationDetails - ONLY ALPHABETS AND SPACES
+//     if (formData.occupationDetails && formData.occupationDetails.trim() !== "") {
+//       const regex = /^[A-Za-z\s]+$/;
+//       if (!regex.test(formData.occupationDetails)) {
+//         setErrorMessage("Occupation Details can only contain alphabets and spaces");
+//         return;
+//       }
+//     }
+
+//     // Validate additionalDetails
+//     if (formData.additionalDetails && formData.additionalDetails.trim() !== "") {
+//       const regex = /^[A-Za-z0-9\s.,'()\-&!?;:"]+$/;
+//       if (!regex.test(formData.additionalDetails)) {
+//         setErrorMessage("Additional Details can only contain alphabets, numbers, spaces, and basic punctuation");
+//         return;
+//       }
 //     }
 
 //     // Validate income with experience (backend business rule)
@@ -446,9 +567,6 @@
 //         // Move to next step - FIXED: Call nextStep immediately or with very short delay
 //         console.log("Moving to next step from education form...");
         
-//         // Option 1: Immediate call (remove timeout)
-//         // nextStep();
-        
 //         // Option 2: Short timeout to show success message
 //         setTimeout(() => {
 //           console.log("Calling nextStep function...");
@@ -524,7 +642,6 @@
 
 //   const fieldStyle = {
 //     backgroundColor: "#FF8C4405",
-//     border: "1px solid #8180801c",
 //     borderRadius: "6px",
 //     fontFamily: "'Inter', sans-serif",
 //     fontWeight: 400,
@@ -618,6 +735,44 @@
 //         className="px-4 sm:px-6 md:px-10 py-8"
 //         style={{ backgroundColor: "#FF8C4405" }}
 //       >
+//         {/* Required Fields Alert - RED BOX */}
+//         {showRequiredAlert && (
+//           <div 
+//             id="required-fields-alert"
+//             className="mb-6 p-4 bg-red-50 border border-red-300 rounded-lg"
+//           >
+//             <div className="flex items-start">
+//               <div className="flex-shrink-0">
+//                 <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+//                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+//                 </svg>
+//               </div>
+//               <div className="ml-3">
+//                 <h3 className="text-sm font-medium text-red-800">
+//                   Please fill all required fields
+//                 </h3>
+//                 <div className="mt-2 text-sm text-red-700">
+//                   <p>The following required fields are missing:</p>
+//                   <ul className="list-disc pl-5 mt-1">
+//                     {missingFieldsList.map((fieldName, index) => (
+//                       <li key={index}>{fieldName}</li>
+//                     ))}
+//                   </ul>
+//                 </div>
+//                 <div className="mt-2">
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowRequiredAlert(false)}
+//                     className="text-sm bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1 px-3 rounded"
+//                   >
+//                     Dismiss
+//                   </button>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
 //         {/* Status Messages */}
 //         {successMessage && (
 //           <div
@@ -651,7 +806,10 @@
 //               value={formData.education || ""}
 //               onChange={handleChange}
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-//               style={fieldStyle}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.education ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //             >
 //               <option value="">Select Education</option>
 //               {validEducationOptions.map((edu) => (
@@ -677,12 +835,18 @@
 //               onChange={handleChange}
 //               placeholder="e.g., Computer Science Engineering, MBA Finance"
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-//               style={fieldStyle}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.degree ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               maxLength={100}
 //             />
 //             {validationErrors.degree && (
 //               <p className="text-red-500 text-xs">{validationErrors.degree}</p>
 //             )}
+//             <p className="text-xs text-gray-500 mt-1">
+//               Only alphabets, spaces, and basic punctuation (. , ' - & ( )) allowed
+//             </p>
 //           </div>
 
 //           {/* OCCUPATION */}
@@ -696,7 +860,10 @@
 //               onChange={handleChange}
 //               placeholder="e.g., Software Engineer, Business Owner"
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-//               style={fieldStyle}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.occupation ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               maxLength={100}
 //             />
 //             {validationErrors.occupation && (
@@ -704,6 +871,9 @@
 //             )}
 //             <p className="text-xs text-gray-500 mt-1">
 //               Note: Engineer/Manager/Consultant/Developer roles require details
+//             </p>
+//             <p className="text-xs text-gray-500">
+//               Only alphabets, spaces, and basic punctuation (. , ' - & ( )) allowed
 //             </p>
 //           </div>
 
@@ -716,7 +886,11 @@
 //               onChange={handleChange}
 //               placeholder="Describe your role, responsibilities, etc. (Required for Engineer/Manager/Consultant/Developer)"
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none resize-none"
-//               style={{ ...fieldStyle, height: "80px" }}
+//               style={{
+//                 ...fieldStyle,
+//                 height: "80px",
+//                 border: validationErrors.occupationDetails ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               maxLength={500}
 //             />
 //             {validationErrors.occupationDetails && (
@@ -724,6 +898,9 @@
 //             )}
 //             <p className="text-xs text-gray-500 mt-1">
 //               {formData.occupationDetails?.length || 0}/500 characters
+//             </p>
+//             <p className="text-xs text-gray-500">
+//               Only alphabets and spaces allowed
 //             </p>
 //           </div>
 
@@ -737,7 +914,10 @@
 //               onChange={handleChange}
 //               placeholder="e.g., 5"
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-//               style={fieldStyle}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.experienceYears ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               min="0"
 //               max="50"
 //             />
@@ -755,7 +935,10 @@
 //               value={formData.incomePerYear || ""}
 //               onChange={handleChange}
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-//               style={fieldStyle}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.incomePerYear ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //             >
 //               <option value="">Select Income</option>
 //               <option value="0">Not Applicable / Student</option>
@@ -802,9 +985,18 @@
 //               onChange={handleChange}
 //               placeholder="e.g., Google, TCS, Self-employed"
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-//               style={fieldStyle}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.companyName ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               maxLength={200}
 //             />
+//             {validationErrors.companyName && (
+//               <p className="text-red-500 text-xs">{validationErrors.companyName}</p>
+//             )}
+//             <p className="text-xs text-gray-500 mt-1">
+//               Only alphabets, spaces, and basic punctuation (. , ' - & ( )) allowed
+//             </p>
 //           </div>
 
 //           {/* WORK LOCATION */}
@@ -817,9 +1009,18 @@
 //               onChange={handleChange}
 //               placeholder="e.g., Mumbai, Remote"
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-//               style={fieldStyle}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.workLocation ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               maxLength={100}
 //             />
+//             {validationErrors.workLocation && (
+//               <p className="text-red-500 text-xs">{validationErrors.workLocation}</p>
+//             )}
+//             <p className="text-xs text-gray-500 mt-1">
+//               Only alphabets, spaces, and basic punctuation (. , ' - & ( )) allowed
+//             </p>
 //           </div>
 
 //           {/* ADDITIONAL DETAILS */}
@@ -831,11 +1032,18 @@
 //               onChange={handleChange}
 //               placeholder="Any additional information about your education or profession"
 //               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none resize-none"
-//               style={{ ...fieldStyle, height: "100px" }}
+//               style={{
+//                 ...fieldStyle,
+//                 height: "100px",
+//                 border: validationErrors.additionalDetails ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               maxLength={1000}
 //             />
 //             <p className="text-xs text-gray-500 mt-1">
 //               {formData.additionalDetails?.length || 0}/1000 characters
+//             </p>
+//             <p className="text-xs text-gray-500">
+//               Only alphabets, numbers, spaces, and basic punctuation allowed
 //             </p>
 //           </div>
 //         </form>
@@ -899,16 +1107,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Stepper from "./Stepper";
 import {
   useCreateEducationDetailsMutation,
@@ -925,6 +1124,8 @@ const Step3EducationDetails = ({
   step,
   completedStep,
 }) => {
+  const autoNextRef = useRef(false);
+  const apiLoadedRef = useRef(false);
   const [formData, setFormData] = useState(data || {});
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -933,6 +1134,7 @@ const Step3EducationDetails = ({
   const [dataLoaded, setDataLoaded] = useState(false);
   const [showRequiredAlert, setShowRequiredAlert] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [version, setVersion] = useState(0);
 
   // RTK Query hooks
   const [createEducationDetails] = useCreateEducationDetailsMutation();
@@ -940,14 +1142,16 @@ const Step3EducationDetails = ({
 
   // GET API hook - Auto fetches on mount
   const {
-    data: educationApiResponse,
+    data: res,
     isLoading: isFetching,
     error: educationError,
     isSuccess,
-    isError
+    refetch,
   } = useGetEducationDetailsQuery(undefined, {
-    refetchOnMountOrArgChange: false,
+    refetchOnMountOrArgChange: true,
   });
+
+  const apiData = res?.data;
 
   // Valid education options (based on Indian education system)
   const validEducationOptions = [
@@ -1046,76 +1250,62 @@ const Step3EducationDetails = ({
   );
 
   const [validationErrors, setValidationErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
-  // LOAD DATA FROM GET API - Only run once
+  // AUTO-NEXT LOGIC: Load data from API and auto-navigate if step is sequential
   useEffect(() => {
-    if (educationApiResponse && !dataLoaded) {
-      console.log("Education fetch response:", educationApiResponse);
+    if (!isSuccess || !apiData) return;
+    if (apiLoadedRef.current) return;
 
-      if (educationApiResponse.data) {
-        setHasExistingEducation(true);
-        const educationData = educationApiResponse.data;
+    apiLoadedRef.current = true;
 
-        // Transform backend data to form format
-        const transformedData = {
-          education: educationData.education || "",
-          degree: educationData.degree || "",
-          occupation: educationData.occupation || "",
-          occupationDetails: educationData.occupationDetails || "",
-          incomePerYear: educationData.incomePerYear ? educationData.incomePerYear.toString() : "",
-          additionalDetails: educationData.additionalDetails || "",
-          workLocation: educationData.workLocation || "",
-          companyName: educationData.companyName || "",
-          experienceYears: educationData.experienceYears ? educationData.experienceYears.toString() : "",
-        };
+    console.log("Education fetch response:", apiData);
 
-        console.log("Education form data populated:", transformedData);
+    setHasExistingEducation(true);
+    const educationData = apiData;
+    setVersion(educationData.version || 0);
 
-        setFormData(transformedData);
-        setData(transformedData);
-        setDataLoaded(true);
+    // Transform backend data to form format
+    const transformedData = {
+      education: educationData.education || "",
+      degree: educationData.degree || "",
+      occupation: educationData.occupation || "",
+      occupationDetails: educationData.occupationDetails || "",
+      incomePerYear: educationData.incomePerYear ? educationData.incomePerYear.toString() : "",
+      additionalDetails: educationData.additionalDetails || "",
+      workLocation: educationData.workLocation || "",
+      companyName: educationData.companyName || "",
+      experienceYears: educationData.experienceYears ? educationData.experienceYears.toString() : "",
+    };
 
-        setSuccessMessage("Education details loaded successfully");
-        setTimeout(() => setSuccessMessage(""), 3000);
-      }
+    console.log("Education form data populated:", transformedData);
+
+    // ✅ ALWAYS load data
+    setFormData(transformedData);
+    setData(transformedData);
+    setDataLoaded(true);
+
+    // ✅ auto-next only once and only in sequence
+    if (
+      !autoNextRef.current &&
+      Object.keys(transformedData).length > 0 &&
+      step === completedStep + 1
+    ) {
+      autoNextRef.current = true;
+      setTimeout(() => {
+        console.log("Auto-navigating to next step...");
+        nextStep();
+      }, 0);
     }
-  }, [educationApiResponse, dataLoaded, setData]);
 
-  // Handle error state from the query
+    setSuccessMessage("Education details loaded successfully");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }, [isSuccess, apiData, step, completedStep, nextStep, setData]);
+
+  // 404 = new user
   useEffect(() => {
-    if (educationError && !dataLoaded) {
-      console.log("Education fetch error:", educationError);
-
-      const errorData = educationError.data || {};
-      const errorMessageText = errorData.message || "";
-      const isEducationNotFound =
-        educationError.status === 404 ||
-        errorMessageText.includes("not found") ||
-        errorMessageText.includes("No education found") ||
-        errorMessageText.includes("EducationNotFoundException");
-
-      if (isEducationNotFound) {
-        setHasExistingEducation(false);
-        setDataLoaded(true);
-        setSuccessMessage(
-          "No existing education details found. Please create new ones."
-        );
-        setTimeout(() => setSuccessMessage(""), 3000);
-      } else if (educationError.status === 401 || educationError.status === 403) {
-        // setErrorMessage("Session expired. Please login again.");
-        setDataLoaded(true);
-      } else {
-        console.error("Unexpected error:", educationError);
-        // setErrorMessage("Failed to load education data");
-        setDataLoaded(true);
-      }
-    }
-  }, [educationError, dataLoaded]);
-
-  // Handle successful query with no data (new user)
-  useEffect(() => {
-    if (isSuccess && !educationApiResponse?.data && !dataLoaded) {
-      console.log("No education data found - new user");
+    if (educationError?.status === 404 && !dataLoaded) {
+      apiLoadedRef.current = true;
       setHasExistingEducation(false);
       setDataLoaded(true);
       setSuccessMessage(
@@ -1123,7 +1313,7 @@ const Step3EducationDetails = ({
       );
       setTimeout(() => setSuccessMessage(""), 3000);
     }
-  }, [isSuccess, educationApiResponse, dataLoaded]);
+  }, [educationError, dataLoaded]);
 
   const validateField = (name, value) => {
     let err = "";
@@ -1205,59 +1395,61 @@ const Step3EducationDetails = ({
       }
     }
     
-    setValidationErrors((prev) => ({ ...prev, [name]: err }));
+    return err;
   };
 
-  // Validate income when experience changes
-  useEffect(() => {
+  const validateAllFields = () => {
+    const newErrors = {};
+    
+    // Validate all required fields
+    requiredKeys.forEach((key) => {
+      const value = formData[key] || "";
+      const error = validateField(key, value);
+      if (error) {
+        newErrors[key] = error;
+      }
+    });
+
+    // Validate optional fields if they have value
+    const optionalFields = [
+      "occupationDetails",
+      "experienceYears",
+      "companyName",
+      "workLocation",
+      "additionalDetails"
+    ];
+    
+    optionalFields.forEach((key) => {
+      const value = formData[key] || "";
+      if (value && value.toString().trim() !== "") {
+        const error = validateField(key, value);
+        if (error) {
+          newErrors[key] = error;
+        }
+      }
+    });
+
+    // Validate income-experience rule
     if (formData.incomePerYear && formData.experienceYears) {
       if (!validateIncomeWithExperience(formData.incomePerYear, formData.experienceYears)) {
-        setValidationErrors(prev => ({
-          ...prev,
-          incomePerYear: "Income > ₹50L requires minimum 2 years experience"
-        }));
-      } else {
-        // Clear the error if validation passes
-        setValidationErrors(prev => ({
-          ...prev,
-          incomePerYear: ""
-        }));
+        newErrors.incomePerYear = "Income > ₹50L requires minimum 2 years experience";
       }
     }
-  }, [formData.incomePerYear, formData.experienceYears]);
 
-  // Validate occupation details when occupation changes
-  useEffect(() => {
-    if (formData.occupation) {
-      const lowerOccupation = formData.occupation.toLowerCase();
-      const requiresDetails = 
-        lowerOccupation.includes("engineer") || 
-        lowerOccupation.includes("manager") || 
-        lowerOccupation.includes("consultant") ||
-        lowerOccupation.includes("developer");
-      
-      if (requiresDetails && (!formData.occupationDetails || formData.occupationDetails.trim() === "")) {
-        setValidationErrors(prev => ({
-          ...prev,
-          occupationDetails: "Occupation details are required for this type of occupation"
-        }));
-      } else {
-        // Clear the error if not required or details are provided
-        setValidationErrors(prev => ({
-          ...prev,
-          occupationDetails: ""
-        }));
-      }
+    // Validate occupation details rule
+    if (formData.occupation && !validateOccupationDetails(formData.occupation, formData.occupationDetails)) {
+      newErrors.occupationDetails = "Occupation details are required for Engineer/Manager/Consultant/Developer roles";
     }
-  }, [formData.occupation, formData.occupationDetails]);
 
-  const validateAllFields = () => {
-    requiredKeys.forEach((key) => validateField(key, formData[key] || ""));
-    return !Object.values(validationErrors).some((err) => err);
+    setValidationErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
     
     // Special handling for alphabets-only fields
     if (["degree", "occupation", "companyName", "workLocation"].includes(name)) {
@@ -1266,7 +1458,9 @@ const Step3EducationDetails = ({
       const updatedData = { ...formData, [name]: filteredValue };
       setFormData(updatedData);
       setData(updatedData);
-      validateField(name, filteredValue);
+      // Validate the field
+      const error = validateField(name, filteredValue);
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
     } 
     // For occupationDetails - ONLY ALPHABETS AND SPACES
     else if (name === "occupationDetails") {
@@ -1275,7 +1469,9 @@ const Step3EducationDetails = ({
       const updatedData = { ...formData, [name]: filteredValue };
       setFormData(updatedData);
       setData(updatedData);
-      validateField(name, filteredValue);
+      // Validate the field
+      const error = validateField(name, filteredValue);
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
     }
     // For additionalDetails
     else if (name === "additionalDetails") {
@@ -1284,18 +1480,32 @@ const Step3EducationDetails = ({
       const updatedData = { ...formData, [name]: filteredValue };
       setFormData(updatedData);
       setData(updatedData);
-      validateField(name, filteredValue);
+      // Validate the field
+      const error = validateField(name, filteredValue);
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
     }
     // For other fields
     else {
       const updatedData = { ...formData, [name]: value };
       setFormData(updatedData);
       setData(updatedData);
-      validateField(name, value);
+      // Validate the field
+      const error = validateField(name, value);
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
     }
 
     if (errorMessage) setErrorMessage("");
     if (showRequiredAlert) setShowRequiredAlert(false);
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    // Validate the field on blur
+    const error = validateField(name, value);
+    setValidationErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const prepareApiData = () => {
@@ -1320,8 +1530,8 @@ const Step3EducationDetails = ({
     };
 
     // For PATCH request, include version if available
-    if (hasExistingEducation && educationApiResponse?.data?.version !== undefined) {
-      apiData.version = educationApiResponse.data.version;
+    if (hasExistingEducation) {
+      apiData.version = version;
     }
 
     console.log("=== FINAL EDUCATION API PAYLOAD ===");
@@ -1359,7 +1569,13 @@ const Step3EducationDetails = ({
   const handleNextClick = async () => {
     console.log("=== EDUCATION FORM SUBMISSION STARTED ===");
     console.log("nextStep function available:", typeof nextStep === 'function');
-    console.log("nextStep function:", nextStep);
+
+    // Mark all required fields as touched when trying to submit
+    const allTouched = {};
+    requiredKeys.forEach(key => {
+      allTouched[key] = true;
+    });
+    setTouchedFields(allTouched);
 
     // Check for missing fields first
     if (!checkMissingFields()) {
@@ -1372,34 +1588,10 @@ const Step3EducationDetails = ({
       return;
     }
 
-    // Validate alphabets-only for text fields
-    const alphabetFields = ["degree", "occupation", "companyName", "workLocation"];
-    for (const field of alphabetFields) {
-      if (formData[field] && formData[field].trim() !== "") {
-        const regex = /^[A-Za-z\s.,'()\-&]+$/;
-        if (!regex.test(formData[field])) {
-          setErrorMessage(`${fieldDisplayNames[field]} can only contain alphabets, spaces, and basic punctuation (. , ' - & ( ))`);
-          return;
-        }
-      }
-    }
-
-    // Validate occupationDetails - ONLY ALPHABETS AND SPACES
-    if (formData.occupationDetails && formData.occupationDetails.trim() !== "") {
-      const regex = /^[A-Za-z\s]+$/;
-      if (!regex.test(formData.occupationDetails)) {
-        setErrorMessage("Occupation Details can only contain alphabets and spaces");
-        return;
-      }
-    }
-
-    // Validate additionalDetails
-    if (formData.additionalDetails && formData.additionalDetails.trim() !== "") {
-      const regex = /^[A-Za-z0-9\s.,'()\-&!?;:"]+$/;
-      if (!regex.test(formData.additionalDetails)) {
-        setErrorMessage("Additional Details can only contain alphabets, numbers, spaces, and basic punctuation");
-        return;
-      }
+    if (!validateAllFields()) {
+      setErrorMessage("Please fix all validation errors");
+      console.log("Validation errors:", validationErrors);
+      return;
     }
 
     // Validate income with experience (backend business rule)
@@ -1416,14 +1608,9 @@ const Step3EducationDetails = ({
       return;
     }
 
-    if (!validateAllFields()) {
-      setErrorMessage("Please fix all validation errors");
-      console.log("Validation errors:", validationErrors);
-      return;
-    }
-
     // Check authentication
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
+
     if (!token) {
       setErrorMessage("Please login to save education data");
       return;
@@ -1447,46 +1634,38 @@ const Step3EducationDetails = ({
 
       console.log("=== EDUCATION API RESPONSE DETAILS ===");
       console.log("Full response:", response);
-      console.log("Response keys:", Object.keys(response));
-      console.log("Response statusCode:", response.statusCode);
-      console.log("Response code:", response.code);
-      console.log("Response success:", response.success);
-      console.log("Response data:", response.data);
 
-      // FIXED: Check for multiple response formats
-      const isSuccess = 
+      // Check for success response
+      const isSuccessResponse = 
         response.statusCode === 201 || 
         response.statusCode === 200 || 
         response.code === "201" || 
         response.code === "200" ||
         response.success === true ||
         (response.data && (response.data.statusCode === 201 || response.data.statusCode === 200)) ||
-        response.message?.toLowerCase().includes("success");
+        response.message?.toLowerCase().includes("success") ||
+        response.message?.toLowerCase().includes("created") ||
+        response.message?.toLowerCase().includes("updated");
 
-      if (isSuccess) {
+      if (isSuccessResponse) {
         const successMsg = hasExistingEducation
           ? "Education details updated successfully!"
           : "Education details created successfully!";
         
         setSuccessMessage(successMsg);
-        console.log(successMsg);
-
-        // Clear any previous errors
-        setErrorMessage("");
-
-        // Move to next step - FIXED: Call nextStep immediately or with very short delay
-        console.log("Moving to next step from education form...");
         
-        // Option 2: Short timeout to show success message
+        // Update version if available
+        if (response.data?.version) {
+          setVersion(response.data.version);
+        }
+
+        await refetch();
+        
+        // Move to next step after short delay
         setTimeout(() => {
           console.log("Calling nextStep function...");
-          if (typeof nextStep === 'function') {
-            nextStep();
-          } else {
-            console.error("Error: nextStep is not a function!");
-            setErrorMessage("Navigation error. Please contact support.");
-          }
-        }, 1000); // Reduced from 1500 to 1000ms
+          nextStep();
+        }, 500);
         
       } else {
         const errorMsg = response.message || response.data?.message || "Failed to save education details";
@@ -1550,13 +1729,27 @@ const Step3EducationDetails = ({
     }
   };
 
-  const fieldStyle = {
-    backgroundColor: "#FF8C4405",
-    borderRadius: "6px",
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 400,
-    color: "#646565ff",
-    padding: "14px 12px",
+  const getFieldStyle = (fieldName) => {
+    const baseStyle = {
+      backgroundColor: "#FF8C4405",
+      borderRadius: "6px",
+      fontFamily: "'Inter', sans-serif",
+      fontWeight: 400,
+      color: "#646565ff",
+      padding: "14px 12px",
+      border: "1px solid #8180801c",
+    };
+
+    // Highlight field with red border if it has an error AND has been touched
+    if (touchedFields[fieldName] && validationErrors[fieldName]) {
+      return {
+        ...baseStyle,
+        border: "2px solid #ef4444", // Thicker red border for better visibility
+        backgroundColor: "#fef2f2",
+      };
+    }
+
+    return baseStyle;
   };
 
   const labelStyle = {
@@ -1567,7 +1760,8 @@ const Step3EducationDetails = ({
   };
 
   // Check authentication first
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("authToken");
+
   if (!token) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
@@ -1715,19 +1909,17 @@ const Step3EducationDetails = ({
               name="education"
               value={formData.education || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.education ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={getFieldStyle("education")}
             >
               <option value="">Select Education</option>
               {validEducationOptions.map((edu) => (
                 <option key={edu} value={edu}>{edu}</option>
               ))}
             </select>
-            {validationErrors.education && (
-              <p className="text-red-500 text-xs">{validationErrors.education}</p>
+            {touchedFields.education && validationErrors.education && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.education}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
               Must select from recognized qualifications
@@ -1743,16 +1935,14 @@ const Step3EducationDetails = ({
               name="degree"
               value={formData.degree || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="e.g., Computer Science Engineering, MBA Finance"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.degree ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={getFieldStyle("degree")}
               maxLength={100}
             />
-            {validationErrors.degree && (
-              <p className="text-red-500 text-xs">{validationErrors.degree}</p>
+            {touchedFields.degree && validationErrors.degree && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.degree}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
               Only alphabets, spaces, and basic punctuation (. , ' - & ( )) allowed
@@ -1768,16 +1958,14 @@ const Step3EducationDetails = ({
               name="occupation"
               value={formData.occupation || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="e.g., Software Engineer, Business Owner"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.occupation ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={getFieldStyle("occupation")}
               maxLength={100}
             />
-            {validationErrors.occupation && (
-              <p className="text-red-500 text-xs">{validationErrors.occupation}</p>
+            {touchedFields.occupation && validationErrors.occupation && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.occupation}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
               Note: Engineer/Manager/Consultant/Developer roles require details
@@ -1794,17 +1982,17 @@ const Step3EducationDetails = ({
               name="occupationDetails"
               value={formData.occupationDetails || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Describe your role, responsibilities, etc. (Required for Engineer/Manager/Consultant/Developer)"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none resize-none"
               style={{
-                ...fieldStyle,
-                height: "80px",
-                border: validationErrors.occupationDetails ? "1px solid #ef4444" : "1px solid #8180801c"
+                ...getFieldStyle("occupationDetails"),
+                height: "80px"
               }}
               maxLength={500}
             />
-            {validationErrors.occupationDetails && (
-              <p className="text-red-500 text-xs">{validationErrors.occupationDetails}</p>
+            {touchedFields.occupationDetails && validationErrors.occupationDetails && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.occupationDetails}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
               {formData.occupationDetails?.length || 0}/500 characters
@@ -1822,17 +2010,15 @@ const Step3EducationDetails = ({
               name="experienceYears"
               value={formData.experienceYears || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="e.g., 5"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.experienceYears ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={getFieldStyle("experienceYears")}
               min="0"
               max="50"
             />
-            {validationErrors.experienceYears && (
-              <p className="text-red-500 text-xs">{validationErrors.experienceYears}</p>
+            {touchedFields.experienceYears && validationErrors.experienceYears && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.experienceYears}</p>
             )}
           </div>
 
@@ -1844,11 +2030,9 @@ const Step3EducationDetails = ({
               name="incomePerYear"
               value={formData.incomePerYear || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.incomePerYear ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={getFieldStyle("incomePerYear")}
             >
               <option value="">Select Income</option>
               <option value="0">Not Applicable / Student</option>
@@ -1875,8 +2059,8 @@ const Step3EducationDetails = ({
               <option value="50000000">5 Crore</option>
               <option value="100000000">10 Crore</option>
             </select>
-            {validationErrors.incomePerYear && (
-              <p className="text-red-500 text-xs">{validationErrors.incomePerYear}</p>
+            {touchedFields.incomePerYear && validationErrors.incomePerYear && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.incomePerYear}</p>
             )}
             {formData.experienceYears && formData.incomePerYear && parseInt(formData.incomePerYear) > 5000000 && (
               <p className="text-xs text-yellow-600 mt-1">
@@ -1893,16 +2077,14 @@ const Step3EducationDetails = ({
               name="companyName"
               value={formData.companyName || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="e.g., Google, TCS, Self-employed"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.companyName ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={getFieldStyle("companyName")}
               maxLength={200}
             />
-            {validationErrors.companyName && (
-              <p className="text-red-500 text-xs">{validationErrors.companyName}</p>
+            {touchedFields.companyName && validationErrors.companyName && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.companyName}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
               Only alphabets, spaces, and basic punctuation (. , ' - & ( )) allowed
@@ -1917,16 +2099,14 @@ const Step3EducationDetails = ({
               name="workLocation"
               value={formData.workLocation || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="e.g., Mumbai, Remote"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={{
-                ...fieldStyle,
-                border: validationErrors.workLocation ? "1px solid #ef4444" : "1px solid #8180801c"
-              }}
+              style={getFieldStyle("workLocation")}
               maxLength={100}
             />
-            {validationErrors.workLocation && (
-              <p className="text-red-500 text-xs">{validationErrors.workLocation}</p>
+            {touchedFields.workLocation && validationErrors.workLocation && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.workLocation}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
               Only alphabets, spaces, and basic punctuation (. , ' - & ( )) allowed
@@ -1940,15 +2120,18 @@ const Step3EducationDetails = ({
               name="additionalDetails"
               value={formData.additionalDetails || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Any additional information about your education or profession"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none resize-none"
               style={{
-                ...fieldStyle,
-                height: "100px",
-                border: validationErrors.additionalDetails ? "1px solid #ef4444" : "1px solid #8180801c"
+                ...getFieldStyle("additionalDetails"),
+                height: "100px"
               }}
               maxLength={1000}
             />
+            {touchedFields.additionalDetails && validationErrors.additionalDetails && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.additionalDetails}</p>
+            )}
             <p className="text-xs text-gray-500 mt-1">
               {formData.additionalDetails?.length || 0}/1000 characters
             </p>

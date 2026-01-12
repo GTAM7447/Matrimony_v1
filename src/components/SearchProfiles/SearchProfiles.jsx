@@ -104,27 +104,25 @@
 
 
 
-
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import ProfileCard from "../Brides/BrideCard";
 import SkeletonSearchCard from "./SkeletonSearchCard";
-import { useGetPublicProfileByIdQuery } from "../../context/profileApi";
+import { useGetPublicProfileByIdV2Query } from "../../context/profileApi";
 
 const SearchProfiles = () => {
   const [profileId, setProfileId] = useState("");
   const [searchId, setSearchId] = useState(null);
 
-  /* API CALL */
+  /* 🔹 USE NEW ENDPOINT */
   const {
     data,
     isLoading,
     isError,
-  } = useGetPublicProfileByIdQuery(searchId, {
+  } = useGetPublicProfileByIdV2Query(searchId, {
     skip: !searchId,
   });
 
-  /* HANDLE SEARCH */
   const handleIdSearch = () => {
     const trimmedId = profileId.trim();
 
@@ -133,12 +131,10 @@ const SearchProfiles = () => {
       return;
     }
 
-    // Allow same ID search again
     setSearchId(trimmedId);
     setProfileId("");
   };
 
-  /* MEMOIZED PROFILE LIST */
   const profiles = useMemo(() => {
     return data?.data ? [data.data] : [];
   }, [data]);
@@ -151,7 +147,6 @@ const SearchProfiles = () => {
           Search <span className="text-orange-500">Profile by ID</span>
         </h1>
 
-        {/* SEARCH */}
         <div className="space-y-6">
           <input
             value={profileId}
@@ -169,17 +164,14 @@ const SearchProfiles = () => {
           </button>
         </div>
 
-        {/* LOADING */}
         {isLoading && <SkeletonSearchCard />}
 
-        {/* ERROR */}
         {isError && (
           <p className="text-center text-red-500 mt-6">
             Profile not found
           </p>
         )}
 
-        {/* RESULT */}
         <div className="mt-8 space-y-6">
           {profiles.map((profile) => (
             <ProfileCard
