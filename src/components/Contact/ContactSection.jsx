@@ -56,9 +56,10 @@ const ContactSection = () => {
         backgroundSize: "cover",
         backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed", // Keeps background fixed during scroll
+        backgroundAttachment: "fixed", 
       }}
     >
+    
       {/* dark effect on the right */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-black/40 to-black/80 z-0"></div>
 
