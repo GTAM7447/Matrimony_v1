@@ -1669,7 +1669,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             value={formData.whatsappNumber || ""}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="WhatsApp number (if different)"
+            placeholder="WhatsApp number"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("whatsappNumber")}
             maxLength={15}

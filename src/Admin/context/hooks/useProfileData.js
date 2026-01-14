@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // src/Admin/hooks/useProfileData.js
 import { useState, useEffect } from "react";
 import { useGetAllProfilesQuery } from "../adminApi";
@@ -10,6 +11,8 @@ export const useAdminProfiles = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const [transformedData, setTransformedData] = useState([]);
   const [loadingStatuses, setLoadingStatuses] = useState({});
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [profileToEdit, setProfileToEdit] = useState(null); // New state for edit profile
  
   // Get all profiles from main API
   const {
@@ -31,6 +34,10 @@ export const useAdminProfiles = () => {
       console.log("Transforming API data...");
      
       const transformed = apiResponse.content.map((user, index) => {
+        // Determine if user is active based on backend status field
+        // Backend returns "Active" or "Deactivate" in status field
+        const isActive = user.status === "Active";
+       
         return {
           // Fields from your API
           userId: user.userId,
@@ -39,28 +46,34 @@ export const useAdminProfiles = () => {
           gender: user.gender,
           roles: user.roles,
           role: user.role,
-          isActive: user.isActive || true, // Default to active
+          isActive: isActive, // Properly mapped from backend status
          
-          // Generated fields
-          profileId: user.profileId || `MAT${user.userId || "00000"}`,
-          name: user.name || user.email?.split('@')[0] || "User",
+          // Use firstName and lastName to create full name
+          name: user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : user.email?.split('@')[0] || "User",
          
-          // Fields not in your API - will show "--"
-          age: user.age || "--",
-          city: user.city || "--",
-          religion: user.religion || "--",
-          caste: user.caste || "--",
-          profession: user.profession || "--",
-          membership: user.membership || "--",
-          verification: user.verification || "--",
-          sendRequests: user.sendRequests || 0,
-          receiveRequests: user.receiveRequests || 0,
+          // Map all fields directly from API
+          profileId: user.profileId,
+          age: user.age,
+          city: user.city,
+          religion: user.religion,
+          caste: user.caste,
+          profession: user.profession,
+          membership: user.membership,
+          verification: user.verification,
+          sendRequests: user.sendRequests,
+          receiveRequests: user.receiveRequests,
+          // Add additional fields if needed for view/edit
+          firstName: user.firstName,
+          lastName: user.lastName,
+          status: user.status,
         };
       });
      
       setTransformedData(transformed);
      
-      // Initialize status map from API data or defaults
+      // Initialize status map from API data
       const initialStatus = {};
       transformed.forEach((item, index) => {
         initialStatus[index] = item.isActive === true;
@@ -108,16 +121,50 @@ export const useAdminProfiles = () => {
     }
   };
  
-  // Navigation
+  // Handle View Profile - Set selected profile for modal/drawer
   const handleViewProfile = (userId) => {
     if (userId) {
-      window.location.href = `/admin/view-profile/${userId}`;
+      const profile = transformedData.find(item => item.userId === userId);
+      setSelectedProfile(profile);
+      console.log("View profile clicked for:", userId);
+      // Optional: You could fetch detailed profile data here
     }
   };
  
+  // Handle Edit Profile - Set profile to edit for modal/drawer
   const handleEditProfile = (userId) => {
     if (userId) {
-      window.location.href = `/admin/edit-profile/${userId}`;
+      const profile = transformedData.find(item => item.userId === userId);
+      setProfileToEdit(profile);
+      console.log("Edit profile clicked for:", userId);
+      // Optional: You could fetch detailed profile data for editing here
+    }
+  };
+ 
+  // Close view modal/drawer
+  const closeProfileView = () => {
+    setSelectedProfile(null);
+  };
+ 
+  // Close edit modal/drawer
+  const closeProfileEdit = () => {
+    setProfileToEdit(null);
+  };
+ 
+  // Save edited profile (example function - implement as needed)
+  const saveProfileEdit = async (updatedData) => {
+    try {
+      console.log("Saving profile data:", updatedData);
+      // Implement your save logic here, e.g., API call
+      // await updateProfileApi(updatedData.userId, updatedData);
+     
+      // Refresh data after edit
+      refetch();
+      setProfileToEdit(null);
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Failed to update profile");
     }
   };
  
@@ -158,8 +205,12 @@ export const useAdminProfiles = () => {
     activeProfiles,
     handleViewProfile,
     handleEditProfile,
+    closeProfileView,
+    closeProfileEdit,
+    saveProfileEdit,
+    selectedProfile,
+    profileToEdit,
     refetch,
     loadingStatuses
   };
 };
- 
