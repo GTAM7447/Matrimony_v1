@@ -10,4 +10,3 @@ const SearchProfiles = () => {
 };
 
 export default SearchProfiles;
-

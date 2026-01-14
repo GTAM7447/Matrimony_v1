@@ -1,13 +1,23 @@
-// src/features/auth/ProtectedRoute.jsx
+// // src/features/auth/ProtectedRoute.jsx
+// import { Navigate } from "react-router-dom";
+// import { useAuth } from "../../context/AuthContext";
 
+// export default function ProtectedRoute({ children }) {
+//   const { isLoggedIn } = useAuth();
+//   const loggedIn = isLoggedIn || !!localStorage.getItem("authToken");
+//   return loggedIn ? children : <Navigate to="/signin" replace />;
+// }
+
+
+
+
+
+
+
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
-  const { isLoggedIn } = useAuth();
-
-  // fallback to localStorage token if context is not initialized yet
-  const loggedIn = isLoggedIn || !!localStorage.getItem("token");
-
-  return loggedIn ? children : <Navigate to="/signin" replace />;
+  const isAuth = useSelector((state) => state.auth.isAuthenticated);
+  return isAuth ? children : <Navigate to="/signin" replace />;
 }

@@ -25,6 +25,8 @@
 //   const [hasExistingProfile, setHasExistingProfile] = useState(false);
 //   const [dataLoaded, setDataLoaded] = useState(false);
 //   const [currentVersion, setCurrentVersion] = useState(0);
+//   const [showRequiredAlert, setShowRequiredAlert] = useState(false);
+//   const [missingFieldsList, setMissingFieldsList] = useState([]);
 
 //   // RTK Query hooks
 //   const [createPersonalDetails] = useCreatePersonalDetailsMutation();
@@ -49,6 +51,35 @@
 //     "complexion", "diet", "spectacle", "lens", "physicallyChallenged",
 //     "homeTownDistrict", "nativeTaluka", "currentCity"
 //   ];
+
+//   // Field display names for better error messages
+//   const fieldDisplayNames = {
+//     firstName: "First Name",
+//     middleName: "Middle Name",
+//     lastName: "Last Name",
+//     age: "Age",
+//     gender: "Gender",
+//     status: "Status",
+//     address: "Address",
+//     taluka: "Taluka",
+//     district: "District",
+//     pinCode: "PIN Code",
+//     religion: "Religion",
+//     caste: "Caste",
+//     maritalStatus: "Marital Status",
+//     heightFt: "Height (Feet)",
+//     heightIn: "Height (Inches)",
+//     weight: "Weight",
+//     bloodGroup: "Blood Group",
+//     complexion: "Complexion",
+//     diet: "Diet",
+//     spectacle: "Spectacle",
+//     lens: "Lens",
+//     physicallyChallenged: "Physically Challenged",
+//     homeTownDistrict: "Home Town District",
+//     nativeTaluka: "Native Taluka",
+//     currentCity: "Current City"
+//   };
 
 //   const isFormValid = apiRequiredKeys.every(
 //     (key) => formData[key] !== undefined && formData[key] !== ""
@@ -265,6 +296,7 @@
 //     validateField(name, value);
 
 //     if (errorMessage) setErrorMessage("");
+//     if (showRequiredAlert) setShowRequiredAlert(false);
 //   };
 
 //   const prepareApiData = () => {
@@ -350,19 +382,38 @@
 //     return apiData;
 //   };
 
+//   // Check for missing fields and show alert
+//   const checkMissingFields = () => {
+//     const missingFields = apiRequiredKeys.filter(
+//       (key) => !formData[key] || formData[key].toString().trim() === ""
+//     );
+
+//     if (missingFields.length > 0) {
+//       const missingFieldNames = missingFields.map(field => fieldDisplayNames[field] || field);
+//       setMissingFieldsList(missingFieldNames);
+//       setShowRequiredAlert(true);
+      
+//       // Scroll to the alert
+//       setTimeout(() => {
+//         const alertElement = document.getElementById("required-fields-alert");
+//         if (alertElement) {
+//           alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//         }
+//       }, 100);
+      
+//       return false;
+//     }
+//     return true;
+//   };
+
 //   // Handle form submission
 //   const handleNextClick = async () => {
 //     console.log("=== PERSONAL DETAILS SUBMISSION STARTED ===");
 //     console.log("Has existing profile:", hasExistingProfile);
 //     console.log("Current version:", currentVersion);
 
-//     const missingFields = apiRequiredKeys.filter(
-//       (key) => !formData[key] || formData[key].toString().trim() === ""
-//     );
-
-//     if (missingFields.length > 0) {
-//       setErrorMessage(`Please fill all required fields: ${missingFields.join(", ")}`);
-//       console.log("Missing fields:", missingFields);
+//     // Check for missing fields first
+//     if (!checkMissingFields()) {
 //       return;
 //     }
 
@@ -587,6 +638,44 @@
 //         className="px-4 sm:px-6 md:px-10 py-8"
 //         style={{ backgroundColor: "#FF8C4405" }}
 //       >
+//         {/* Required Fields Alert - RED BOX */}
+//         {showRequiredAlert && (
+//           <div 
+//             id="required-fields-alert"
+//             className="mb-6 p-4 bg-red-50 border border-red-300 rounded-lg"
+//           >
+//             <div className="flex items-start">
+//               <div className="flex-shrink-0">
+//                 <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+//                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+//                 </svg>
+//               </div>
+//               <div className="ml-3">
+//                 <h3 className="text-sm font-medium text-red-800">
+//                   Please fill all required fields
+//                 </h3>
+//                 <div className="mt-2 text-sm text-red-700">
+//                   <p>The following required fields are missing:</p>
+//                   <ul className="list-disc pl-5 mt-1">
+//                     {missingFieldsList.map((fieldName, index) => (
+//                       <li key={index}>{fieldName}</li>
+//                     ))}
+//                   </ul>
+//                 </div>
+//                 <div className="mt-2">
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowRequiredAlert(false)}
+//                     className="text-sm bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1 px-3 rounded"
+//                   >
+//                     Dismiss
+//                   </button>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
 //         {/* Status Messages */}
 //         {successMessage && (
 //           <div
@@ -1231,8 +1320,16 @@
 
 
 
+
+
+
+
+
+
+
+
 /* eslint-disable no-useless-escape */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { City } from "country-state-city";
 import Stepper from "./Stepper";
 import {
@@ -1249,6 +1346,11 @@ const Step1PersonalDetails = ({
   completedStep,
   step,
 }) => {
+
+  const autoNextRef = useRef(false);
+  const apiLoadedRef = useRef(false);
+  
+  // States
   const [districts, setDistricts] = useState([]);
   const [talukas, setTalukas] = useState([]);
   const [formData, setFormData] = useState(data || {});
@@ -1260,6 +1362,8 @@ const Step1PersonalDetails = ({
   const [currentVersion, setCurrentVersion] = useState(0);
   const [showRequiredAlert, setShowRequiredAlert] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   // RTK Query hooks
   const [createPersonalDetails] = useCreatePersonalDetailsMutation();
@@ -1267,14 +1371,14 @@ const Step1PersonalDetails = ({
 
   // GET API hook
   const {
-    data: profileApiResponse,
+    data: res,
     isLoading: isFetching,
     error: profileError,
     isSuccess,
-    isError
   } = useGetPersonalDetailsQuery(undefined, {
     refetchOnMountOrArgChange: false,
   });
+  const apiData = res?.data;
 
   // Required fields
   const apiRequiredKeys = [
@@ -1318,8 +1422,6 @@ const Step1PersonalDetails = ({
     (key) => formData[key] !== undefined && formData[key] !== ""
   );
 
-  const [validationErrors, setValidationErrors] = useState({});
-
   // Data arrays for dropdowns
   const genderOptions = ["MALE", "FEMALE", "OTHER"];
   const statusOptions = ["ACTIVE"];
@@ -1336,123 +1438,94 @@ const Step1PersonalDetails = ({
   const heightFtOptions = [4, 5, 6, 7];
   const heightInOptions = Array.from({ length: 12 }, (_, i) => i);
 
-  // LOAD DATA FROM GET API
+  // AUTO-NEXT LOGIC: Load data from API and auto-navigate if step is sequential
   useEffect(() => {
-    if (profileApiResponse && !dataLoaded) {
-      console.log("Profile fetch response:", profileApiResponse);
+    if (!isSuccess || !apiData) return;
+    if (apiLoadedRef.current) return;
 
-      if (profileApiResponse.data) {
-        setHasExistingProfile(true);
-        const profileData = profileApiResponse.data;
-        setCurrentVersion(profileData.version || 0);
+    apiLoadedRef.current = true;
 
-        // Parse height from backend
-        let heightFt = "", heightIn = "";
-        if (profileData.height) {
-          const heightCm = profileData.height;
-          const totalInches = heightCm / 2.54;
-          heightFt = Math.floor(totalInches / 12).toString();
-          heightIn = Math.round(totalInches % 12).toString();
-        }
+    const profileData = apiData;
+    setHasExistingProfile(true);
+    setCurrentVersion(profileData.version || 0);
 
-        // Transform backend data to form format
-        const transformedData = {
-          firstName: profileData.firstName || "",
-          middleName: profileData.middleName || "",
-          lastName: profileData.lastName || "",
-          age: profileData.age ? profileData.age.toString() : "",
-          gender: profileData.gender || "",
-          status: profileData.status || "INACTIVE",
-          address: profileData.address || "",
-          taluka: profileData.taluka || "",
-          district: profileData.district || "",
-          pinCode: profileData.pinCode ? profileData.pinCode.toString() : "",
-          religion: profileData.religion || "",
-          caste: profileData.caste || "",
-          maritalStatus: profileData.maritalStatus || "",
-          heightFt: heightFt,
-          heightIn: heightIn,
-          weight: profileData.weight ? profileData.weight.toString() : "",
-          bloodGroup: profileData.bloodGroup || "",
-          complexion: profileData.complexion || "",
-          diet: profileData.diet || "",
-          spectacle: profileData.spectacle ? "Yes" : "No",
-          lens: profileData.lens ? "Yes" : "No",
-          physicallyChallenged: profileData.physicallyChallenged ? "Yes" : "No",
-          homeTownDistrict: profileData.homeTownDistrict || "",
-          nativeTaluka: profileData.nativeTaluka || "",
-          currentCity: profileData.currentCity || "",
-        };
-
-        console.log("Form data populated:", transformedData);
-
-        setFormData(transformedData);
-        setData(transformedData);
-        setDataLoaded(true);
-
-        setSuccessMessage("Personal details loaded successfully");
-        setTimeout(() => setSuccessMessage(""), 3000);
-      }
+    // Parse height from backend
+    let heightFt = "", heightIn = "";
+    if (profileData.height) {
+      const heightCm = profileData.height;
+      const totalInches = heightCm / 2.54;
+      heightFt = Math.floor(totalInches / 12).toString();
+      heightIn = Math.round(totalInches % 12).toString();
     }
-  }, [profileApiResponse, dataLoaded, setData]);
 
-  // Handle error state
-  useEffect(() => {
-    if (profileError && !dataLoaded) {
-      console.log("Profile fetch error:", profileError);
+    // Transform backend data to form format
+    const transformedData = {
+      firstName: profileData.firstName || "",
+      middleName: profileData.middleName || "",
+      lastName: profileData.lastName || "",
+      age: profileData.age ? profileData.age.toString() : "",
+      gender: profileData.gender || "",
+      status: profileData.status || "INACTIVE",
+      address: profileData.address || "",
+      taluka: profileData.taluka || "",
+      district: profileData.district || "",
+      pinCode: profileData.pinCode ? profileData.pinCode.toString() : "",
+      religion: profileData.religion || "",
+      caste: profileData.caste || "",
+      maritalStatus: profileData.maritalStatus || "",
+      heightFt: heightFt,
+      heightIn: heightIn,
+      weight: profileData.weight ? profileData.weight.toString() : "",
+      bloodGroup: profileData.bloodGroup || "",
+      complexion: profileData.complexion || "",
+      diet: profileData.diet || "",
+      spectacle: profileData.spectacle ? "Yes" : "No",
+      lens: profileData.lens ? "Yes" : "No",
+      physicallyChallenged: profileData.physicallyChallenged ? "Yes" : "No",
+      homeTownDistrict: profileData.homeTownDistrict || "",
+      nativeTaluka: profileData.nativeTaluka || "",
+      currentCity: profileData.currentCity || "",
+    };
 
-      const errorData = profileError.data || {};
-      const errorMessageText = errorData.message || "";
-      const isProfileNotFound =
-        profileError.status === 500 ||
-        errorMessageText.includes("profile not found") ||
-        errorMessageText.includes("Profile not found") ||
-        errorMessageText.includes("No profile found") ||
-        errorMessageText.includes("ProfileNotFoundException");
+    // ALWAYS load data
+    setFormData(transformedData);
+    setData(transformedData);
+    setDataLoaded(true);
 
-      if (isProfileNotFound) {
-        setHasExistingProfile(false);
-        setDataLoaded(true);
-        setSuccessMessage("No existing profile found. Please create a new one.");
-        setTimeout(() => setSuccessMessage(""), 3000);
-      } else if (profileError.status === 401 || profileError.status === 403) {
-        // setErrorMessage("Session expired. Please login again.");
-        setDataLoaded(true);
-      } else {
-        console.error("Unexpected error:", profileError);
-        // setErrorMessage("Failed to load profile data");
-        setDataLoaded(true);
-      }
+    // auto-next only once and only in sequence
+    if (
+      !autoNextRef.current &&
+      Object.keys(transformedData).length > 0 &&
+      step === completedStep + 1
+    ) {
+      autoNextRef.current = true;
+      setTimeout(() => {
+        console.log("Auto-navigating to next step...");
+        nextStep();
+      }, 0);
     }
-  }, [profileError, dataLoaded]);
 
-  // Handle successful query with no data
+    setSuccessMessage("Personal details loaded successfully");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }, [isSuccess, apiData, step, completedStep, nextStep, setData]);
+
+  // 404 = new user
   useEffect(() => {
-    if (isSuccess && !profileApiResponse?.data && !dataLoaded) {
-      console.log("No profile data found - new user");
+    if (profileError?.status === 404 && !dataLoaded) {
+      apiLoadedRef.current = true;
       setHasExistingProfile(false);
       setDataLoaded(true);
       setSuccessMessage("No existing profile found. Please create a new one.");
       setTimeout(() => setSuccessMessage(""), 3000);
     }
-  }, [isSuccess, profileApiResponse, dataLoaded]);
+  }, [profileError, dataLoaded]);
 
-  // SMARTER WAY: Load cities as talukas from country-state-city library
+  // Load cities (districts and talukas)
   useEffect(() => {
-    // Get all cities from Maharashtra state
-    const maharashtraCities = City.getCitiesOfState("IN", "MH");
-
-    // Extract city names and remove duplicates
-    const cityNames = [...new Set(maharashtraCities.map(city => city.name))];
-
-    // Sort alphabetically
-    const sortedCities = cityNames.sort();
-
-    console.log(`Loaded ${sortedCities.length} cities/talukas from Maharashtra`);
-
-    // Use these as both districts and talukas (smart shortcut)
-    setDistricts(sortedCities);
-    setTalukas(sortedCities);
+    const cities = City.getCitiesOfState("IN", "MH");
+    const cityNames = [...new Set(cities.map(city => city.name))].sort();
+    setDistricts(cityNames);
+    setTalukas(cityNames);
   }, []);
 
   const validateField = (name, value) => {
@@ -1491,9 +1564,6 @@ const Step1PersonalDetails = ({
           err = "Weight must be between 30 and 300 kg";
         }
       }
-      if (name === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        err = "Enter a valid email address";
-      }
       if (name === "heightFt") {
         const ft = parseInt(value);
         if (isNaN(ft) || ft < 4 || ft > 7) {
@@ -1507,37 +1577,47 @@ const Step1PersonalDetails = ({
         }
       }
     }
-    setValidationErrors((prev) => ({ ...prev, [name]: err }));
-  };
-
-  const validateAllFields = () => {
-    const errors = {};
-    apiRequiredKeys.forEach((key) => {
-      validateField(key, formData[key] || "");
-      if (!formData[key]) {
-        errors[key] = "Required";
-      }
-    });
-    return Object.keys(errors).length === 0;
+    
+    setValidationErrors(prev => ({ ...prev, [name]: err }));
+    return err;
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    const updatedData = { ...formData, [name]: value };
+  const { name, value } = e.target;
+    
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    let updatedData;
+    
+    // Special handling for pinCode - only allow digits
+    if (name === "pinCode") {
+      const digitsOnly = value.replace(/\D/g, "");
+      updatedData = { ...formData, [name]: digitsOnly };
+    } else {
+      updatedData = { ...formData, [name]: value };
+    }
+    
     setFormData(updatedData);
     setData(updatedData);
-    validateField(name, value);
+    
+    // Validate the field
+    validateField(name, updatedData[name]);
 
     if (errorMessage) setErrorMessage("");
     if (showRequiredAlert) setShowRequiredAlert(false);
   };
 
-  const prepareApiData = () => {
-    console.log("=== PREPARING API DATA ===");
-    console.log("Form Data:", formData);
-    console.log("Has existing profile:", hasExistingProfile);
-    console.log("Current version:", currentVersion);
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    // Validate the field on blur
+    validateField(name, value);
+  };
 
+  const prepareApiData = () => {
     // Convert height to centimeters
     const ft = parseInt(formData.heightFt || 0);
     const inches = parseInt(formData.heightIn || 0);
@@ -1548,43 +1628,7 @@ const Step1PersonalDetails = ({
     const pinCodeValue = parseInt(formData.pinCode || 0);
     const ageValue = parseInt(formData.age || 0);
 
-    // For CREATE (POST)
-    if (!hasExistingProfile) {
-      const apiData = {
-        firstName: (formData.firstName || "").trim(),
-        middleName: (formData.middleName || "").trim(),
-        lastName: (formData.lastName || "").trim(),
-        age: ageValue,
-        gender: (formData.gender || "").toUpperCase(),
-        status: (formData.status || "INACTIVE").toUpperCase(),
-        address: (formData.address || "").trim(),
-        taluka: (formData.taluka || "").trim(),
-        district: (formData.district || "").trim(),
-        pinCode: pinCodeValue,
-        religion: (formData.religion || "").trim(),
-        caste: (formData.caste || "").trim(),
-        maritalStatus: (formData.maritalStatus || "").trim(),
-        height: heightCm,
-        weight: weightValue,
-        bloodGroup: (formData.bloodGroup || "").trim(),
-        complexion: (formData.complexion || "").trim(),
-        diet: (formData.diet || "").trim(),
-        spectacle: formData.spectacle === "Yes",
-        lens: formData.lens === "Yes",
-        physicallyChallenged: formData.physicallyChallenged === "Yes",
-        homeTownDistrict: (formData.homeTownDistrict || "").trim(),
-        nativeTaluka: (formData.nativeTaluka || "").trim(),
-        currentCity: (formData.currentCity || "").trim()
-      };
-
-      console.log("POST API Data:", apiData);
-      return apiData;
-    }
-
-    // For UPDATE (PATCH) - MUST include version
-    const apiData = {
-      // VERSION IS REQUIRED FOR PATCH
-      version: currentVersion,
+    const baseData = {
       firstName: (formData.firstName || "").trim(),
       middleName: (formData.middleName || "").trim(),
       lastName: (formData.lastName || "").trim(),
@@ -1611,8 +1655,11 @@ const Step1PersonalDetails = ({
       currentCity: (formData.currentCity || "").trim()
     };
 
-    console.log("PATCH API Data (with version):", apiData);
-    return apiData;
+    if (hasExistingProfile) {
+      return { version: currentVersion, ...baseData };
+    }
+    
+    return baseData;
   };
 
   // Check for missing fields and show alert
@@ -1641,43 +1688,16 @@ const Step1PersonalDetails = ({
 
   // Handle form submission
   const handleNextClick = async () => {
-    console.log("=== PERSONAL DETAILS SUBMISSION STARTED ===");
-    console.log("Has existing profile:", hasExistingProfile);
-    console.log("Current version:", currentVersion);
-
     // Check for missing fields first
     if (!checkMissingFields()) {
       return;
     }
 
-    if (!validateAllFields()) {
-      setErrorMessage("Please fix all validation errors");
-      console.log("Validation errors:", validationErrors);
-      return;
-    }
+    const token = localStorage.getItem("authToken");
 
-    const token = localStorage.getItem("token");
     if (!token) {
       setErrorMessage("Please login to save profile data");
       return;
-    }
-
-    // Additional token validation
-    try {
-      const tokenData = JSON.parse(atob(token.split('.')[1]));
-      const tokenExp = tokenData.exp * 1000;
-      const now = Date.now();
-
-      // if (tokenExp < now) {
-      //   localStorage.removeItem("token");
-      //   setErrorMessage("Session expired. Please login again.");
-      //   setTimeout(() => {
-      //     window.location.href = "/signin";
-      //   }, 2000);
-      //   return;
-      // }
-    } catch (error) {
-      console.error("Token parsing error:", error);
     }
 
     try {
@@ -1688,10 +1708,7 @@ const Step1PersonalDetails = ({
       const apiData = prepareApiData();
 
       if (hasExistingProfile) {
-        console.log("=== SENDING PATCH REQUEST ===");
-
         const response = await updatePersonalDetails(apiData).unwrap();
-        console.log("PATCH API Response:", response);
 
         setSuccessMessage("Profile updated successfully!");
 
@@ -1704,10 +1721,7 @@ const Step1PersonalDetails = ({
         }, 500);
       }
       else {
-        console.log("=== SENDING POST REQUEST ===");
-
         const response = await createPersonalDetails(apiData).unwrap();
-        console.log("POST API Response:", response);
 
         if (response.statusCode === 201 || response.success === true || response.code === "201") {
           setSuccessMessage("Profile created successfully!");
@@ -1725,20 +1739,13 @@ const Step1PersonalDetails = ({
         }
       }
     } catch (error) {
-      console.error("=== PERSONAL DETAILS API ERROR ===");
-      console.error("Complete error:", error);
-      console.error("Error status:", error.status);
-      console.error("Error data:", error.data);
-
       let errorMsg = "Failed to save profile. Please try again.";
 
       if (error.data) {
         if (error.data.details) {
-          // Parse details string like family background
           try {
-            const detailsStr = error.data.details;
-            const cleaned = detailsStr.replace(/[{}]/g, '');
-            const errors = cleaned.split(', ');
+            const detailsStr = error.data.details.replace(/[{}]/g, '');
+            const errors = detailsStr.split(', ');
             const errorMessages = errors.map(err => {
               const parts = err.split('=');
               return parts.length > 1 ? parts[1] : parts[0];
@@ -1774,14 +1781,25 @@ const Step1PersonalDetails = ({
     }
   };
 
-  const fieldStyle = {
-    backgroundColor: "#FF8C4405",
-    border: "1px solid #8180801c",
-    borderRadius: "6px",
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 400,
-    color: "#646565ff",
-    padding: "14px 12px",
+  const getFieldStyle = (fieldName) => {
+    const baseStyle = {
+      backgroundColor: "#FF8C4405",
+      border: "1px solid #8180801c",
+      borderRadius: "6px",
+      fontFamily: "'Inter', sans-serif",
+      fontWeight: 400,
+      color: "#646565ff",
+      padding: "14px 12px",
+    };
+
+    if (touchedFields[fieldName] && validationErrors[fieldName]) {
+      return {
+        ...baseStyle,
+        border: "2px solid #ef4444",
+        backgroundColor: "#fef2f2",
+      };
+    }
+    return baseStyle;
   };
 
   const labelStyle = {
@@ -1792,7 +1810,8 @@ const Step1PersonalDetails = ({
   };
 
   // Check authentication
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("authToken");
+
   if (!token) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
@@ -1942,13 +1961,14 @@ const Step1PersonalDetails = ({
               name="firstName"
               value={formData.firstName || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter First Name"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("firstName")}
               maxLength={45}
             />
-            {validationErrors.firstName && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.firstName && validationErrors.firstName && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.firstName}
               </p>
             )}
@@ -1963,13 +1983,14 @@ const Step1PersonalDetails = ({
               name="middleName"
               value={formData.middleName || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Middle Name"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("middleName")}
               maxLength={45}
             />
-            {validationErrors.middleName && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.middleName && validationErrors.middleName && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.middleName}
               </p>
             )}
@@ -1984,13 +2005,14 @@ const Step1PersonalDetails = ({
               name="lastName"
               value={formData.lastName || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Last Name"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("lastName")}
               maxLength={45}
             />
-            {validationErrors.lastName && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.lastName && validationErrors.lastName && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.lastName}
               </p>
             )}
@@ -2005,14 +2027,15 @@ const Step1PersonalDetails = ({
               name="age"
               value={formData.age || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Age"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("age")}
               min="18"
               max="100"
             />
-            {validationErrors.age && (
-              <p className="text-red-500 text-xs">{validationErrors.age}</p>
+            {touchedFields.age && validationErrors.age && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.age}</p>
             )}
           </div>
 
@@ -2024,8 +2047,9 @@ const Step1PersonalDetails = ({
               name="gender"
               value={formData.gender || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("gender")}
             >
               <option value="">Select</option>
               {genderOptions.map((gender) => (
@@ -2034,8 +2058,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.gender && (
-              <p className="text-red-500 text-xs">{validationErrors.gender}</p>
+            {touchedFields.gender && validationErrors.gender && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.gender}</p>
             )}
           </div>
 
@@ -2047,8 +2071,9 @@ const Step1PersonalDetails = ({
               name="status"
               value={formData.status || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("status")}
             >
               <option value="">Select</option>
               {statusOptions.map((status) => (
@@ -2057,8 +2082,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.status && (
-              <p className="text-red-500 text-xs">{validationErrors.status}</p>
+            {touchedFields.status && validationErrors.status && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.status}</p>
             )}
           </div>
 
@@ -2071,12 +2096,13 @@ const Step1PersonalDetails = ({
               name="caste"
               value={formData.caste || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Caste"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("caste")}
             />
-            {validationErrors.caste && (
-              <p className="text-red-500 text-xs">{validationErrors.caste}</p>
+            {touchedFields.caste && validationErrors.caste && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.caste}</p>
             )}
           </div>
 
@@ -2088,8 +2114,9 @@ const Step1PersonalDetails = ({
               name="maritalStatus"
               value={formData.maritalStatus || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("maritalStatus")}
             >
               <option value="">Select</option>
               {maritalStatusOptions.map((status) => (
@@ -2098,8 +2125,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.maritalStatus && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.maritalStatus && validationErrors.maritalStatus && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.maritalStatus}
               </p>
             )}
@@ -2114,8 +2141,9 @@ const Step1PersonalDetails = ({
                 name="heightFt"
                 value={formData.heightFt || ""}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className="w-1/2 px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-                style={fieldStyle}
+                style={getFieldStyle("heightFt")}
               >
                 <option value="">Ft</option>
                 {heightFtOptions.map((ft) => (
@@ -2129,8 +2157,9 @@ const Step1PersonalDetails = ({
                 name="heightIn"
                 value={formData.heightIn || ""}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className="w-1/2 px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-                style={fieldStyle}
+                style={getFieldStyle("heightIn")}
               >
                 <option value="">Inches</option>
                 {heightInOptions.map((inch) => (
@@ -2140,9 +2169,9 @@ const Step1PersonalDetails = ({
                 ))}
               </select>
             </div>
-            {(validationErrors.heightFt || validationErrors.heightIn) && (
-              <p className="text-red-500 text-xs">Height is required</p>
-            )}
+            {(touchedFields.heightFt && validationErrors.heightFt) || (touchedFields.heightIn && validationErrors.heightIn) ? (
+              <p className="text-red-500 text-xs mt-1">Height is required</p>
+            ) : null}
           </div>
 
           {/* WEIGHT */}
@@ -2155,16 +2184,17 @@ const Step1PersonalDetails = ({
                 name="weight"
                 value={formData.weight || ""}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter weight in kg"
-                className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-                style={fieldStyle}
+                className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none pr-10"
+                style={getFieldStyle("weight")}
               />
               <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                 kg
               </span>
             </div>
-            {validationErrors.weight && (
-              <p className="text-red-500 text-xs">{validationErrors.weight}</p>
+            {touchedFields.weight && validationErrors.weight && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.weight}</p>
             )}
           </div>
 
@@ -2176,8 +2206,9 @@ const Step1PersonalDetails = ({
               name="bloodGroup"
               value={formData.bloodGroup || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("bloodGroup")}
             >
               <option value="">Select</option>
               {bloodGroupOptions.map((bg) => (
@@ -2186,8 +2217,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.bloodGroup && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.bloodGroup && validationErrors.bloodGroup && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.bloodGroup}
               </p>
             )}
@@ -2201,8 +2232,9 @@ const Step1PersonalDetails = ({
               name="complexion"
               value={formData.complexion || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("complexion")}
             >
               <option value="">Select</option>
               {complexionOptions.map((complexion) => (
@@ -2211,8 +2243,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.complexion && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.complexion && validationErrors.complexion && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.complexion}
               </p>
             )}
@@ -2226,8 +2258,9 @@ const Step1PersonalDetails = ({
               name="diet"
               value={formData.diet || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("diet")}
             >
               <option value="">Select</option>
               {dietOptions.map((diet) => (
@@ -2236,8 +2269,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.diet && (
-              <p className="text-red-500 text-xs">{validationErrors.diet}</p>
+            {touchedFields.diet && validationErrors.diet && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.diet}</p>
             )}
           </div>
 
@@ -2249,8 +2282,9 @@ const Step1PersonalDetails = ({
               name="spectacle"
               value={formData.spectacle || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("spectacle")}
             >
               <option value="">Select</option>
               {yesNoOptions.map((option) => (
@@ -2259,8 +2293,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.spectacle && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.spectacle && validationErrors.spectacle && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.spectacle}
               </p>
             )}
@@ -2274,8 +2308,9 @@ const Step1PersonalDetails = ({
               name="lens"
               value={formData.lens || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("lens")}
             >
               <option value="">Select</option>
               {yesNoOptions.map((option) => (
@@ -2284,8 +2319,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.lens && (
-              <p className="text-red-500 text-xs">{validationErrors.lens}</p>
+            {touchedFields.lens && validationErrors.lens && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.lens}</p>
             )}
           </div>
 
@@ -2297,8 +2332,9 @@ const Step1PersonalDetails = ({
               name="physicallyChallenged"
               value={formData.physicallyChallenged || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("physicallyChallenged")}
             >
               <option value="">Select</option>
               {yesNoOptions.map((option) => (
@@ -2307,8 +2343,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.physicallyChallenged && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.physicallyChallenged && validationErrors.physicallyChallenged && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.physicallyChallenged}
               </p>
             )}
@@ -2322,8 +2358,9 @@ const Step1PersonalDetails = ({
               name="homeTownDistrict"
               value={formData.homeTownDistrict || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none truncate"
-              style={fieldStyle}
+              style={getFieldStyle("homeTownDistrict")}
             >
               <option value="">Select District</option>
               {districts.map((district, index) => (
@@ -2332,8 +2369,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.homeTownDistrict && (
-              <p className="text-red-500 text-xs">{validationErrors.homeTownDistrict}</p>
+            {touchedFields.homeTownDistrict && validationErrors.homeTownDistrict && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.homeTownDistrict}</p>
             )}
           </div>
 
@@ -2345,23 +2382,19 @@ const Step1PersonalDetails = ({
               type="text"
               name="pinCode"
               value={formData.pinCode || ""}
-              onChange={(e) => {
-                const digitsOnly = e.target.value.replace(/\D/g, "");
-                handleChange({
-                  target: { name: "pinCode", value: digitsOnly },
-                });
-              }}
+              onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter 6-digit Pin Code"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("pinCode")}
               maxLength={6}
             />
-            {validationErrors.pinCode && (
-              <p className="text-red-500 text-xs">{validationErrors.pinCode}</p>
+            {touchedFields.pinCode && validationErrors.pinCode && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.pinCode}</p>
             )}
           </div>
 
-          {/* TALUKA - Now has complete list */}
+          {/* TALUKA */}
           <div>
             <label style={labelStyle}>Taluka <span style={{ color: "red" }}>*</span></label>
             <select
@@ -2369,8 +2402,9 @@ const Step1PersonalDetails = ({
               name="taluka"
               value={formData.taluka || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none truncate"
-              style={fieldStyle}
+              style={getFieldStyle("taluka")}
             >
               <option value="">Select Taluka</option>
               {talukas.map((taluka, index) => (
@@ -2379,12 +2413,12 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.taluka && (
-              <p className="text-red-500 text-xs">{validationErrors.taluka}</p>
+            {touchedFields.taluka && validationErrors.taluka && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.taluka}</p>
             )}
           </div>
 
-          {/* NATIVE TALUKA - Same complete list */}
+          {/* NATIVE TALUKA */}
           <div>
             <label style={labelStyle}>Native Taluka <span style={{ color: "red" }}>*</span></label>
             <select
@@ -2392,8 +2426,9 @@ const Step1PersonalDetails = ({
               name="nativeTaluka"
               value={formData.nativeTaluka || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none truncate"
-              style={fieldStyle}
+              style={getFieldStyle("nativeTaluka")}
             >
               <option value="">Select Native Taluka</option>
               {talukas.map((taluka, index) => (
@@ -2402,8 +2437,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.nativeTaluka && (
-              <p className="text-red-500 text-xs">{validationErrors.nativeTaluka}</p>
+            {touchedFields.nativeTaluka && validationErrors.nativeTaluka && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.nativeTaluka}</p>
             )}
           </div>
 
@@ -2415,8 +2450,9 @@ const Step1PersonalDetails = ({
               name="district"
               value={formData.district || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none truncate"
-              style={fieldStyle}
+              style={getFieldStyle("district")}
             >
               <option value="">Select District</option>
               {districts.map((district, index) => (
@@ -2425,8 +2461,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.district && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.district && validationErrors.district && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.district}
               </p>
             )}
@@ -2440,8 +2476,9 @@ const Step1PersonalDetails = ({
               name="religion"
               value={formData.religion || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("religion")}
             >
               <option value="">Select Religion</option>
               {religionOptions.map((religion) => (
@@ -2450,8 +2487,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.religion && (
-              <p className="text-red-500 text-xs">
+            {touchedFields.religion && validationErrors.religion && (
+              <p className="text-red-500 text-xs mt-1">
                 {validationErrors.religion}
               </p>
             )}
@@ -2465,8 +2502,9 @@ const Step1PersonalDetails = ({
               name="currentCity"
               value={formData.currentCity || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none truncate"
-              style={fieldStyle}
+              style={getFieldStyle("currentCity")}
             >
               <option value="">Select Current City</option>
               {districts.map((city, index) => (
@@ -2475,8 +2513,8 @@ const Step1PersonalDetails = ({
                 </option>
               ))}
             </select>
-            {validationErrors.currentCity && (
-              <p className="text-red-500 text-xs">{validationErrors.currentCity}</p>
+            {touchedFields.currentCity && validationErrors.currentCity && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.currentCity}</p>
             )}
           </div>
 
@@ -2489,13 +2527,14 @@ const Step1PersonalDetails = ({
               name="address"
               value={formData.address || ""}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Enter Full Address"
               className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-              style={fieldStyle}
+              style={getFieldStyle("address")}
               maxLength={250}
             />
-            {validationErrors.address && (
-              <p className="text-red-500 text-xs">{validationErrors.address}</p>
+            {touchedFields.address && validationErrors.address && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.address}</p>
             )}
           </div>
         </form>

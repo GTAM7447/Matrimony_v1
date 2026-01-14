@@ -344,7 +344,7 @@ const BrideCard = ({ profile }) => {
 
   const {
     userProfileId,
-    completeProfileId, // ✅ ADD THIS
+    completeProfileId,
     firstName,
     age,
     religion,
@@ -447,7 +447,7 @@ const BrideCard = ({ profile }) => {
           )}
         </ul>
 
-        {/* ✅ SAME AS GROOMCARD */}
+        {/* SAME AS GROOMCARD */}
         <button
           onClick={() => navigate(`/profile/${completeProfileId}`)}
           disabled={!completeProfileId}

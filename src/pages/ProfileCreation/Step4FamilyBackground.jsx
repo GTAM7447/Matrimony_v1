@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Stepper from "./Stepper";
 import { 
   useCreateFamilyBackgroundMutation, 
@@ -15,6 +15,8 @@ const Step4FamilyBackground = ({
   step,
   completedStep,
 }) => {
+  const autoNextRef = useRef(false);
+  const apiLoadedRef = useRef(false);
   const [formData, setFormData] = useState(data || {});
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -27,16 +29,18 @@ const Step4FamilyBackground = ({
   const [createFamilyBackground] = useCreateFamilyBackgroundMutation();
   const [updateFamilyBackground] = useUpdateFamilyBackgroundMutation();
 
-  // GET API hook - Auto fetches on mount
+  // GET API hook
   const {
-    data: familyApiResponse,
+    data: res,
     isLoading: isFetching,
     error: familyError,
     isSuccess,
-    isError
+    refetch,
   } = useGetFamilyBackgroundQuery(undefined, {
-    refetchOnMountOrArgChange: false,
+    refetchOnMountOrArgChange: true,
   });
+
+  const apiData = res?.data;
 
   const requiredKeys = [
     "fathersName",
@@ -62,86 +66,67 @@ const Step4FamilyBackground = ({
   const [validationErrors, setValidationErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
 
-  // LOAD DATA FROM GET API - Only run once
+  // AUTO-NEXT LOGIC: Load data from API and auto-navigate if step is sequential
   useEffect(() => {
-    // Only process if we have a response and haven't loaded data yet
-    if (familyApiResponse && !dataLoaded) {
-      console.log("Family fetch response:", familyApiResponse);
+    if (!isSuccess || !apiData) return;
+    if (apiLoadedRef.current) return;
 
-      if (familyApiResponse.data) {
-        setHasExistingFamily(true);
-        const familyData = familyApiResponse.data;
-        
-        // Get version from familyData AFTER it's declared
-        setVersion(familyData.version || 0);
+    apiLoadedRef.current = true;
 
-        // Transform backend data to form format
-        const transformedData = {
-          fathersName: familyData.fathersName || "",
-          fatherOccupation: familyData.fatherOccupation || "",
-          mothersName: familyData.mothersName || "",
-          motherOccupation: familyData.motherOccupation || "",
-          brothers: familyData.brother ? familyData.brother.toString() : "",
-          marriedBrothers: familyData.marriedBrothers ? familyData.marriedBrothers.toString() : "",
-          sisters: familyData.sisters ? familyData.sisters.toString() : "",
-          marriedSisters: familyData.marriedSisters ? familyData.marriedSisters.toString() : "",
-          interCasteInFamily: familyData.interCasteInFamily === true ? "Yes" : "No",
-          parentResiding: familyData.parentResiding || "",
-          mamaSurname: familyData.mamaSurname || "",
-          mamaPlace: familyData.mamaPlace || "",
-          familyWealth: familyData.familyWealth || "",
-          relativeSurnames: familyData.relativeSurnames || "",
-        };
+    console.log("Family fetch response:", apiData);
 
-        console.log("Family form data populated:", transformedData);
+    setHasExistingFamily(true);
+    const familyData = apiData;
+    
+    // Get version from familyData
+    setVersion(familyData.version || 0);
 
-        setFormData(transformedData);
-        setData(transformedData);
-        setDataLoaded(true);
+    // Transform backend data to form format
+    const transformedData = {
+      fathersName: familyData.fathersName || "",
+      fatherOccupation: familyData.fatherOccupation || "",
+      mothersName: familyData.mothersName || "",
+      motherOccupation: familyData.motherOccupation || "",
+      brothers: familyData.brother ? familyData.brother.toString() : "",
+      marriedBrothers: familyData.marriedBrothers ? familyData.marriedBrothers.toString() : "",
+      sisters: familyData.sisters ? familyData.sisters.toString() : "",
+      marriedSisters: familyData.marriedSisters ? familyData.marriedSisters.toString() : "",
+      interCasteInFamily: familyData.interCasteInFamily === true ? "Yes" : "No",
+      parentResiding: familyData.parentResiding || "",
+      mamaSurname: familyData.mamaSurname || "",
+      mamaPlace: familyData.mamaPlace || "",
+      familyWealth: familyData.familyWealth || "",
+      relativeSurnames: familyData.relativeSurnames || "",
+    };
 
-        setSuccessMessage("Family background loaded successfully");
-        setTimeout(() => setSuccessMessage(""), 3000);
-      }
+    console.log("Family form data populated:", transformedData);
+
+    // ✅ ALWAYS load data
+    setFormData(transformedData);
+    setData(transformedData);
+    setDataLoaded(true);
+
+    // ✅ auto-next only once and only in sequence
+    if (
+      !autoNextRef.current &&
+      Object.keys(transformedData).length > 0 &&
+      step === completedStep + 1
+    ) {
+      autoNextRef.current = true;
+      setTimeout(() => {
+        console.log("Auto-navigating to next step...");
+        nextStep();
+      }, 0);
     }
-  }, [familyApiResponse, dataLoaded, setData]);
 
-  // Handle error state from the query
+    setSuccessMessage("Family background loaded successfully");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }, [isSuccess, apiData, step, completedStep, nextStep, setData]);
+
+  // 404 = new user
   useEffect(() => {
-    if (familyError && !dataLoaded) {
-      console.log("Family fetch error:", familyError);
-
-      const errorData = familyError.data || {};
-      const errorMessageText = errorData.message || "";
-      const isFamilyNotFound =
-        familyError.status === 500 ||
-        errorMessageText.includes("family not found") ||
-        errorMessageText.includes("Family not found") ||
-        errorMessageText.includes("No family found") ||
-        errorMessageText.includes("FamilyNotFoundException");
-
-      if (isFamilyNotFound) {
-        // This is normal - new user doesn't have family background yet
-        setHasExistingFamily(false);
-        setDataLoaded(true);
-        setSuccessMessage(
-          "No existing family background found. Please create new ones."
-        );
-        setTimeout(() => setSuccessMessage(""), 3000);
-      } else if (familyError.status === 401 || familyError.status === 403) {
-        // setErrorMessage("Session expired. Please login again.");
-        setDataLoaded(true);
-      } else {
-        console.error("Unexpected error:", familyError);
-        // setErrorMessage("Failed to load family background data");
-        setDataLoaded(true);
-      }
-    }
-  }, [familyError, dataLoaded]);
-
-  // Handle successful query with no data (new user)
-  useEffect(() => {
-    if (isSuccess && !familyApiResponse?.data && !dataLoaded) {
-      console.log("No family background data found - new user");
+    if (familyError?.status === 404 && !dataLoaded) {
+      apiLoadedRef.current = true;
       setHasExistingFamily(false);
       setDataLoaded(true);
       setSuccessMessage(
@@ -149,7 +134,7 @@ const Step4FamilyBackground = ({
       );
       setTimeout(() => setSuccessMessage(""), 3000);
     }
-  }, [isSuccess, familyApiResponse, dataLoaded]);
+  }, [familyError, dataLoaded]);
 
   const validateField = (name, value) => {
     let err = "";
@@ -183,20 +168,19 @@ const Step4FamilyBackground = ({
       }
 
       if (["brothers", "marriedBrothers", "sisters", "marriedSisters"].includes(name)) {
-  if (!/^[0-9]+$/.test(value)) return "Please select a valid number";
-}
+        if (!/^[0-9]+$/.test(value)) return "Please select a valid number";
+      }
 
     }
     return err;
   };
 
   const parseFormNumber = (value) => {
-  if (!value) return 0;
-  if (value === "6+") return 6;
-  const num = parseInt(value, 10);
-  return isNaN(num) ? 0 : num;
-};
-
+    if (!value) return 0;
+    if (value === "6+") return 6;
+    const num = parseInt(value, 10);
+    return isNaN(num) ? 0 : num;
+  };
 
   const validateAllFields = () => {
     // Clear previous validation errors
@@ -244,22 +228,21 @@ const Step4FamilyBackground = ({
     const updatedData = { ...formData, [name]: value };
     
     // Auto-reset married brothers/sisters when total is set to None or 0
-   if (name === "brothers") {
-  if (value === "0") {
-    updatedData.marriedBrothers = "0";
-  } else if (parseFormNumber(updatedData.marriedBrothers) > parseFormNumber(value)) {
-    updatedData.marriedBrothers = "0";
-  }
-}
+    if (name === "brothers") {
+      if (value === "0") {
+        updatedData.marriedBrothers = "0";
+      } else if (parseFormNumber(updatedData.marriedBrothers) > parseFormNumber(value)) {
+        updatedData.marriedBrothers = "0";
+      }
+    }
 
-if (name === "sisters") {
-  if (value === "0") {
-    updatedData.marriedSisters = "0";
-  } else if (parseFormNumber(updatedData.marriedSisters) > parseFormNumber(value)) {
-    updatedData.marriedSisters = "0";
-  }
-}
-
+    if (name === "sisters") {
+      if (value === "0") {
+        updatedData.marriedSisters = "0";
+      } else if (parseFormNumber(updatedData.marriedSisters) > parseFormNumber(value)) {
+        updatedData.marriedSisters = "0";
+      }
+    }
     
     setFormData(updatedData);
     setData(updatedData);
@@ -286,13 +269,12 @@ if (name === "sisters") {
     // Convert Yes/No → boolean
     const interCasteBool = formData.interCasteInFamily === "Yes";
 
-   const parseNumber = (value) => {
-  if (!value) return 0;
-  if (value === "6+") return 6;
-  const num = parseInt(value, 10);
-  return isNaN(num) ? 0 : num;
-};
-
+    const parseNumber = (value) => {
+      if (!value) return 0;
+      if (value === "6+") return 6;
+      const num = parseInt(value, 10);
+      return isNaN(num) ? 0 : num;
+    };
 
     const brothersCount = parseNumber(formData.brothers);
     const marriedBrothersCount = parseNumber(formData.marriedBrothers);
@@ -316,7 +298,7 @@ if (name === "sisters") {
       relativeSurnames: (formData.relativeSurnames || "").trim(),
     };
 
-    //PATCH requires version
+    // PATCH requires version
     if (hasExistingFamily) {
       // Use the version from state or default to 0
       apiData.version = version !== null && version !== undefined ? version : 0;
@@ -357,7 +339,8 @@ if (name === "sisters") {
     }
 
     // Check authentication
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
+
     if (!token) {
       setErrorMessage("Please login to save family background data");
       return;
@@ -384,22 +367,34 @@ if (name === "sisters") {
 
       console.log("API Response:", response);
 
-      if (
+      // Check for success response
+      const isSuccessResponse = 
         response.code === "201" ||
+        response.statusCode === 201 ||
         response.statusCode === 200 ||
         response.success === true ||
-        response.message?.includes("success")
-      ) {
-        setSuccessMessage(
-          hasExistingFamily
-            ? "Family background updated successfully!"
-            : "Family background created successfully!"
-        );
+        response.message?.toLowerCase().includes("success") ||
+        response.message?.toLowerCase().includes("created") ||
+        response.message?.toLowerCase().includes("updated");
 
-        // Move to next step
+      if (isSuccessResponse) {
+        const successMsg = hasExistingFamily
+          ? "Family background updated successfully!"
+          : "Family background created successfully!";
+        
+        setSuccessMessage(successMsg);
+
+        // Update version if available
+        if (response.data?.version) {
+          setVersion(response.data.version);
+        }
+
+        await refetch();
+        
+        // Move to next step after short delay
         setTimeout(() => {
           nextStep();
-        }, 1500);
+        }, 500);
       } else {
         setErrorMessage(response.message || "Failed to save family background");
       }
@@ -483,53 +478,52 @@ if (name === "sisters") {
     marginBottom: "4px",
   };
 
-const getMarriedBrothersOptions = () => {
-  const brothersValue = formData.brothers || "";
+  const getMarriedBrothersOptions = () => {
+    const brothersValue = formData.brothers || "";
 
-  if (!brothersValue || brothersValue === "0") {
-    return [];
-  }
+    if (!brothersValue || brothersValue === "0") {
+      return [];
+    }
 
-  const maxBrothers = brothersValue === "6+" ? 6 : parseInt(brothersValue, 10);
-  const options = [];
+    const maxBrothers = brothersValue === "6+" ? 6 : parseInt(brothersValue, 10);
+    const options = [];
 
-  for (let i = 0; i <= maxBrothers; i++) {
-    options.push(
-      <option key={i} value={i}>
-        {i}
-      </option>
-    );
-  }
+    for (let i = 0; i <= maxBrothers; i++) {
+      options.push(
+        <option key={i} value={i}>
+          {i}
+        </option>
+      );
+    }
 
-  return options;
-};
-
+    return options;
+  };
 
   // Generate options for married sisters based on selected sisters
-const getMarriedSistersOptions = () => {
-  const sistersValue = formData.sisters || "";
+  const getMarriedSistersOptions = () => {
+    const sistersValue = formData.sisters || "";
 
-  if (!sistersValue || sistersValue === "0") {
-    return [];
-  }
+    if (!sistersValue || sistersValue === "0") {
+      return [];
+    }
 
-  const maxSisters = sistersValue === "6+" ? 6 : parseInt(sistersValue, 10);
-  const options = [];
+    const maxSisters = sistersValue === "6+" ? 6 : parseInt(sistersValue, 10);
+    const options = [];
 
-  for (let i = 0; i <= maxSisters; i++) {
-    options.push(
-      <option key={i} value={i}>
-        {i}
-      </option>
-    );
-  }
+    for (let i = 0; i <= maxSisters; i++) {
+      options.push(
+        <option key={i} value={i}>
+          {i}
+        </option>
+      );
+    }
 
-  return options;
-};
-
+    return options;
+  };
 
   // Check authentication first
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("authToken");
+
   if (!token) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
@@ -564,7 +558,7 @@ const getMarriedSistersOptions = () => {
     );
   }
 
-  // Show loading state ONLY when initially fetching
+  // Show loading state
   if (isFetching && !dataLoaded) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">

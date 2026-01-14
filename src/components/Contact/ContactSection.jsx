@@ -4,7 +4,7 @@ import FAQContactSection from "../../pages/ContactSection/FAQContactSection";
 import BackgroundSignIn from "../../assets/SignIn/BackgroundSignIn.jpg";
 import ContactHighlights from "../../pages/ContactSection/ContactHighlights";
 
- const ContactSection = () => {
+const ContactSection = () => {
   const faqs = [
     {
       question: "How quickly can I expect a response?",
@@ -14,7 +14,7 @@ import ContactHighlights from "../../pages/ContactSection/ContactHighlights";
     {
       question: "What information should I include in my inquiry?",
       answer:
-        "Please provide your full name, registered email address, and a detailed description of your question or concern. If it’s a technical issue, include screenshots and the steps to reproduce the problem.",
+        "Please provide your full name, registered email address, and a detailed description of your question or concern. If it's a technical issue, include screenshots and the steps to reproduce the problem.",
     },
     {
       question: "Can I schedule a call with your team?",
@@ -34,12 +34,7 @@ import ContactHighlights from "../../pages/ContactSection/ContactHighlights";
     {
       question: "What if I need to report a profile or concern?",
       answer:
-        "User safety is our priority. Select 'Report an issue' in the contact form, or use the report button on any profile. Our moderation team reviews all reports within 2–4 hours.",
-    },
-    {
-      question: "What if I need to report a profile or concern?",
-      answer:
-        "User safety is our priority. Select 'Report an issue' in the contact form, or use the report button on any profile. Our moderation team reviews all reports within 2–4 hours.",
+        "User safety is our priority. Select 'Report an issue' in the contact form, or use the report button on any profile. Our moderation team reviews all reports within 2-4 hours.",
     },
     {
       question: "Can I visit your office in person?",
@@ -53,15 +48,15 @@ import ContactHighlights from "../../pages/ContactSection/ContactHighlights";
     },
   ];
 
-
   return (
     <div
       className="relative min-h-screen font-[Inter] overflow-hidden"
       style={{
         backgroundImage: `url(${BackgroundSignIn})`,
-        backgroundSize: "120%", // zoom
-       backgroundPosition: "left -279px top -950px",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed", // Keeps background fixed during scroll
       }}
     >
       {/* dark effect on the right */}
@@ -69,13 +64,11 @@ import ContactHighlights from "../../pages/ContactSection/ContactHighlights";
 
       {/* Content sits above the background */}
       <div className="relative z-10">
-    
         <ContactHeader />
-
         <ContactHighlights />
 
         {/* FAQ component */}
-        <div className="max-w-8xl mx-auto px-6">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <FAQContactSection faqs={faqs} />
         </div>
       </div>

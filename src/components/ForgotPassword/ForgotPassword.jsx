@@ -174,8 +174,9 @@ function Feature({ icon, title, text, orangeWhite }) {
   return (
     <div className="flex items-start gap-3">
       <div
-        className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border ${orangeWhite ? "bg-white border-white" : "bg-white"
-          }`}
+        className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border ${
+          orangeWhite ? "bg-white border-white" : "bg-white"
+        }`}
       >
         {React.cloneElement(icon, {
           className: "w-5 h-5 text-[#f68527]",

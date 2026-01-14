@@ -130,7 +130,6 @@
 
 
 
-
 import React, { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
@@ -161,7 +160,7 @@ const GroomCard = ({ profile }) => {
     isFavorited,
   } = profile;
 
-  /* IMAGE (SAFE + MEMOIZED) */
+  /* IMAGE */
   const profileImageSrc = useMemo(() => {
     if (hasProfilePhoto && profilePhotoBase64 && profilePhotoContentType) {
       return `data:${profilePhotoContentType};base64,${profilePhotoBase64}`;
@@ -180,6 +179,7 @@ const GroomCard = ({ profile }) => {
 
   return (
     <div className="flex bg-white rounded-xl shadow-md overflow-hidden">
+      {/* IMAGE */}
       <img
         src={profileImageSrc}
         alt="profile"
@@ -188,6 +188,7 @@ const GroomCard = ({ profile }) => {
         onError={(e) => (e.currentTarget.src = defaultProfileImg)}
       />
 
+      {/* DETAILS */}
       <div className="p-4 flex-1">
         <div className="flex justify-between items-center">
           <h3 className="font-semibold text-gray-800">
@@ -195,20 +196,31 @@ const GroomCard = ({ profile }) => {
           </h3>
 
           {isLoggedIn && (
-            <button
-              onClick={handleFavorite}
-              disabled={isFavorited || isLoading}
-              className={`p-2 rounded-full ${isFavorited
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-red-500 text-white"
+            <div className="flex items-center gap-2">
+              {/* PROFILE ID BADGE */}
+              <span className="text-xs font-semibold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md">
+                ID: {userProfileId}
+              </span>
+
+              {/* FAVORITE BUTTON */}
+              <button
+                onClick={handleFavorite}
+                disabled={isFavorited || isLoading}
+                className={`p-2 rounded-full transition ${
+                  isFavorited
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-red-500 text-white hover:bg-red-600"
                 }`}
-            >
-              <Heart size={16} fill={isFavorited ? "gray" : "white"} />
-            </button>
+                title={isFavorited ? "Added to Favorites" : "Add to Favorites"}
+              >
+                <Heart size={16} fill={isFavorited ? "gray" : "white"} />
+              </button>
+            </div>
           )}
         </div>
 
-        <ul className="mt-2 text-sm space-y-0.5">
+        {/* INFO */}
+        <ul className="mt-2 text-sm space-y-0.5 text-gray-700">
           {age && <li>Age: {age}</li>}
           {gender && <li>Gender: {gender}</li>}
           {religion && <li>Religion: {religion}</li>}
@@ -217,13 +229,13 @@ const GroomCard = ({ profile }) => {
           {maritalStatus && <li>Status: {maritalStatus}</li>}
         </ul>
 
+        {/* VIEW PROFILE */}
         <button
-  onClick={() => navigate(`/profile/${completeProfileId}`)}
-  className="mt-3 bg-orange-500 text-white px-4 py-1.5 rounded-md"
->
-  View Profile
-</button>
-
+          onClick={() => navigate(`/profile/${completeProfileId}`)}
+          className="mt-3 bg-orange-500 text-white px-4 py-1.5 rounded-md hover:bg-orange-600"
+        >
+          View Profile
+        </button>
       </div>
     </div>
   );

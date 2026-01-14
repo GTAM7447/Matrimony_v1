@@ -108,11 +108,10 @@
 
 
 
-
-
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
 import { profileApi } from "../context/profileApi";
 
@@ -128,23 +127,32 @@ export const AuthProvider = ({ children }) => {
 
   /* RESTORE AUTH ON REFRESH */
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("authToken");
 
-    if (token && storedUser) {
+    if (token) {
       try {
-        setUser(JSON.parse(storedUser));
+        const decoded = jwtDecode(token);
+        setUser(decoded);
         setIsLoggedIn(true);
+
+        // Prefetch fresh RTK data
+        dispatch(
+          profileApi.util.invalidateTags([
+            "OwnProfile",
+            "SentInterests",
+            "ReceivedInterests",
+            "ProfilePhoto",
+          ])
+        );
       } catch {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        localStorage.removeItem("authToken");
       }
     }
 
     setLoading(false);
-  }, []);
+  }, [dispatch]);
 
-  /* AXIOS INTERCEPTOR (JWT EXPIRED) */
+  /* AXIOS INTERCEPTOR FOR EXPIRED TOKEN */
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       (res) => res,
@@ -160,30 +168,37 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /* LOGIN */
-  const login = async (username, password) => {
+  const login = async (email, password) => {
     try {
       const res = await axios.post(
         "https://mttlprv1.digiledge.info/jwt/login",
-        { username, password }
+        { email, password }
       );
 
-      const token = res.data.accessToken;
+      const token =
+        res?.data?.token ||
+        res?.data?.accessToken ||
+        res?.data?.data?.token;
+
       if (!token) {
         return { success: false, message: "No token received" };
       }
 
-      const userObj = {
-        id: res.data.userId || null,
-        email: username,
-        gender: res.data.gender || null,
-        roles: res.data.roles || [],
-      };
+      localStorage.setItem("authToken", token);
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userObj));
-
-      setUser(userObj);
+      const decoded = jwtDecode(token);
+      setUser(decoded);
       setIsLoggedIn(true);
+
+      // Force Navbar/User UI to refresh NOW
+      dispatch(
+        profileApi.util.invalidateTags([
+          "OwnProfile",
+          "SentInterests",
+          "ReceivedInterests",
+          "ProfilePhoto",
+        ])
+      );
 
       return { success: true };
     } catch (err) {
@@ -194,34 +209,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /* HARD LOGOUT (USED INTERNALLY) */
+  /* HARD LOGOUT — used internally */
   const hardLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
 
     // CLEAR RTK QUERY CACHE
     dispatch(profileApi.util.resetApiState());
 
     setUser(null);
     setIsLoggedIn(false);
-
     navigate("/signin", { replace: true });
   };
 
-  /* PUBLIC LOGOUT */
-  const logout = () => {
-    hardLogout();
-  };
+  /* PUBLIC LOGOUT - usable by UI */
+  const logout = () => hardLogout();
 
   if (loading) return null;
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isLoggedIn,
-        login,
-        logout,
+        user,           // decoded JWT
+        isLoggedIn,     // true if token exists
+        login,          // login function
+        logout,         // logout function
       }}
     >
       {children}
