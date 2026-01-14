@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Stepper from "./Stepper";
-import { 
-  useCreateFamilyBackgroundMutation, 
+import {
+  useCreateFamilyBackgroundMutation,
   useGetFamilyBackgroundQuery,
-  useUpdateFamilyBackgroundMutation 
+  useUpdateFamilyBackgroundMutation
 } from "../../context/createProfile";
 
 const Step4FamilyBackground = ({
@@ -77,7 +77,7 @@ const Step4FamilyBackground = ({
 
     setHasExistingFamily(true);
     const familyData = apiData;
-    
+
     // Get version from familyData
     setVersion(familyData.version || 0);
 
@@ -87,8 +87,8 @@ const Step4FamilyBackground = ({
       fatherOccupation: familyData.fatherOccupation || "",
       mothersName: familyData.mothersName || "",
       motherOccupation: familyData.motherOccupation || "",
-      brothers: familyData.brother ? familyData.brother.toString() : "",
-      marriedBrothers: familyData.marriedBrothers ? familyData.marriedBrothers.toString() : "",
+      brothers: familyData.brother !== undefined && familyData.brother !== null ? familyData.brother.toString() : "",
+      marriedBrothers: familyData.marriedBrothers !== undefined && familyData.marriedBrothers !== null ? familyData.marriedBrothers.toString() : "",
       sisters: familyData.sisters ? familyData.sisters.toString() : "",
       marriedSisters: familyData.marriedSisters ? familyData.marriedSisters.toString() : "",
       interCasteInFamily: familyData.interCasteInFamily === true ? "Yes" : "No",
@@ -101,12 +101,12 @@ const Step4FamilyBackground = ({
 
     console.log("Family form data populated:", transformedData);
 
-    // ✅ ALWAYS load data
+    // ALWAYS load data
     setFormData(transformedData);
     setData(transformedData);
     setDataLoaded(true);
 
-    // ✅ auto-next only once and only in sequence
+    // auto-next only once and only in sequence
     if (
       !autoNextRef.current &&
       Object.keys(transformedData).length > 0 &&
@@ -143,7 +143,7 @@ const Step4FamilyBackground = ({
     } else {
       // All text fields should only contain alphabets and spaces
       const alphabetOnlyRegex = /^[A-Za-z\s]+$/;
-      
+
       // Fields that must contain only alphabets and spaces
       const textFields = [
         "fathersName",
@@ -156,7 +156,7 @@ const Step4FamilyBackground = ({
         "familyWealth",
         "relativeSurnames"
       ];
-      
+
       if (textFields.includes(name)) {
         if (!alphabetOnlyRegex.test(value)) {
           err = "Only alphabets (A-Z, a-z) and spaces allowed";
@@ -185,7 +185,7 @@ const Step4FamilyBackground = ({
   const validateAllFields = () => {
     // Clear previous validation errors
     const newErrors = {};
-    
+
     // Validate all required fields
     requiredKeys.forEach((key) => {
       const value = formData[key] || "";
@@ -221,12 +221,12 @@ const Step4FamilyBackground = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Mark field as touched
     setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
+
     const updatedData = { ...formData, [name]: value };
-    
+
     // Auto-reset married brothers/sisters when total is set to None or 0
     if (name === "brothers") {
       if (value === "0") {
@@ -243,13 +243,13 @@ const Step4FamilyBackground = ({
         updatedData.marriedSisters = "0";
       }
     }
-    
+
     setFormData(updatedData);
     setData(updatedData);
-    
+
     // Clear messages when user starts typing
     if (errorMessage) setErrorMessage("");
-    
+
     // Validate the field
     const error = validateField(name, value);
     setValidationErrors(prev => ({ ...prev, [name]: error }));
@@ -259,7 +259,7 @@ const Step4FamilyBackground = ({
     const { name, value } = e.target;
     // Mark field as touched
     setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
+
     // Validate the field on blur
     const error = validateField(name, value);
     setValidationErrors(prev => ({ ...prev, [name]: error }));
@@ -368,7 +368,7 @@ const Step4FamilyBackground = ({
       console.log("API Response:", response);
 
       // Check for success response
-      const isSuccessResponse = 
+      const isSuccessResponse =
         response.code === "201" ||
         response.statusCode === 201 ||
         response.statusCode === 200 ||
@@ -381,7 +381,7 @@ const Step4FamilyBackground = ({
         const successMsg = hasExistingFamily
           ? "Family background updated successfully!"
           : "Family background created successfully!";
-        
+
         setSuccessMessage(successMsg);
 
         // Update version if available
@@ -390,7 +390,7 @@ const Step4FamilyBackground = ({
         }
 
         await refetch();
-        
+
         // Move to next step after short delay
         setTimeout(() => {
           nextStep();
@@ -416,13 +416,13 @@ const Step4FamilyBackground = ({
             // Remove curly braces and split by comma
             const cleaned = detailsStr.replace(/[{}]/g, '');
             const errors = cleaned.split(', ');
-            
+
             // Extract error messages
             const errorMessages = errors.map(err => {
               const parts = err.split('=');
               return parts.length > 1 ? parts[1] : parts[0];
             });
-            
+
             errorMsg = errorMessages.join('. ');
           } catch (e) {
             // If parsing fails, use the raw details
@@ -606,8 +606,8 @@ const Step4FamilyBackground = ({
         {successMessage && (
           <div
             className={`mb-6 p-3 rounded-md ${hasExistingFamily
-                ? "bg-green-50 border border-green-200 text-green-600"
-                : "bg-blue-50 border border-blue-200 text-blue-600"
+              ? "bg-green-50 border border-green-200 text-green-600"
+              : "bg-blue-50 border border-blue-200 text-blue-600"
               }`}
           >
             <p className="text-sm text-center">{successMessage}</p>
@@ -745,8 +745,15 @@ const Step4FamilyBackground = ({
               style={getFieldStyle("marriedBrothers")}
               disabled={!formData.brothers}
             >
-              <option value="">Select</option>
-              {getMarriedBrothersOptions()}
+              {formData.brothers === "0" ? (
+                <option value="0">0</option>
+              ) : (
+                <>
+                  <option value="">Select</option>
+                  {getMarriedBrothersOptions()}
+                </>
+              )}
+
             </select>
             {touchedFields.marriedBrothers && validationErrors.marriedBrothers && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.marriedBrothers}</p>
@@ -792,8 +799,15 @@ const Step4FamilyBackground = ({
               style={getFieldStyle("marriedSisters")}
               disabled={!formData.sisters || formData.sisters === "0"}
             >
-              <option value="">Select</option>
-              {getMarriedSistersOptions()}
+              {formData.sisters === "0" ? (
+                <option value="0">0</option>
+              ) : (
+                <>
+                  <option value="">Select</option>
+                  {getMarriedSistersOptions()}
+                </>
+              )}
+
             </select>
             {touchedFields.marriedSisters && validationErrors.marriedSisters && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.marriedSisters}</p>
@@ -941,8 +955,8 @@ const Step4FamilyBackground = ({
           disabled={!isFormValid || isLoading}
           onClick={handleNextClick}
           className={`px-10 py-3 rounded-xl text-white flex items-center justify-center ${isFormValid && !isLoading
-              ? "bg-orange-400 hover:bg-orange-500"
-              : "bg-gray-400 cursor-not-allowed"
+            ? "bg-orange-400 hover:bg-orange-500"
+            : "bg-gray-400 cursor-not-allowed"
             }`}
         >
           {isLoading ? (

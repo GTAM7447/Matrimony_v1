@@ -1,5 +1,5 @@
-// import React, { useState, useEffect } from "react";
-// import { Country, State } from "country-state-city";
+// import React, { useState, useEffect, useRef } from "react";
+// import { Country, State, City } from "country-state-city";
 // import Stepper from "./Stepper";
 // import {
 //   useCreateResidentialDetailsMutation,
@@ -17,6 +17,9 @@
 //   completedStep,
 //   hasDataForStep,
 // }) => {
+//   const autoNextRef = useRef(false);
+//   const apiLoadedRef = useRef(false);
+
 //   // Add states for country-state-city data
 //   const [countries, setCountries] = useState([]);
 //   const [states, setStates] = useState([]);
@@ -28,14 +31,16 @@
 //   const [updateResidentialDetails] = useUpdateResidentialDetailsMutation();
 
 //   const {
-//     data: residentialResponse,
+//     data: res,
 //     error: residentialError,
-//     isLoading: residentialLoading,
-//     isFetching,
+//     isLoading: isFetching,
 //     isSuccess,
+//     refetch,
 //   } = useGetResidentialDetailsQuery(undefined, {
-//     refetchOnMountOrArgChange: false,
+//     refetchOnMountOrArgChange: true,
 //   });
+
+//   const apiData = res?.data;
 
 //   /* STATE */
 //   const [hasExistingContact, setHasExistingContact] = useState(false);
@@ -46,49 +51,16 @@
 //   const [apiError, setApiError] = useState("");
 //   const [successMessage, setSuccessMessage] = useState("");
 //   const [validationErrors, setValidationErrors] = useState({});
-//   const [touchedFields, setTouchedFields] = useState({});
+//   const [isValid, setIsValid] = useState(false);
 
-//   // ALL FIELDS ARE NOW REQUIRED
+//   // Required fields according to backend DTO
 //   const requiredKeys = [
 //     "fullAddress",
-//     "streetAddress",
-//     "city",
-//     "state",
+//     "city", 
 //     "country",
 //     "pinCode",
 //     "mobileNumber",
-//     "alternateNumber",
-//     "whatsappNumber",
-//     "emailAddress",
-//     "emergencyContactName",
-//     "emergencyContactNumber",
-//     "emergencyContactRelation",
-//     "preferredContactMethod",
 //     "contactVisibility"
-//   ];
-
-//   // HARDCODED COMMON CITIES (Will always show these)
-//   const commonCities = [
-//     "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad",
-//     "Chennai", "Kolkata", "Surat", "Pune", "Jaipur",
-//     "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane",
-//     "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara",
-//     "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad",
-//     "Meerut", "Rajkot", "Kalyan-Dombivli", "Vasai-Virar", "Varanasi",
-//     "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai",
-//     "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur",
-//     "Gwalior", "Vijayawada", "Jodhpur", "Madurai", "Raipur",
-//     "Kota", "Guwahati", "Chandigarh", "Solapur", "Hubli-Dharwad",
-//     "Bareilly", "Moradabad", "Mysore", "Gurgaon", "Aligarh",
-//     "Jalandhar", "Tiruchirappalli", "Bhubaneswar", "Salem", "Mira-Bhayandar",
-//     "Thiruvananthapuram", "Bhiwandi", "Saharanpur", "Gorakhpur", "Guntur",
-//     "Bikaner", "Amravati", "Noida", "Jamshedpur", "Bhilai",
-//     "Warangal", "Cuttack", "Firozabad", "Kochi", "Bhavnagar",
-//     "Dehradun", "Durgapur", "Asansol", "Nanded", "Kolhapur",
-//     "Ajmer", "Gulbarga", "Jamnagar", "Ujjain", "Loni",
-//     "Siliguri", "Jhansi", "Ulhasnagar", "Nellore", "Jammu",
-//     "Sangli-Miraj", "Belgaum", "Mangalore", "Ambattur", "Tirunelveli",
-//     "Malegaon", "Gaya", "Jalgaon", "Udaipur", "Maheshtala"
 //   ];
 
 //   /*  COUNTRY-STATE-CITY LOGIC  */
@@ -111,137 +83,207 @@
 //         const indiaStates = State.getStatesOfCountry("IN");
 //         const sortedStates = indiaStates.sort((a, b) => a.name.localeCompare(b.name));
 //         setStates(sortedStates);
+        
+//         // Load Indian cities (from Maharashtra by default)
+//         const maharashtraCities = City.getCitiesOfState("IN", "MH");
+//         const sortedCities = maharashtraCities.sort((a, b) => a.name.localeCompare(b.name));
+//         setCities(sortedCities);
 //       }
 //     }
-    
-//     // ALWAYS SET CITIES - no matter what
-//     const sortedCommonCities = [...commonCities].sort((a, b) => a.localeCompare(b));
-//     setCities(sortedCommonCities.map(city => ({ name: city })));
     
 //   }, []);
 
 //   // When country changes, load its states
 //   useEffect(() => {
-//     if (formData.countryCode) {
-//       const countryStates = State.getStatesOfCountry(formData.countryCode);
-//       const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
-//       setStates(sortedStates);
-      
-//       // Reset state and city when country changes
-//       const updatedData = { ...formData, state: "", stateCode: "", city: "" };
-//       setFormData(updatedData);
-//       setData(updatedData);
+//     if (!formData.countryCode) return;
+
+//     const countryStates = State.getStatesOfCountry(formData.countryCode);
+//     const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
+//     setStates(sortedStates);
+    
+//     // Clear cities when country changes
+//     setCities([]);
+    
+//     if (!apiLoadedRef.current) {
+//       const updated = { ...formData, state: "", stateCode: "", city: "" };
+//       setFormData(updated);
+//       setData(updated);
 //     }
 //   }, [formData.countryCode]);
 
-//   /* LOAD DATA FROM GET API  */
+//   // When state changes, load its cities
 //   useEffect(() => {
-//     if (residentialResponse && !dataLoaded) {
-//       console.log("Contact fetch response:", residentialResponse);
+//     if (!formData.countryCode || !formData.stateCode) {
+//       setCities([]);
+//       return;
+//     }
 
-//       if (residentialResponse.data) {
-//         setHasExistingContact(true);
-//         const contactData = residentialResponse.data;
-        
-//         // Store version for optimistic locking
-//         if (contactData.version) {
-//           setVersion(contactData.version);
-//         }
+//     const stateCities = City.getCitiesOfState(formData.countryCode, formData.stateCode);
+//     const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+//     setCities(sortedCities);
+    
+//     // Clear city when state changes
+//     if (!apiLoadedRef.current) {
+//       const updated = { ...formData, city: "" };
+//       setFormData(updated);
+//       setData(updated);
+//     }
+//   }, [formData.countryCode, formData.stateCode]);
 
-//         // Transform backend data to form format
-//         const transformedData = {
-//           fullAddress: contactData.fullAddress || "",
-//           streetAddress: contactData.streetAddress || "",
-//           city: contactData.city || "",
-//           state: contactData.state || "",
-//           country: contactData.country || "",
-//           pinCode: contactData.pinCode || "",
-//           mobileNumber: contactData.mobileNumber || "",
-//           alternateNumber: contactData.alternateNumber || "",
-//           whatsappNumber: contactData.whatsappNumber || "",
-//           emailAddress: contactData.emailAddress || "",
-//           emergencyContactName: contactData.emergencyContactName || "",
-//           emergencyContactNumber: contactData.emergencyContactNumber || "",
-//           emergencyContactRelation: contactData.emergencyContactRelation || "",
-//           preferredContactMethod: contactData.preferredContactMethod || "",
-//           contactVisibility: contactData.contactVisibility || "PRIVATE",
-//         };
+//   // AFTER countries load, map backend values properly
+//   useEffect(() => {
+//     if (!apiData || !countries.length) return;
 
-//         console.log("Contact form data populated:", transformedData);
+//     const countryObj = countries.find(c => c.name === apiData.country);
+//     if (!countryObj) return;
 
-//         setFormData(transformedData);
-//         setData(transformedData);
-//         setDataLoaded(true);
+//     apiLoadedRef.current = true;
 
-//         // Find country code for the loaded country
-//         if (transformedData.country) {
-//           const countryObj = countries.find(c => c.name === transformedData.country);
-//           if (countryObj) {
-//             const updatedData = { 
-//               ...transformedData, 
-//               countryCode: countryObj.isoCode 
-//             };
-//             setFormData(updatedData);
-//             setData(updatedData);
-            
-//             // Load states for this country
-//             const countryStates = State.getStatesOfCountry(countryObj.isoCode);
-//             const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
-//             setStates(sortedStates);
+//     const updated = {
+//       ...formData,
+//       country: countryObj.name,
+//       countryCode: countryObj.isoCode
+//     };
+
+//     const stateObj = State.getStatesOfCountry(countryObj.isoCode)
+//       .find(s => s.name === apiData.state);
+
+//     if (stateObj) {
+//       updated.state = stateObj.name;
+//       updated.stateCode = stateObj.isoCode;
+      
+//       // Load cities for this state
+//       const stateCities = City.getCitiesOfState(countryObj.isoCode, stateObj.isoCode);
+//       const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+//       setCities(sortedCities);
+//     }
+
+//     updated.city = apiData.city || "";
+
+//     setFormData(updated);
+//     setData(updated);
+//   }, [countries, apiData]);
+
+//   // AUTO-NEXT LOGIC: Load data from API and auto-navigate if step is sequential
+//   useEffect(() => {
+//     if (!isSuccess || !apiData) return;
+//     if (apiLoadedRef.current) return;
+
+//     apiLoadedRef.current = true;
+
+//     console.log("Contact fetch response:", apiData);
+
+//     if (apiData) {
+//       setHasExistingContact(true);
+//       const contactData = apiData;
+      
+//       // Store version for optimistic locking
+//       if (contactData.version) {
+//         setVersion(contactData.version);
+//       }
+
+//       // Transform backend data to form format
+//       const transformedData = {
+//         fullAddress: contactData.fullAddress || "",
+//         streetAddress: contactData.streetAddress || "",
+//         city: contactData.city || "",
+//         state: contactData.state || "",
+//         country: contactData.country || "",
+//         pinCode: contactData.pinCode || "",
+//         mobileNumber: contactData.mobileNumber || "",
+//         alternateNumber: contactData.alternateNumber || "",
+//         whatsappNumber: contactData.whatsappNumber || "",
+//         emailAddress: contactData.emailAddress || "",
+//         emergencyContactName: contactData.emergencyContactName || "",
+//         emergencyContactNumber: contactData.emergencyContactNumber || "",
+//         emergencyContactRelation: contactData.emergencyContactRelation || "",
+//         preferredContactMethod: contactData.preferredContactMethod || "",
+//         contactVisibility: contactData.contactVisibility || "PRIVATE",
+//       };
+
+//       console.log("Contact form data populated:", transformedData);
+
+//       // ✅ ALWAYS load data
+//       setFormData(transformedData);
+//       setData(transformedData);
+//       setDataLoaded(true);
+
+//       // ✅ auto-next only once and only in sequence
+//       if (
+//         !autoNextRef.current &&
+//         Object.keys(transformedData).length > 0 &&
+//         step === completedStep + 1
+//       ) {
+//         autoNextRef.current = true;
+//         setTimeout(() => {
+//           console.log("Auto-navigating to next step...");
+//           nextStep();
+//         }, 0);
+//       }
+
+//       // Find country code for the loaded country
+//       if (transformedData.country) {
+//         const countryObj = countries.find(c => c.name === transformedData.country);
+//         if (countryObj) {
+//           const updatedData = { 
+//             ...transformedData, 
+//             countryCode: countryObj.isoCode 
+//           };
+//           setFormData(updatedData);
+//           setData(updatedData);
+          
+//           // Load states for this country
+//           const countryStates = State.getStatesOfCountry(countryObj.isoCode);
+//           const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
+//           setStates(sortedStates);
+          
+//           // Load cities if state is available
+//           if (transformedData.state) {
+//             const stateObj = sortedStates.find(s => s.name === transformedData.state);
+//             if (stateObj) {
+//               const stateCities = City.getCitiesOfCountry(countryObj.isoCode)
+//                 .filter(city => city.stateCode === stateObj.isoCode);
+//               const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+//               setCities(sortedCities);
+//             }
 //           }
 //         }
-
-//         setSuccessMessage("Contact details loaded successfully");
-//         setTimeout(() => setSuccessMessage(""), 3000);
 //       }
+
+//       setSuccessMessage("Contact details loaded successfully");
+//       setTimeout(() => setSuccessMessage(""), 3000);
 //     }
-//   }, [residentialResponse, dataLoaded, setData, countries]);
+//   }, [isSuccess, apiData, step, completedStep, nextStep, setData, countries]);
 
-//   // Handle error state from the query
+//   // 404 = new user
 //   useEffect(() => {
-//     if (residentialError && !dataLoaded) {
-//       console.log("Contact fetch error:", residentialError);
-
-//       const errorData = residentialError.data || {};
-//       const errorMessageText = errorData.message || "";
-//       const isContactNotFound =
-//         residentialError.status === 500 ||
-//         errorMessageText.includes("contact not found") ||
-//         errorMessageText.includes("Contact not found") ||
-//         errorMessageText.includes("No contact found") ||
-//         errorMessageText.includes("ContactNotFoundException");
-
-//       if (isContactNotFound) {
-//         setHasExistingContact(false);
-//         setDataLoaded(true);
-//         setSuccessMessage("No existing contact details found. Please create new ones.");
-//         setTimeout(() => setSuccessMessage(""), 3000);
-//       } else if (residentialError.status === 401 || residentialError.status === 403) {
-//         setDataLoaded(true);
-//       } else {
-//         console.error("Unexpected error:", residentialError);
-//         setDataLoaded(true);
-//       }
+//     if (residentialError?.status === 404 && !dataLoaded) {
+//       apiLoadedRef.current = true;
+//       setHasExistingContact(false);
+//       setDataLoaded(true);
+//       setSuccessMessage("No existing contact details found. Please create new ones.");
+//       setTimeout(() => setSuccessMessage(""), 3000);
 //     }
 //   }, [residentialError, dataLoaded]);
 
 //   // Handle successful query with no data (new user)
 //   useEffect(() => {
-//     if (isSuccess && !residentialResponse?.data && !dataLoaded) {
+//     if (isSuccess && !apiData && !dataLoaded) {
+//       apiLoadedRef.current = true;
 //       console.log("No contact data found - new user");
 //       setHasExistingContact(false);
 //       setDataLoaded(true);
 //       setSuccessMessage("No existing contact details found. Please create new ones.");
 //       setTimeout(() => setSuccessMessage(""), 3000);
 //     }
-//   }, [isSuccess, residentialResponse, dataLoaded]);
+//   }, [isSuccess, apiData, dataLoaded]);
 
 //   /*  VALIDATION  */
 //   const validateField = (name, value) => {
 //     let err = "";
 //     const trimmedValue = value ? value.toString().trim() : "";
     
-//     // Check required fields - ALL fields are now required
+//     // Check required fields
 //     if (requiredKeys.includes(name) && trimmedValue === "") {
 //       err = "This field is required";
 //     } else if (trimmedValue !== "") {
@@ -259,13 +301,18 @@
 //           break;
           
 //         case "city":
-//           if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
+//           if (trimmedValue === "Other") {
+//             // If "Other" is selected, check if full address contains city details
+//             if (!formData.fullAddress || formData.fullAddress.trim().length < 10) {
+//               err = "Please specify city in the full address field";
+//             }
+//           } else if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
 //             err = "Only alphabets, spaces, dots and hyphens allowed";
 //           }
 //           break;
           
 //         case "state":
-//           if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
+//           if (trimmedValue && !/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
 //             err = "Only alphabets, spaces, dots and hyphens allowed";
 //           }
 //           break;
@@ -291,20 +338,20 @@
           
 //         case "alternateNumber":
 //           const cleanAlt = trimmedValue.replace(/[\s()-]/g, '');
-//           if (!/^[+]?[0-9]{10,15}$/.test(cleanAlt)) {
+//           if (cleanAlt && !/^[+]?[0-9]{10,15}$/.test(cleanAlt)) {
 //             err = "Enter valid 10-15 digit phone number";
 //           }
 //           break;
           
 //         case "whatsappNumber":
 //           const cleanWhatsapp = trimmedValue.replace(/[\s()-]/g, '');
-//           if (!/^[+]?[0-9]{10,15}$/.test(cleanWhatsapp)) {
+//           if (cleanWhatsapp && !/^[+]?[0-9]{10,15}$/.test(cleanWhatsapp)) {
 //             err = "Enter valid 10-15 digit phone number";
 //           }
 //           break;
           
 //         case "emailAddress":
-//           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) {
+//           if (trimmedValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) {
 //             err = "Enter valid email address";
 //           }
 //           break;
@@ -317,19 +364,19 @@
           
 //         case "emergencyContactNumber":
 //           const cleanEmergency = trimmedValue.replace(/[\s()-]/g, '');
-//           if (!/^[+]?[0-9]{10,15}$/.test(cleanEmergency)) {
+//           if (cleanEmergency && !/^[+]?[0-9]{10,15}$/.test(cleanEmergency)) {
 //             err = "Enter valid 10-15 digit phone number";
 //           }
 //           break;
           
 //         case "emergencyContactRelation":
-//           if (!/^[A-Za-z\s]+$/.test(trimmedValue)) {
+//           if (trimmedValue && !/^[A-Za-z\s]+$/.test(trimmedValue)) {
 //             err = "Only alphabets and spaces allowed";
 //           }
 //           break;
           
 //         case "preferredContactMethod":
-//           if (!/^[A-Za-z\s]+$/.test(trimmedValue)) {
+//           if (trimmedValue && !/^[A-Za-z\s]+$/.test(trimmedValue)) {
 //             err = "Only alphabets and spaces allowed";
 //           }
 //           break;
@@ -345,31 +392,33 @@
 //       }
 //     }
     
+//     setValidationErrors((prev) => ({ ...prev, [name]: err }));
 //     return err;
 //   };
 
-//   const validateAllFields = () => {
-//     const newErrors = {};
-    
-//     // Validate ALL fields (all are required now)
-//     requiredKeys.forEach((key) => {
-//       const value = formData[key] || "";
-//       const error = validateField(key, value);
-//       if (error) {
-//         newErrors[key] = error;
-//       }
+//   // Check if form is valid whenever formData changes
+//   useEffect(() => {
+//     // First, check all required fields are filled
+//     const allRequiredFilled = requiredKeys.every(key => {
+//       const value = formData[key];
+//       return value && value.toString().trim() !== "";
 //     });
-
-//     setValidationErrors(newErrors);
-//     return Object.keys(newErrors).length === 0;
-//   };
+    
+//     if (!allRequiredFilled) {
+//       setIsValid(false);
+//       return;
+//     }
+    
+//     // Then, check if there are any validation errors for required fields
+//     const hasValidationErrors = requiredKeys.some(key => {
+//       return validationErrors[key] && validationErrors[key] !== "";
+//     });
+    
+//     setIsValid(!hasValidationErrors);
+//   }, [formData, validationErrors]);
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
-    
-//     // Mark field as touched
-//     setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
 //     let updatedData = { ...formData, [name]: value };
     
 //     // Special handling for country selection
@@ -384,6 +433,12 @@
 //           stateCode: "",
 //           city: ""
 //         };
+        
+//         // Load states for selected country
+//         const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+//         const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
+//         setStates(sortedStates);
+//         setCities([]); // Clear cities when country changes
 //       }
 //     }
     
@@ -397,15 +452,21 @@
 //           stateCode: selectedState.isoCode,
 //           city: "" // Reset city when state changes
 //         };
+        
+//         // Load cities for selected state
+//         if (formData.countryCode && selectedState.isoCode) {
+//           const stateCities = City.getCitiesOfState(formData.countryCode, selectedState.isoCode);
+//           const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+//           setCities(sortedCities);
+//         }
 //       }
 //     }
     
 //     setFormData(updatedData);
 //     setData(updatedData);
     
-//     // Validate the field
-//     const error = validateField(name, value);
-//     setValidationErrors(prev => ({ ...prev, [name]: error }));
+//     // Validate the field immediately
+//     validateField(name, value);
 
 //     // Clear error message when user starts typing
 //     if (apiError) setApiError("");
@@ -413,52 +474,27 @@
 
 //   const handleBlur = (e) => {
 //     const { name, value } = e.target;
-//     // Mark field as touched
-//     setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
-//     // Validate the field on blur
-//     const error = validateField(name, value);
-//     setValidationErrors(prev => ({ ...prev, [name]: error }));
-//   };
-
-//   // Check if form is valid
-//   const isFormValid = () => {
-//     // Check ALL fields are filled
-//     const allFieldsFilled = requiredKeys.every(key => {
-//       const value = formData[key];
-//       return value && value.toString().trim() !== "";
-//     });
-    
-//     if (!allFieldsFilled) {
-//       return false;
-//     }
-    
-//     // Check if there are any validation errors
-//     const hasValidationErrors = requiredKeys.some(key => {
-//       return validationErrors[key] && validationErrors[key] !== "";
-//     });
-    
-//     return !hasValidationErrors;
+//     validateField(name, value);
 //   };
 
 //   const prepareApiData = () => {
-//     // Check ALL fields are filled
+//     // Check all required fields are filled
 //     const missingFields = requiredKeys.filter(key => {
 //       const value = formData[key];
 //       return !value || value.toString().trim() === "";
 //     });
     
-//     console.log("Missing fields:", missingFields);
+//     console.log("Missing required fields:", missingFields);
 
 //     if (missingFields.length > 0) {
-//       throw new Error(`Please fill all fields: ${missingFields.join(", ")}`);
+//       throw new Error(`Please fill all required fields: ${missingFields.join(", ")}`);
 //     }
 
 //     // Prepare API data according to ContactDetails DTO structure
 //     const apiData = {
 //       fullAddress: (formData.fullAddress || "").trim(),
 //       streetAddress: (formData.streetAddress || "").trim(),
-//       city: (formData.city || "").trim(),
+//       city: (formData.city === "Other" ? "Other (see full address)" : (formData.city || "").trim()),
 //       state: (formData.state || "").trim(),
 //       country: (formData.country || "").trim(),
 //       pinCode: (formData.pinCode || "").trim(),
@@ -487,28 +523,9 @@
 //   const handleNext = async () => {
 //     console.log("=== CONTACT FORM SUBMISSION STARTED ===");
 
-//     // Mark all fields as touched when trying to submit
-//     const allTouched = {};
-//     requiredKeys.forEach(key => {
-//       allTouched[key] = true;
-//     });
-//     setTouchedFields(allTouched);
-
-//     // Check ALL fields are filled
-//     const missingFields = requiredKeys.filter(
-//       (key) => !formData[key] || formData[key].toString().trim() === ""
-//     );
-
-//     if (missingFields.length > 0) {
-//       setApiError(`Please fill all fields: ${missingFields.join(", ")}`);
-//       console.log("Missing fields:", missingFields);
-//       return;
-//     }
-
-//     // Validate all fields
-//     if (!validateAllFields()) {
-//       setApiError("Please fix all validation errors");
-//       console.log("Validation errors:", validationErrors);
+//     // Double-check form validity
+//     if (!isValid) {
+//       setApiError("Please fill all required fields correctly");
 //       return;
 //     }
 
@@ -554,23 +571,18 @@
 //         setSuccessMessage(successMsg);
 //         console.log(successMsg);
 
-//         // Clear any previous errors
-//         setApiError("");
-
-//         // Test if nextStep is a function
-//         if (typeof nextStep === 'function') {
-//           setTimeout(() => {
-//             try {
-//               nextStep();
-//             } catch (error) {
-//               console.error("Error calling nextStep:", error);
-//               setApiError("Navigation failed. Please try again.");
-//             }
-//           }, 1000);
-//         } else {
-//           console.error("nextStep is not a function! Type:", typeof nextStep);
-//           setApiError("Navigation error. Please contact support.");
+//         // Update version if available
+//         if (response.data?.version) {
+//           setVersion(response.data.version);
 //         }
+
+//         await refetch();
+        
+//         // Move to next step after short delay
+//         setTimeout(() => {
+//           nextStep();
+//         }, 500);
+
 //       } else {
 //         const errorMsg = response.message || response.data?.message || "Failed to save contact details";
 //         setApiError(errorMsg);
@@ -597,10 +609,10 @@
 //           errorMsg = error.data.detail;
 //         }
 //       } else if (error.status === 400) {
-//         errorMsg = "Invalid data. Please check all fields are filled correctly.";
+//         errorMsg = "Invalid data. Please check all required fields are filled correctly.";
 //       } else if (error.status === 500) {
 //         errorMsg = "Server error. Please try again later.";
-//       } else if (error.message && error.message.includes("Please fill all fields")) {
+//       } else if (error.message && error.message.includes("Please fill all required fields")) {
 //         errorMsg = error.message;
 //       }
 
@@ -610,30 +622,16 @@
 //     }
 //   };
 
-//   /* -------------------- FIELD STYLE FUNCTION -------------------- */
-//   const getFieldStyle = (fieldName) => {
-//     const baseStyle = {
-//       backgroundColor: "#FF8C4405",
-//       borderRadius: "6px",
-//       padding: "14px 12px",
-//       color: "#707C8B",
-//       fontFamily: "'Inter', sans-serif",
-//       fontWeight: 400,
-//       outline: "none",
-//       width: "100%",
-//       border: "1px solid #8180801c",
-//     };
-
-//     // Highlight field with red border if it has an error AND has been touched
-//     if (touchedFields[fieldName] && validationErrors[fieldName]) {
-//       return {
-//         ...baseStyle,
-//         border: "2px solid #ef4444", // Thicker red border for better visibility
-//         backgroundColor: "#fef2f2",
-//       };
-//     }
-
-//     return baseStyle;
+//   /* -------------------- UI STYLES -------------------- */
+//   const fieldStyle = {
+//     backgroundColor: "#FF8C4405",
+//     borderRadius: "6px",
+//     padding: "14px 12px",
+//     color: "#707C8B",
+//     fontFamily: "'Inter', sans-serif",
+//     fontWeight: 400,
+//     outline: "none",
+//     width: "100%",
 //   };
 
 //   const labelStyle = {
@@ -642,6 +640,41 @@
 //     marginBottom: "4px",
 //     fontFamily: "'Inter', sans-serif",
 //   };
+
+//   // Check authentication
+//   const token = localStorage.getItem("authToken");
+
+//   if (!token) {
+//     return (
+//       <div className="w-full max-w-[95%] mx-auto font-[Inter] flex flex-col min-h-[600px]">
+//         <div className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl" style={{ backgroundColor: "#FF8C4426" }}>
+//           <Stepper step={step} completedStep={completedStep} goToStep={goToStep} />
+//         </div>
+//         <div className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center" style={{ backgroundColor: "#FF8C4405" }}>
+//           <div className="text-red-500 text-lg mb-4">Authentication Required</div>
+//           <p className="text-gray-600 mb-6">Please login to access your contact details.</p>
+//           <button onClick={() => (window.location.href = "/signin")} className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+//             Go to Login
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // Show loading state
+//   if (isFetching && !dataLoaded) {
+//     return (
+//       <div className="w-full max-w-[95%] mx-auto font-[Inter] flex flex-col min-h-[600px]">
+//         <div className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl" style={{ backgroundColor: "#FF8C4426" }}>
+//           <Stepper step={step} completedStep={completedStep} goToStep={goToStep} />
+//         </div>
+//         <div className="flex justify-center items-center h-64" style={{ backgroundColor: "#FF8C4405" }}>
+//           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+//           <span className="ml-3">Loading contact details...</span>
+//         </div>
+//       </div>
+//     );
+//   }
 
 //   /* -------------------- JSX -------------------- */
 //   return (
@@ -666,17 +699,10 @@
 //           Residential Address / Contact Details
 //         </h3>
 
-//         {/* Loading State */}
-//         {(isFetching || residentialLoading) && !dataLoaded && (
-//           <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-md">
-//             <p className="text-blue-600 text-sm text-center">Loading your contact details...</p>
-//           </div>
-//         )}
-
 //         {/* Success Message */}
 //         {successMessage && (
-//           <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-md">
-//             <p className="text-green-600 text-sm text-center">{successMessage}</p>
+//           <div className={`mb-6 p-3 rounded-md ${hasExistingContact ? "bg-green-50 border border-green-200 text-green-600" : "bg-blue-50 border border-blue-200 text-blue-600"}`}>
+//             <p className="text-sm text-center">{successMessage}</p>
 //           </div>
 //         )}
 
@@ -701,32 +727,34 @@
 //               onChange={handleChange}
 //               onBlur={handleBlur}
 //               style={{
-//                 ...getFieldStyle("fullAddress"),
+//                 ...fieldStyle,
 //                 minHeight: "100px",
 //                 resize: "vertical",
+//                 border: validationErrors.fullAddress ? "1px solid #ef4444" : "1px solid #8180801c"
 //               }}
 //               placeholder="Enter your complete address (minimum 10 characters)"
 //               rows={3}
-//               required
 //             />
-//             {touchedFields.fullAddress && validationErrors.fullAddress && (
+//             {validationErrors.fullAddress && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.fullAddress}</p>
 //             )}
 //           </div>
 
 //           {/* STREET ADDRESS */}
 //           <div>
-//             <label style={labelStyle}>Street Address <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Street Address</label>
 //             <input
 //               name="streetAddress"
 //               value={formData.streetAddress || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("streetAddress")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.streetAddress ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               placeholder="House number, street"
-//               required
 //             />
-//             {touchedFields.streetAddress && validationErrors.streetAddress && (
+//             {validationErrors.streetAddress && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.streetAddress}</p>
 //             )}
 //           </div>
@@ -739,7 +767,10 @@
 //               value={formData.country || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("country")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.country ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               required
 //             >
 //               <option value="">Select Country</option>
@@ -749,22 +780,24 @@
 //                 </option>
 //               ))}
 //             </select>
-//             {touchedFields.country && validationErrors.country && (
+//             {validationErrors.country && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.country}</p>
 //             )}
 //           </div>
 
 //           {/* STATE */}
 //           <div>
-//             <label style={labelStyle}>State <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>State</label>
 //             <select
 //               name="state"
 //               value={formData.state || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("state")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.state ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               disabled={!formData.country}
-//               required
 //             >
 //               <option value="">Select State</option>
 //               {states.map((state) => (
@@ -773,7 +806,7 @@
 //                 </option>
 //               ))}
 //             </select>
-//             {touchedFields.state && validationErrors.state && (
+//             {validationErrors.state && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.state}</p>
 //             )}
 //             <p className="text-xs text-gray-500 mt-1">
@@ -781,7 +814,7 @@
 //             </p>
 //           </div>
 
-//           {/* CITY - SIMPLE DROPDOWN WITH HARDCODED CITIES */}
+//           {/* CITY - DYNAMIC FROM COUNTRY-STATE-CITY LIBRARY */}
 //           <div>
 //             <label style={labelStyle}>City <span style={{ color: "red" }}>*</span></label>
             
@@ -790,24 +823,36 @@
 //               value={formData.city || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("city")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.city ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               required
+//               disabled={!formData.state}
 //             >
 //               <option value="">Select City</option>
-//               {cities.map((city, index) => (
-//                 <option key={index} value={city.name}>
-//                   {city.name}
+//               {cities.length > 0 ? (
+//                 cities.map((city, index) => (
+//                   <option key={`${city.name}-${index}`} value={city.name}>
+//                     {city.name}
+//                   </option>
+//                 ))
+//               ) : (
+//                 <option value="" disabled>
+//                   {!formData.state ? "Select a state first" : "Loading cities..."}
 //                 </option>
-//               ))}
+//               )}
 //               <option value="Other">Other (Please specify in address)</option>
 //             </select>
             
-//             {touchedFields.city && validationErrors.city && (
+//             {validationErrors.city && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.city}</p>
 //             )}
             
 //             <p className="text-xs text-gray-500 mt-1">
-//               {cities.length} Indian cities available
+//               {!formData.state ? "Select a state first" : 
+//                cities.length === 0 ? "Loading cities..." : 
+//                `${cities.length} cities available in ${formData.state}`}
 //             </p>
 //           </div>
 
@@ -819,12 +864,14 @@
 //               value={formData.pinCode || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("pinCode")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.pinCode ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               placeholder="6-digit PIN code"
 //               maxLength={6}
-//               required
 //             />
-//             {touchedFields.pinCode && validationErrors.pinCode && (
+//             {validationErrors.pinCode && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.pinCode}</p>
 //             )}
 //           </div>
@@ -837,111 +884,125 @@
 //               value={formData.mobileNumber || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("mobileNumber")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.mobileNumber ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               placeholder="e.g., +91-9876543210"
-//               required
 //             />
-//             {touchedFields.mobileNumber && validationErrors.mobileNumber && (
+//             {validationErrors.mobileNumber && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.mobileNumber}</p>
 //             )}
 //           </div>
 
 //           {/* ALTERNATE MOBILE NUMBER */}
 //           <div>
-//             <label style={labelStyle}>Alternate Mobile Number <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Alternate Mobile Number</label>
 //             <input
 //               name="alternateNumber"
 //               value={formData.alternateNumber || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("alternateNumber")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.alternateNumber ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               placeholder="Alternative contact number"
-//               required
 //             />
-//             {touchedFields.alternateNumber && validationErrors.alternateNumber && (
+//             {validationErrors.alternateNumber && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.alternateNumber}</p>
 //             )}
 //           </div>
 
 //           {/* WHATSAPP NUMBER */}
 //           <div>
-//             <label style={labelStyle}>WhatsApp Number <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>WhatsApp Number</label>
 //             <input
 //               name="whatsappNumber"
 //               value={formData.whatsappNumber || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("whatsappNumber")}
-//               placeholder="WhatsApp number (if different)"
-//               required
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.whatsappNumber ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
+//               placeholder="WhatsApp number"
 //             />
-//             {touchedFields.whatsappNumber && validationErrors.whatsappNumber && (
+//             {validationErrors.whatsappNumber && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.whatsappNumber}</p>
 //             )}
 //           </div>
 
 //           {/* EMAIL ADDRESS */}
 //           <div>
-//             <label style={labelStyle}>Email Address <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Email Address</label>
 //             <input
 //               type="email"
 //               name="emailAddress"
 //               value={formData.emailAddress || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("emailAddress")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.emailAddress ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               placeholder="your.email@example.com"
-//               required
 //             />
-//             {touchedFields.emailAddress && validationErrors.emailAddress && (
+//             {validationErrors.emailAddress && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.emailAddress}</p>
 //             )}
 //           </div>
 
 //           {/* EMERGENCY CONTACT NAME */}
 //           <div>
-//             <label style={labelStyle}>Emergency Contact Name <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Emergency Contact Name</label>
 //             <input
 //               name="emergencyContactName"
 //               value={formData.emergencyContactName || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("emergencyContactName")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.emergencyContactName ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               placeholder="Name of emergency contact"
-//               required
 //             />
-//             {touchedFields.emergencyContactName && validationErrors.emergencyContactName && (
+//             {validationErrors.emergencyContactName && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.emergencyContactName}</p>
 //             )}
 //           </div>
 
 //           {/* EMERGENCY CONTACT NUMBER */}
 //           <div>
-//             <label style={labelStyle}>Emergency Contact Number <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Emergency Contact Number</label>
 //             <input
 //               name="emergencyContactNumber"
 //               value={formData.emergencyContactNumber || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("emergencyContactNumber")}
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.emergencyContactNumber ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //               placeholder="Emergency contact phone"
-//               required
 //             />
-//             {touchedFields.emergencyContactNumber && validationErrors.emergencyContactNumber && (
+//             {validationErrors.emergencyContactNumber && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.emergencyContactNumber}</p>
 //             )}
 //           </div>
 
 //           {/* EMERGENCY CONTACT RELATION */}
 //           <div>
-//             <label style={labelStyle}>Emergency Contact Relation <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Emergency Contact Relation</label>
 //             <select
 //               name="emergencyContactRelation"
 //               value={formData.emergencyContactRelation || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("emergencyContactRelation")}
-//               required
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.emergencyContactRelation ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //             >
 //               <option value="">Select Relation</option>
 //               <option value="Father">Father</option>
@@ -954,21 +1015,23 @@
 //               <option value="Friend">Friend</option>
 //               <option value="Other">Other</option>
 //             </select>
-//             {touchedFields.emergencyContactRelation && validationErrors.emergencyContactRelation && (
+//             {validationErrors.emergencyContactRelation && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.emergencyContactRelation}</p>
 //             )}
 //           </div>
 
 //           {/* PREFERRED CONTACT METHOD */}
 //           <div>
-//             <label style={labelStyle}>Preferred Contact Method <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Preferred Contact Method</label>
 //             <select
 //               name="preferredContactMethod"
 //               value={formData.preferredContactMethod || ""}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("preferredContactMethod")}
-//               required
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.preferredContactMethod ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //             >
 //               <option value="">Select Method</option>
 //               <option value="Mobile">Mobile</option>
@@ -976,7 +1039,7 @@
 //               <option value="Email">Email</option>
 //               <option value="Alternate Number">Alternate Number</option>
 //             </select>
-//             {touchedFields.preferredContactMethod && validationErrors.preferredContactMethod && (
+//             {validationErrors.preferredContactMethod && (
 //               <p className="text-red-500 text-xs mt-1">{validationErrors.preferredContactMethod}</p>
 //             )}
 //           </div>
@@ -989,16 +1052,16 @@
 //               value={formData.contactVisibility || "PRIVATE"}
 //               onChange={handleChange}
 //               onBlur={handleBlur}
-//               style={getFieldStyle("contactVisibility")}
-//               required
+//               style={{
+//                 ...fieldStyle,
+//                 border: validationErrors.contactVisibility ? "1px solid #ef4444" : "1px solid #8180801c"
+//               }}
 //             >
+//               <option value="">Select</option>
 //               <option value="PRIVATE">Private (Only you)</option>
 //               <option value="MEMBERS_ONLY">Members Only</option>
 //               <option value="PUBLIC">Public (All users)</option>
 //             </select>
-//             {touchedFields.contactVisibility && validationErrors.contactVisibility && (
-//               <p className="text-red-500 text-xs mt-1">{validationErrors.contactVisibility}</p>
-//             )}
 //             <p className="text-xs text-gray-500 mt-1">
 //               Who can see your contact information
 //             </p>
@@ -1015,16 +1078,16 @@
 //         <button
 //           onClick={prevStep}
 //           className="bg-white text-orange-600 px-10 py-3 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
-//           disabled={loading || (isFetching && !dataLoaded)}
+//           disabled={loading}
 //         >
 //           Previous
 //         </button>
 
 //         <button
-//           disabled={!isFormValid() || loading || (isFetching && !dataLoaded)}
+//           disabled={!isValid || loading}
 //           onClick={handleNext}
 //           className={`px-10 py-3 text-white rounded-lg transition-colors ${
-//             isFormValid() && !loading && !(isFetching && !dataLoaded)
+//             isValid && !loading
 //               ? "bg-orange-400 hover:bg-orange-500 cursor-pointer"
 //               : "bg-gray-400 cursor-not-allowed"
 //           }`}
@@ -1034,8 +1097,6 @@
 //               <span className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></span>
 //               {hasExistingContact ? "Updating..." : "Saving..."}
 //             </>
-//           ) : (isFetching && !dataLoaded) ? (
-//             "Loading..."
 //           ) : hasExistingContact ? (
 //             "Update & Next"
 //           ) : (
@@ -1071,8 +1132,14 @@
 
 
 
+
+
+
+
+
+
 import React, { useState, useEffect, useRef } from "react";
-import { Country, State } from "country-state-city";
+import { Country, State, City } from "country-state-city";
 import Stepper from "./Stepper";
 import {
   useCreateResidentialDetailsMutation,
@@ -1126,38 +1193,23 @@ const Step6ResidentialDetails = ({
   const [validationErrors, setValidationErrors] = useState({});
   const [isValid, setIsValid] = useState(false);
 
-  // Required fields according to backend DTO
+  // ALL fields are required now
   const requiredKeys = [
     "fullAddress",
+    "streetAddress", 
     "city", 
+    "state",
     "country",
     "pinCode",
     "mobileNumber",
+    "alternateNumber",
+    "whatsappNumber",
+    "emailAddress",
+    "emergencyContactName",
+    "emergencyContactNumber",
+    "emergencyContactRelation",
+    "preferredContactMethod",
     "contactVisibility"
-  ];
-
-  // HARDCODED COMMON CITIES (Will always show these)
-  const commonCities = [
-    "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad",
-    "Chennai", "Kolkata", "Surat", "Pune", "Jaipur",
-    "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane",
-    "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara",
-    "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad",
-    "Meerut", "Rajkot", "Kalyan-Dombivli", "Vasai-Virar", "Varanasi",
-    "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai",
-    "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur",
-    "Gwalior", "Vijayawada", "Jodhpur", "Madurai", "Raipur",
-    "Kota", "Guwahati", "Chandigarh", "Solapur", "Hubli-Dharwad",
-    "Bareilly", "Moradabad", "Mysore", "Gurgaon", "Aligarh",
-    "Jalandhar", "Tiruchirappalli", "Bhubaneswar", "Salem", "Mira-Bhayandar",
-    "Thiruvananthapuram", "Bhiwandi", "Saharanpur", "Gorakhpur", "Guntur",
-    "Bikaner", "Amravati", "Noida", "Jamshedpur", "Bhilai",
-    "Warangal", "Cuttack", "Firozabad", "Kochi", "Bhavnagar",
-    "Dehradun", "Durgapur", "Asansol", "Nanded", "Kolhapur",
-    "Ajmer", "Gulbarga", "Jamnagar", "Ujjain", "Loni",
-    "Siliguri", "Jhansi", "Ulhasnagar", "Nellore", "Jammu",
-    "Sangli-Miraj", "Belgaum", "Mangalore", "Ambattur", "Tirunelveli",
-    "Malegaon", "Gaya", "Jalgaon", "Udaipur", "Maheshtala"
   ];
 
   /*  COUNTRY-STATE-CITY LOGIC  */
@@ -1180,28 +1232,86 @@ const Step6ResidentialDetails = ({
         const indiaStates = State.getStatesOfCountry("IN");
         const sortedStates = indiaStates.sort((a, b) => a.name.localeCompare(b.name));
         setStates(sortedStates);
+        
+        // Load Indian cities (from Maharashtra by default)
+        const maharashtraCities = City.getCitiesOfState("IN", "MH");
+        const sortedCities = maharashtraCities.sort((a, b) => a.name.localeCompare(b.name));
+        setCities(sortedCities);
       }
     }
-    
-    // ALWAYS SET CITIES - no matter what
-    const sortedCommonCities = [...commonCities].sort((a, b) => a.localeCompare(b));
-    setCities(sortedCommonCities.map(city => ({ name: city })));
     
   }, []);
 
   // When country changes, load its states
   useEffect(() => {
-    if (formData.countryCode) {
-      const countryStates = State.getStatesOfCountry(formData.countryCode);
-      const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
-      setStates(sortedStates);
-      
-      // Reset state and city when country changes
-      const updatedData = { ...formData, state: "", stateCode: "", city: "" };
-      setFormData(updatedData);
-      setData(updatedData);
+    if (!formData.countryCode) return;
+
+    const countryStates = State.getStatesOfCountry(formData.countryCode);
+    const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
+    setStates(sortedStates);
+    
+    // Clear cities when country changes
+    setCities([]);
+    
+    if (!apiLoadedRef.current) {
+      const updated = { ...formData, state: "", stateCode: "", city: "" };
+      setFormData(updated);
+      setData(updated);
     }
   }, [formData.countryCode]);
+
+  // When state changes, load its cities
+  useEffect(() => {
+    if (!formData.countryCode || !formData.stateCode) {
+      setCities([]);
+      return;
+    }
+
+    const stateCities = City.getCitiesOfState(formData.countryCode, formData.stateCode);
+    const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+    setCities(sortedCities);
+    
+    // Clear city when state changes
+    if (!apiLoadedRef.current) {
+      const updated = { ...formData, city: "" };
+      setFormData(updated);
+      setData(updated);
+    }
+  }, [formData.countryCode, formData.stateCode]);
+
+  // AFTER countries load, map backend values properly
+  useEffect(() => {
+    if (!apiData || !countries.length) return;
+
+    const countryObj = countries.find(c => c.name === apiData.country);
+    if (!countryObj) return;
+
+    apiLoadedRef.current = true;
+
+    const updated = {
+      ...formData,
+      country: countryObj.name,
+      countryCode: countryObj.isoCode
+    };
+
+    const stateObj = State.getStatesOfCountry(countryObj.isoCode)
+      .find(s => s.name === apiData.state);
+
+    if (stateObj) {
+      updated.state = stateObj.name;
+      updated.stateCode = stateObj.isoCode;
+      
+      // Load cities for this state
+      const stateCities = City.getCitiesOfState(countryObj.isoCode, stateObj.isoCode);
+      const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+      setCities(sortedCities);
+    }
+
+    updated.city = apiData.city || "";
+
+    setFormData(updated);
+    setData(updated);
+  }, [countries, apiData]);
 
   // AUTO-NEXT LOGIC: Load data from API and auto-navigate if step is sequential
   useEffect(() => {
@@ -1275,6 +1385,17 @@ const Step6ResidentialDetails = ({
           const countryStates = State.getStatesOfCountry(countryObj.isoCode);
           const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
           setStates(sortedStates);
+          
+          // Load cities if state is available
+          if (transformedData.state) {
+            const stateObj = sortedStates.find(s => s.name === transformedData.state);
+            if (stateObj) {
+              const stateCities = City.getCitiesOfCountry(countryObj.isoCode)
+                .filter(city => city.stateCode === stateObj.isoCode);
+              const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+              setCities(sortedCities);
+            }
+          }
         }
       }
 
@@ -1311,10 +1432,10 @@ const Step6ResidentialDetails = ({
     let err = "";
     const trimmedValue = value ? value.toString().trim() : "";
     
-    // Check required fields
-    if (requiredKeys.includes(name) && trimmedValue === "") {
+    // Check required fields - ALL fields are required
+    if (trimmedValue === "") {
       err = "This field is required";
-    } else if (trimmedValue !== "") {
+    } else {
       switch (name) {
         case "fullAddress":
           if (trimmedValue.length < 10) {
@@ -1329,7 +1450,12 @@ const Step6ResidentialDetails = ({
           break;
           
         case "city":
-          if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
+          if (trimmedValue === "Other") {
+            // If "Other" is selected, check if full address contains city details
+            if (!formData.fullAddress || formData.fullAddress.trim().length < 10) {
+              err = "Please specify city in the full address field";
+            }
+          } else if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
             err = "Only alphabets, spaces, dots and hyphens allowed";
           }
           break;
@@ -1341,7 +1467,7 @@ const Step6ResidentialDetails = ({
           break;
           
         case "country":
-          if (trimmedValue && !countries.find(c => c.name === trimmedValue)) {
+          if (!countries.find(c => c.name === trimmedValue)) {
             err = "Please select a valid country from the list";
           }
           break;
@@ -1361,20 +1487,20 @@ const Step6ResidentialDetails = ({
           
         case "alternateNumber":
           const cleanAlt = trimmedValue.replace(/[\s()-]/g, '');
-          if (cleanAlt && !/^[+]?[0-9]{10,15}$/.test(cleanAlt)) {
+          if (!/^[+]?[0-9]{10,15}$/.test(cleanAlt)) {
             err = "Enter valid 10-15 digit phone number";
           }
           break;
           
         case "whatsappNumber":
           const cleanWhatsapp = trimmedValue.replace(/[\s()-]/g, '');
-          if (cleanWhatsapp && !/^[+]?[0-9]{10,15}$/.test(cleanWhatsapp)) {
+          if (!/^[+]?[0-9]{10,15}$/.test(cleanWhatsapp)) {
             err = "Enter valid 10-15 digit phone number";
           }
           break;
           
         case "emailAddress":
-          if (trimmedValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) {
             err = "Enter valid email address";
           }
           break;
@@ -1387,19 +1513,19 @@ const Step6ResidentialDetails = ({
           
         case "emergencyContactNumber":
           const cleanEmergency = trimmedValue.replace(/[\s()-]/g, '');
-          if (cleanEmergency && !/^[+]?[0-9]{10,15}$/.test(cleanEmergency)) {
+          if (!/^[+]?[0-9]{10,15}$/.test(cleanEmergency)) {
             err = "Enter valid 10-15 digit phone number";
           }
           break;
           
         case "emergencyContactRelation":
-          if (trimmedValue && !/^[A-Za-z\s]+$/.test(trimmedValue)) {
+          if (!/^[A-Za-z\s]+$/.test(trimmedValue)) {
             err = "Only alphabets and spaces allowed";
           }
           break;
           
         case "preferredContactMethod":
-          if (trimmedValue && !/^[A-Za-z\s]+$/.test(trimmedValue)) {
+          if (!/^[A-Za-z\s]+$/.test(trimmedValue)) {
             err = "Only alphabets and spaces allowed";
           }
           break;
@@ -1421,7 +1547,7 @@ const Step6ResidentialDetails = ({
 
   // Check if form is valid whenever formData changes
   useEffect(() => {
-    // First, check all required fields are filled
+    // Check all required fields are filled
     const allRequiredFilled = requiredKeys.every(key => {
       const value = formData[key];
       return value && value.toString().trim() !== "";
@@ -1432,7 +1558,7 @@ const Step6ResidentialDetails = ({
       return;
     }
     
-    // Then, check if there are any validation errors for required fields
+    // Check if there are any validation errors for required fields
     const hasValidationErrors = requiredKeys.some(key => {
       return validationErrors[key] && validationErrors[key] !== "";
     });
@@ -1456,6 +1582,12 @@ const Step6ResidentialDetails = ({
           stateCode: "",
           city: ""
         };
+        
+        // Load states for selected country
+        const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+        const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
+        setStates(sortedStates);
+        setCities([]); // Clear cities when country changes
       }
     }
     
@@ -1469,6 +1601,13 @@ const Step6ResidentialDetails = ({
           stateCode: selectedState.isoCode,
           city: "" // Reset city when state changes
         };
+        
+        // Load cities for selected state
+        if (formData.countryCode && selectedState.isoCode) {
+          const stateCities = City.getCitiesOfState(formData.countryCode, selectedState.isoCode);
+          const sortedCities = stateCities.sort((a, b) => a.name.localeCompare(b.name));
+          setCities(sortedCities);
+        }
       }
     }
     
@@ -1504,7 +1643,7 @@ const Step6ResidentialDetails = ({
     const apiData = {
       fullAddress: (formData.fullAddress || "").trim(),
       streetAddress: (formData.streetAddress || "").trim(),
-      city: (formData.city || "").trim(),
+      city: (formData.city === "Other" ? "Other (see full address)" : (formData.city || "").trim()),
       state: (formData.state || "").trim(),
       country: (formData.country || "").trim(),
       pinCode: (formData.pinCode || "").trim(),
@@ -1744,6 +1883,7 @@ const Step6ResidentialDetails = ({
               }}
               placeholder="Enter your complete address (minimum 10 characters)"
               rows={3}
+              required
             />
             {validationErrors.fullAddress && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.fullAddress}</p>
@@ -1752,7 +1892,7 @@ const Step6ResidentialDetails = ({
 
           {/* STREET ADDRESS */}
           <div>
-            <label style={labelStyle}>Street Address</label>
+            <label style={labelStyle}>Street Address <span style={{ color: "red" }}>*</span></label>
             <input
               name="streetAddress"
               value={formData.streetAddress || ""}
@@ -1763,6 +1903,7 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.streetAddress ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               placeholder="House number, street"
+              required
             />
             {validationErrors.streetAddress && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.streetAddress}</p>
@@ -1797,7 +1938,7 @@ const Step6ResidentialDetails = ({
 
           {/* STATE */}
           <div>
-            <label style={labelStyle}>State</label>
+            <label style={labelStyle}>State <span style={{ color: "red" }}>*</span></label>
             <select
               name="state"
               value={formData.state || ""}
@@ -1808,6 +1949,7 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.state ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               disabled={!formData.country}
+              required
             >
               <option value="">Select State</option>
               {states.map((state) => (
@@ -1824,7 +1966,7 @@ const Step6ResidentialDetails = ({
             </p>
           </div>
 
-          {/* CITY - SIMPLE DROPDOWN WITH HARDCODED CITIES */}
+          {/* CITY - DYNAMIC FROM COUNTRY-STATE-CITY LIBRARY */}
           <div>
             <label style={labelStyle}>City <span style={{ color: "red" }}>*</span></label>
             
@@ -1838,13 +1980,20 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.city ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               required
+              disabled={!formData.state}
             >
               <option value="">Select City</option>
-              {cities.map((city, index) => (
-                <option key={index} value={city.name}>
-                  {city.name}
+              {cities.length > 0 ? (
+                cities.map((city, index) => (
+                  <option key={`${city.name}-${index}`} value={city.name}>
+                    {city.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  {!formData.state ? "Select a state first" : "Loading cities..."}
                 </option>
-              ))}
+              )}
               <option value="Other">Other (Please specify in address)</option>
             </select>
             
@@ -1853,7 +2002,9 @@ const Step6ResidentialDetails = ({
             )}
             
             <p className="text-xs text-gray-500 mt-1">
-              {cities.length} Indian cities available
+              {!formData.state ? "Select a state first" : 
+               cities.length === 0 ? "Loading cities..." : 
+               `${cities.length} cities available in ${formData.state}`}
             </p>
           </div>
 
@@ -1871,6 +2022,7 @@ const Step6ResidentialDetails = ({
               }}
               placeholder="6-digit PIN code"
               maxLength={6}
+              required
             />
             {validationErrors.pinCode && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.pinCode}</p>
@@ -1890,6 +2042,7 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.mobileNumber ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               placeholder="e.g., +91-9876543210"
+              required
             />
             {validationErrors.mobileNumber && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.mobileNumber}</p>
@@ -1898,7 +2051,7 @@ const Step6ResidentialDetails = ({
 
           {/* ALTERNATE MOBILE NUMBER */}
           <div>
-            <label style={labelStyle}>Alternate Mobile Number</label>
+            <label style={labelStyle}>Alternate Mobile Number <span style={{ color: "red" }}>*</span></label>
             <input
               name="alternateNumber"
               value={formData.alternateNumber || ""}
@@ -1909,6 +2062,7 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.alternateNumber ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               placeholder="Alternative contact number"
+              required
             />
             {validationErrors.alternateNumber && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.alternateNumber}</p>
@@ -1917,7 +2071,7 @@ const Step6ResidentialDetails = ({
 
           {/* WHATSAPP NUMBER */}
           <div>
-            <label style={labelStyle}>WhatsApp Number</label>
+            <label style={labelStyle}>WhatsApp Number <span style={{ color: "red" }}>*</span></label>
             <input
               name="whatsappNumber"
               value={formData.whatsappNumber || ""}
@@ -1927,7 +2081,8 @@ const Step6ResidentialDetails = ({
                 ...fieldStyle,
                 border: validationErrors.whatsappNumber ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
-              placeholder="WhatsApp number (if different)"
+              placeholder="WhatsApp number"
+              required
             />
             {validationErrors.whatsappNumber && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.whatsappNumber}</p>
@@ -1936,7 +2091,7 @@ const Step6ResidentialDetails = ({
 
           {/* EMAIL ADDRESS */}
           <div>
-            <label style={labelStyle}>Email Address</label>
+            <label style={labelStyle}>Email Address <span style={{ color: "red" }}>*</span></label>
             <input
               type="email"
               name="emailAddress"
@@ -1948,6 +2103,7 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.emailAddress ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               placeholder="your.email@example.com"
+              required
             />
             {validationErrors.emailAddress && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.emailAddress}</p>
@@ -1956,7 +2112,7 @@ const Step6ResidentialDetails = ({
 
           {/* EMERGENCY CONTACT NAME */}
           <div>
-            <label style={labelStyle}>Emergency Contact Name</label>
+            <label style={labelStyle}>Emergency Contact Name <span style={{ color: "red" }}>*</span></label>
             <input
               name="emergencyContactName"
               value={formData.emergencyContactName || ""}
@@ -1967,6 +2123,7 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.emergencyContactName ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               placeholder="Name of emergency contact"
+              required
             />
             {validationErrors.emergencyContactName && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.emergencyContactName}</p>
@@ -1975,7 +2132,7 @@ const Step6ResidentialDetails = ({
 
           {/* EMERGENCY CONTACT NUMBER */}
           <div>
-            <label style={labelStyle}>Emergency Contact Number</label>
+            <label style={labelStyle}>Emergency Contact Number <span style={{ color: "red" }}>*</span></label>
             <input
               name="emergencyContactNumber"
               value={formData.emergencyContactNumber || ""}
@@ -1986,6 +2143,7 @@ const Step6ResidentialDetails = ({
                 border: validationErrors.emergencyContactNumber ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
               placeholder="Emergency contact phone"
+              required
             />
             {validationErrors.emergencyContactNumber && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.emergencyContactNumber}</p>
@@ -1994,7 +2152,7 @@ const Step6ResidentialDetails = ({
 
           {/* EMERGENCY CONTACT RELATION */}
           <div>
-            <label style={labelStyle}>Emergency Contact Relation</label>
+            <label style={labelStyle}>Emergency Contact Relation <span style={{ color: "red" }}>*</span></label>
             <select
               name="emergencyContactRelation"
               value={formData.emergencyContactRelation || ""}
@@ -2004,6 +2162,7 @@ const Step6ResidentialDetails = ({
                 ...fieldStyle,
                 border: validationErrors.emergencyContactRelation ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
+              required
             >
               <option value="">Select Relation</option>
               <option value="Father">Father</option>
@@ -2023,7 +2182,7 @@ const Step6ResidentialDetails = ({
 
           {/* PREFERRED CONTACT METHOD */}
           <div>
-            <label style={labelStyle}>Preferred Contact Method</label>
+            <label style={labelStyle}>Preferred Contact Method <span style={{ color: "red" }}>*</span></label>
             <select
               name="preferredContactMethod"
               value={formData.preferredContactMethod || ""}
@@ -2033,6 +2192,7 @@ const Step6ResidentialDetails = ({
                 ...fieldStyle,
                 border: validationErrors.preferredContactMethod ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
+              required
             >
               <option value="">Select Method</option>
               <option value="Mobile">Mobile</option>
@@ -2057,7 +2217,9 @@ const Step6ResidentialDetails = ({
                 ...fieldStyle,
                 border: validationErrors.contactVisibility ? "1px solid #ef4444" : "1px solid #8180801c"
               }}
+              required
             >
+              <option value="">Select</option>
               <option value="PRIVATE">Private (Only you)</option>
               <option value="MEMBERS_ONLY">Members Only</option>
               <option value="PUBLIC">Public (All users)</option>

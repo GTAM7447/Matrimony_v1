@@ -208,7 +208,6 @@
 
 
 
-
 // src/pages/AllProfilesPage.jsx
 import React, { useState, useMemo, useEffect } from "react";
 import ProfileFilters from "../components/AllProfilesPage/filters/ProfileFilters";
@@ -287,10 +286,12 @@ const AllProfilesPage = () => {
                 key={u.userId}
                 profile={{
                   id: u.userId,
-                  name: u.email?.split("@")[0] || "Profile",
-                  age: u.age || "--",
-                  city: u.gender || "--",
-                  image: defaultProfileImg
+                  firstName: u.firstName,
+                  lastName: u.lastName,
+                  age: u.age ?? "--",
+                  city: u.city ?? "--",
+                  email: u.email,
+                  image: defaultProfileImg,
                 }}
               />
             ))}

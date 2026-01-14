@@ -392,7 +392,7 @@
 //       const missingFieldNames = missingFields.map(field => fieldDisplayNames[field] || field);
 //       setMissingFieldsList(missingFieldNames);
 //       setShowRequiredAlert(true);
-      
+
 //       // Scroll to the alert
 //       setTimeout(() => {
 //         const alertElement = document.getElementById("required-fields-alert");
@@ -400,7 +400,7 @@
 //           alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 //         }
 //       }, 100);
-      
+
 //       return false;
 //     }
 //     return true;
@@ -1349,7 +1349,7 @@ const Step1PersonalDetails = ({
 
   const autoNextRef = useRef(false);
   const apiLoadedRef = useRef(false);
-  
+
   // States
   const [districts, setDistricts] = useState([]);
   const [talukas, setTalukas] = useState([]);
@@ -1577,19 +1577,19 @@ const Step1PersonalDetails = ({
         }
       }
     }
-    
+
     setValidationErrors(prev => ({ ...prev, [name]: err }));
     return err;
   };
 
   const handleChange = (e) => {
-  const { name, value } = e.target;
-    
+    const { name, value } = e.target;
+
     // Mark field as touched
     setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
+
     let updatedData;
-    
+
     // Special handling for pinCode - only allow digits
     if (name === "pinCode") {
       const digitsOnly = value.replace(/\D/g, "");
@@ -1597,10 +1597,10 @@ const Step1PersonalDetails = ({
     } else {
       updatedData = { ...formData, [name]: value };
     }
-    
+
     setFormData(updatedData);
     setData(updatedData);
-    
+
     // Validate the field
     validateField(name, updatedData[name]);
 
@@ -1612,7 +1612,7 @@ const Step1PersonalDetails = ({
     const { name, value } = e.target;
     // Mark field as touched
     setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
+
     // Validate the field on blur
     validateField(name, value);
   };
@@ -1658,7 +1658,7 @@ const Step1PersonalDetails = ({
     if (hasExistingProfile) {
       return { version: currentVersion, ...baseData };
     }
-    
+
     return baseData;
   };
 
@@ -1672,7 +1672,7 @@ const Step1PersonalDetails = ({
       const missingFieldNames = missingFields.map(field => fieldDisplayNames[field] || field);
       setMissingFieldsList(missingFieldNames);
       setShowRequiredAlert(true);
-      
+
       // Scroll to the alert
       setTimeout(() => {
         const alertElement = document.getElementById("required-fields-alert");
@@ -1680,7 +1680,7 @@ const Step1PersonalDetails = ({
           alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
-      
+
       return false;
     }
     return true;
@@ -1723,21 +1723,18 @@ const Step1PersonalDetails = ({
       else {
         const response = await createPersonalDetails(apiData).unwrap();
 
-        if (response.statusCode === 201 || response.success === true || response.code === "201") {
-          setSuccessMessage("Profile created successfully!");
-          setHasExistingProfile(true);
+        setSuccessMessage("Profile created successfully!");
+        setHasExistingProfile(true);
 
-          if (response.data?.version) {
-            setCurrentVersion(response.data.version);
-          }
-
-          setTimeout(() => {
-            nextStep();
-          }, 1500);
-        } else {
-          setErrorMessage(response.message || "Failed to create profile");
+        if (response?.data?.version) {
+          setCurrentVersion(response.data.version);
         }
+
+        setTimeout(() => {
+          nextStep();
+        }, 500);
       }
+
     } catch (error) {
       let errorMsg = "Failed to save profile. Please try again.";
 
@@ -1892,7 +1889,7 @@ const Step1PersonalDetails = ({
       >
         {/* Required Fields Alert - RED BOX */}
         {showRequiredAlert && (
-          <div 
+          <div
             id="required-fields-alert"
             className="mb-6 p-4 bg-red-50 border border-red-300 rounded-lg"
           >

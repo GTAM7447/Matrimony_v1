@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import storyImage1 from "../../assets/SuccessStories/Story1.jpg";
+import storyImage1 from "../../assets/SuccessStories/story1.jpg";
 import storyImage2 from "../../assets/SuccessStories/story2.jpg";
 
 const SuccessStoriesSubpage = () => {
@@ -100,7 +100,7 @@ They now collaborate on architectural documentary projects together and are plan
                                         <img
                                             src={story.image}
                                             alt={story.name}
-                                            className="w-full h-92 object-cover m-4 rounded"
+                                            className="w-full h-92 object-cover m-4 rounded" 
                                         />
                                     </div>
                                 </div>
@@ -312,8 +312,8 @@ They now collaborate on architectural documentary projects together and are plan
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${currentPage === 0
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : 'text-orange-600 hover:bg-orange-50'
+                                                                ? 'text-gray-400 cursor-not-allowed'
+                                                                : 'text-orange-600 hover:bg-orange-50'
                                                             }`}
                                                     >
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -329,8 +329,8 @@ They now collaborate on architectural documentary projects together and are plan
                                                                 key={index}
                                                                 onClick={() => setCurrentPage(index)}
                                                                 className={`w-2 h-2 rounded-full transition-all ${index === currentPage
-                                                                    ? 'bg-orange-500'
-                                                                    : 'bg-gray-300'
+                                                                        ? 'bg-orange-500'
+                                                                        : 'bg-gray-300'
                                                                     }`}
                                                             />
                                                         ))}
@@ -342,8 +342,8 @@ They now collaborate on architectural documentary projects together and are plan
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${currentPage === 1
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : 'text-orange-600 hover:bg-orange-50'
+                                                                ? 'text-gray-400 cursor-not-allowed'
+                                                                : 'text-orange-600 hover:bg-orange-50'
                                                             }`}
                                                     >
                                                         Next
