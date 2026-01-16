@@ -279,6 +279,13 @@
 
 
 
+
+
+
+
+
+
+
 /* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -321,11 +328,12 @@ const AdminNavbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [token, lastScrollY]);
 
-  const logoutHandler = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminEmail");
-    navigate("/signin");
-  };
+const logoutHandler = () => {
+  localStorage.removeItem("adminToken");
+  localStorage.removeItem("authToken");   // remove user token too
+  localStorage.removeItem("adminEmail");
+  navigate("/signin");
+};
 
   /* ================= PUBLIC NAVBAR ================= */
   if (!token) {

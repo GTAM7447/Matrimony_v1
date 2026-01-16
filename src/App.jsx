@@ -134,7 +134,6 @@
 
 
 
-
 // App.jsx
 import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
@@ -187,6 +186,9 @@ import AdminProfileStatus from "./Admin/pages/AdminProfilestatus";
 import AdminMatchesPage from "./Admin/pages/AdminMatchesPage";
 import AdminDashboard from "./Admin/pages/Admindashboard";
 
+/* NEW PAGE YOU REQUESTED */
+import AdminProfileDetailsPage from "./Admin/components/Registrations/AdminProfileDetailsPage/AdminProfileDetailsPage";
+
 function App() {
   const dispatch = useDispatch();
 
@@ -225,7 +227,7 @@ function App() {
           <Route path="/my-profile" element={<MyProfilePage />} />
         </Route>
 
-        {/* User Auth Pages */}
+        {/* USER AUTH PAGES */}
         <Route path="/forgot" element={<ForgotPasswordPage />} />
         <Route path="/otp" element={<OtpVerificationPage />} />
         <Route path="/reset" element={<ResetPasswordPage />} />
@@ -245,7 +247,10 @@ function App() {
           <Route path="/admin" element={<AdminHomePage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/all-profiles" element={<AllProfilesPage />} />
-          {/* UPDATED ROUTE HERE */}
+
+          {/* NEW PROFILE VIEW PAGE */}
+          <Route path="/admin/profile/:userId" element={<AdminProfileDetailsPage />} />
+
           <Route path="/admin/edit-profile/:userId" element={<EditProfilePage />} />
           <Route path="/admin/create-profile" element={<CreateProfile />} />
           <Route path="/admin/registrations" element={<AdminRegistrationdashboard />} />

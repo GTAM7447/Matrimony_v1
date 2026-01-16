@@ -42,7 +42,6 @@ const RegistrationForm = () => {
 
       const token = localStorage.getItem("authToken")
 
-
       console.log("TOKEN USED:", token);
 
       const res = await fetch(
