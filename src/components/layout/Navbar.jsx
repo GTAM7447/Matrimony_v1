@@ -34,7 +34,6 @@ const NAV_ITEMS = [
 ];
 
 /*  COMPONENT  */
-
 const Navbar = () => {
   const { isLoggedIn, logout } = useAuth();
   const loggedIn = isLoggedIn || !!localStorage.getItem("authToken");
@@ -80,8 +79,6 @@ React.useEffect(() => {
 const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
   skip: !loggedIn,
 });
-
-
 
 const avatarInitial = useMemo(() => {
   const p = ownProfile?.data?.userProfile;

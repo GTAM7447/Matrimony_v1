@@ -407,7 +407,6 @@
 
 
 
-
 import React, { useEffect, useState } from "react";
 import { Info } from "lucide-react";
 import {
@@ -417,6 +416,7 @@ import {
   useGetProfilePhotoQuery,
 } from "../../context/profileApi";
 import defaultProfileImg from "../../assets/DefaultImage/AvtarImg.avif";
+import { Link } from "react-router-dom";
 
 const toImageUrl = (resp) =>
   resp?.data?.fileData
@@ -505,9 +505,7 @@ const ProfileCardUser = () => {
   }, [profileResponse]);
 
   useEffect(() => {
-    setInterestCounts(
-      mapInterestCounts(sentInterests, receivedInterests)
-    );
+    setInterestCounts(mapInterestCounts(sentInterests, receivedInterests));
   }, [sentInterests, receivedInterests]);
 
   const profileImage = toImageUrl(photoResponse);
@@ -524,7 +522,6 @@ const ProfileCardUser = () => {
 
   return (
     <div className="w-full bg-white border rounded-2xl shadow-sm p-6">
-
       <div className="relative w-24 h-24 mx-auto">
         <div className="w-full h-full rounded-full border-4 border-green-400 overflow-hidden">
           <img
@@ -555,9 +552,13 @@ const ProfileCardUser = () => {
         Location: {profileData.location}
       </p>
 
-      <button className="mt-3 w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2 rounded-full">
+      {/* Navigate to Create Profile */}
+      <Link
+        to="/create-profile"
+        className="mt-3 block w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2 rounded-full text-center"
+      >
         Complete Profile
-      </button>
+      </Link>
 
       <div className="border-b my-4"></div>
 
@@ -587,7 +588,6 @@ const ProfileCardUser = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };
