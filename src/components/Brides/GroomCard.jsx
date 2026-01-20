@@ -129,17 +129,22 @@
 
 
 
-
 import React, { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useAddToFavoriteMutation } from "../../context/profileApi";
 import defaultProfileImg from "../../assets/DefaultImage/AvtarImg.avif";
+import Cookies from "js-cookie";
 
 const GroomCard = ({ profile }) => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+
+  /* ===================== COOKIE FALLBACK ===================== */
+  const tokenFromCookie = Cookies.get("authToken");
+  const loggedIn = isLoggedIn || !!tokenFromCookie;
+
   const [addToFavorite, { isLoading }] = useAddToFavoriteMutation();
 
   if (!profile) return null;
@@ -170,12 +175,12 @@ const GroomCard = ({ profile }) => {
 
   /* FAVORITE HANDLER */
   const handleFavorite = useCallback(async () => {
-    if (!isLoggedIn) {
+    if (!loggedIn) {
       navigate("/signin");
       return;
     }
     await addToFavorite(userProfileId);
-  }, [isLoggedIn, navigate, addToFavorite, userProfileId]);
+  }, [loggedIn, navigate, addToFavorite, userProfileId]);
 
   return (
     <div className="flex bg-white rounded-xl shadow-md overflow-hidden">
@@ -195,14 +200,12 @@ const GroomCard = ({ profile }) => {
             {firstName || "Profile"}
           </h3>
 
-          {isLoggedIn && (
+          {loggedIn && (
             <div className="flex items-center gap-2">
-              {/* PROFILE ID BADGE */}
               <span className="text-xs font-semibold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md">
                 ID: {userProfileId}
               </span>
 
-              {/* FAVORITE BUTTON */}
               <button
                 onClick={handleFavorite}
                 disabled={isFavorited || isLoading}
@@ -219,7 +222,6 @@ const GroomCard = ({ profile }) => {
           )}
         </div>
 
-        {/* INFO */}
         <ul className="mt-2 text-sm space-y-0.5 text-gray-700">
           {age && <li>Age: {age}</li>}
           {gender && <li>Gender: {gender}</li>}
@@ -229,7 +231,6 @@ const GroomCard = ({ profile }) => {
           {maritalStatus && <li>Status: {maritalStatus}</li>}
         </ul>
 
-        {/* VIEW PROFILE */}
         <button
           onClick={() => navigate(`/profile/${completeProfileId}`)}
           className="mt-3 bg-orange-500 text-white px-4 py-1.5 rounded-md hover:bg-orange-600"

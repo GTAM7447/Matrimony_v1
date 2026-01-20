@@ -94,12 +94,12 @@
 //       devak: horoscopeData.devak || "",
 //     };
 
-//     // ✅ ALWAYS load data
+//     // ALWAYS load data
 //     setFormData(transformedData);
 //     setData(transformedData);
 //     setDataLoaded(true);
 
-//     // ✅ auto-next only once and only in sequence
+//     // auto-next only once and only in sequence
 //     if (
 //       !autoNextRef.current &&
 //       Object.keys(transformedData).length > 0 &&
@@ -746,9 +746,12 @@ const Step2HoroscopeDetails = ({
     "devak",
   ];
 
-  const isFormValid = requiredKeys.every(
-    (key) => formData[key] !== undefined && formData[key] !== ""
-  );
+const isFormValid = requiredKeys.every(
+  (key) =>
+    formData[key] !== undefined &&
+    formData[key].toString().trim() !== ""
+);
+
 
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -822,13 +825,15 @@ const Step2HoroscopeDetails = ({
     setDistricts(cities);
   }, []);
 
-  const validateField = (name, value) => {
-    let err = "";
-    if (!value || value.toString().trim() === "") {
-      err = "This field is required";
-    }
-    setValidationErrors((prev) => ({ ...prev, [name]: err }));
-  };
+const validateField = (name, value) => {
+  let err = "";
+  if (!value || value.toString().trim() === "") {
+    err = "This field is required";
+  }
+  setValidationErrors((prev) => ({ ...prev, [name]: err }));
+  return err;
+};
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -867,6 +872,18 @@ const Step2HoroscopeDetails = ({
       return;
     }
 
+    const hasErrors = requiredKeys.some((key) => {
+  const value = formData[key];
+  const err = validateField(key, value);
+  return err !== "";
+});
+
+if (hasErrors) {
+  setErrorMessage("Please fix highlighted validation errors");
+  return;
+}
+
+
     try {
       setIsLoading(true);
       setErrorMessage("");
@@ -885,8 +902,6 @@ const Step2HoroscopeDetails = ({
         setHasExistingHoroscope(true);
         setSuccessMessage("Horoscope details created successfully!");
       }
-
-      await refetch();
       
       // Navigate to next step after successful save
       setTimeout(() => {
@@ -918,25 +933,7 @@ const Step2HoroscopeDetails = ({
     marginBottom: "4px",
   };
 
-  const token = localStorage.getItem("authToken");
 
-  if (!token) {
-    return (
-      <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
-        <Stepper step={step} completedStep={completedStep} goToStep={goToStep} />
-        <div className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center" style={{ backgroundColor: "#FF8C4405" }}>
-          <div className="text-red-500 text-lg mb-4">Authentication Required</div>
-          <p className="text-gray-600 mb-6">Please login to access your profile data.</p>
-          <button
-            onClick={() => (window.location.href = "/signin")}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   if (isFetching && !dataLoaded) {
     return (

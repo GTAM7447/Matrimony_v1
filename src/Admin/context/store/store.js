@@ -1,10 +1,11 @@
+// src/Admin/store/adminStore.js
 import { configureStore } from "@reduxjs/toolkit";
-import { apiSlice } from "./context/apiSlice";
+import { adminApiSlice } from "./adminApiSlice";
 
-export const store = configureStore({
+export const adminStore = configureStore({
   reducer: {
-    [apiSlice.reducerPath]: apiSlice.reducer,
+    [adminApiSlice.reducerPath]: adminApiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+    getDefaultMiddleware().concat(adminApiSlice.middleware),
 });

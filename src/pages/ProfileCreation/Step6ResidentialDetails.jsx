@@ -1184,7 +1184,6 @@ const Step6ResidentialDetails = ({
 
   /* STATE */
   const [hasExistingContact, setHasExistingContact] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [version, setVersion] = useState(0);
 
   const [loading, setLoading] = useState(false);
@@ -1352,23 +1351,22 @@ const Step6ResidentialDetails = ({
 
       console.log("Contact form data populated:", transformedData);
 
-      // ✅ ALWAYS load data
+      // ALWAYS load data
       setFormData(transformedData);
       setData(transformedData);
-      setDataLoaded(true);
 
-      // ✅ auto-next only once and only in sequence
-      if (
-        !autoNextRef.current &&
-        Object.keys(transformedData).length > 0 &&
-        step === completedStep + 1
-      ) {
-        autoNextRef.current = true;
-        setTimeout(() => {
-          console.log("Auto-navigating to next step...");
-          nextStep();
-        }, 0);
-      }
+      // auto-next only once and only in sequence
+    if (
+  !autoNextRef.current &&
+  step === completedStep + 1 &&
+  requiredKeys.every(
+    (key) => transformedData[key] && transformedData[key].toString().trim() !== ""
+  )
+) {
+  autoNextRef.current = true;
+  setTimeout(() => nextStep(), 0);
+}
+
 
       // Find country code for the loaded country
       if (transformedData.country) {
@@ -1403,29 +1401,6 @@ const Step6ResidentialDetails = ({
       setTimeout(() => setSuccessMessage(""), 3000);
     }
   }, [isSuccess, apiData, step, completedStep, nextStep, setData, countries]);
-
-  // 404 = new user
-  useEffect(() => {
-    if (residentialError?.status === 404 && !dataLoaded) {
-      apiLoadedRef.current = true;
-      setHasExistingContact(false);
-      setDataLoaded(true);
-      setSuccessMessage("No existing contact details found. Please create new ones.");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    }
-  }, [residentialError, dataLoaded]);
-
-  // Handle successful query with no data (new user)
-  useEffect(() => {
-    if (isSuccess && !apiData && !dataLoaded) {
-      apiLoadedRef.current = true;
-      console.log("No contact data found - new user");
-      setHasExistingContact(false);
-      setDataLoaded(true);
-      setSuccessMessage("No existing contact details found. Please create new ones.");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    }
-  }, [isSuccess, apiData, dataLoaded]);
 
   /*  VALIDATION  */
   const validateField = (name, value) => {
@@ -1790,28 +1765,8 @@ const Step6ResidentialDetails = ({
     fontFamily: "'Inter', sans-serif",
   };
 
-  // Check authentication
-  const token = localStorage.getItem("authToken");
-
-  if (!token) {
-    return (
-      <div className="w-full max-w-[95%] mx-auto font-[Inter] flex flex-col min-h-[600px]">
-        <div className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl" style={{ backgroundColor: "#FF8C4426" }}>
-          <Stepper step={step} completedStep={completedStep} goToStep={goToStep} />
-        </div>
-        <div className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center" style={{ backgroundColor: "#FF8C4405" }}>
-          <div className="text-red-500 text-lg mb-4">Authentication Required</div>
-          <p className="text-gray-600 mb-6">Please login to access your contact details.</p>
-          <button onClick={() => (window.location.href = "/signin")} className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Show loading state
-  if (isFetching && !dataLoaded) {
+if (isFetching && !apiLoadedRef.current) {
     return (
       <div className="w-full max-w-[95%] mx-auto font-[Inter] flex flex-col min-h-[600px]">
         <div className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl" style={{ backgroundColor: "#FF8C4426" }}>

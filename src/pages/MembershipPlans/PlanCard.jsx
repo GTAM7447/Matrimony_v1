@@ -73,7 +73,7 @@ const PlanCard = ({ planName, billing }) => {
 
       {/* Price */}
       <p className="text-3xl font-bold text-[#FF7A00] mb-4">
-        ${price}
+        ₹{price}
         <span className="text-sm text-gray-500">{priceLabel}</span>
       </p>
 

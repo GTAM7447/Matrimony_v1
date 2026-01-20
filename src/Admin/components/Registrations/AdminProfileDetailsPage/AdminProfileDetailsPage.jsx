@@ -103,7 +103,7 @@ export default function AdminProfileDetailsPage() {
               <p><b>Height</b><br />{d(data.userProfile?.height)}</p>
               <p><b>Weight</b><br />{d(data.userProfile?.weight)}</p>
 
-              <p><b>Mother Tongue</b><br />{d(data.userProfile?.motherTongue)}</p>
+              {/* <p><b>Mother Tongue</b><br />{d(data.userProfile?.motherTongue)}</p> */}
             </div>
 
             {/* EDUCATION + WORK */}
@@ -126,8 +126,8 @@ export default function AdminProfileDetailsPage() {
             <p className="mt-2"><b>Mother’s Occupation</b><br />{d(data.familyBackground?.motherOccupation)}</p>
             <p className="mt-2"><b>Brothers</b><br />{d(data.familyBackground?.brother)}</p>
 
-            <p className="mt-2"><b>Family Type</b><br />{d(data.familyBackground?.familyType)}</p>
-            <p className="mt-2"><b>Family Values</b><br />{d(data.familyBackground?.familyValues)}</p>
+            <p className="mt-2"><b>Family Wealth</b><br />{d(data.familyBackground?.familyWealth)}</p>
+            {/* <p className="mt-2"><b>Family Values</b><br />{d(data.familyBackground?.familyValues)}</p> */}
 
             <div className="mt-6 border-t border-gray-300 pt-4 grid grid-cols-3 gap-y-2">
               <p><b>Status</b><br />{d(data.userProfile?.status)}</p>

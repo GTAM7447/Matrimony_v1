@@ -1,30 +1,9 @@
-// import { Navigate } from "react-router-dom";
-
-// const AdminProtectedRoute = ({ children }) => {
-//   const token = localStorage.getItem("adminToken");
-//   return token ? children : <Navigate to="/admin/login" replace />;
-// };
-
-// export default AdminProtectedRoute;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
 const AdminProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("authToken");
+  const token = Cookies.get("authToken");
 
   if (!token) {
     return <Navigate to="/signin" replace />;
@@ -34,11 +13,17 @@ const AdminProtectedRoute = ({ children }) => {
     const decoded = jwtDecode(token);
     const roles = decoded?.authorities || [];
 
-    if (roles.includes("ROLE_ADMIN")) {
+    const isAdmin = roles.some(role => 
+      role.includes("ADMIN") || 
+      role.includes("ROLE_ADMIN")
+    );
+
+    if (isAdmin) {
       return children;
     }
   } catch (error) {
     console.error("Invalid token:", error);
+    Cookies.remove("authToken", { path: "/" });
   }
 
   return <Navigate to="/signin" replace />;

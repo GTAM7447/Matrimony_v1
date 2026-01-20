@@ -22,7 +22,6 @@ const Step4FamilyBackground = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [hasExistingFamily, setHasExistingFamily] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [version, setVersion] = useState(null);
 
   // RTK Query hooks
@@ -104,37 +103,33 @@ const Step4FamilyBackground = ({
     // ALWAYS load data
     setFormData(transformedData);
     setData(transformedData);
-    setDataLoaded(true);
 
     // auto-next only once and only in sequence
-    if (
-      !autoNextRef.current &&
-      Object.keys(transformedData).length > 0 &&
-      step === completedStep + 1
-    ) {
-      autoNextRef.current = true;
-      setTimeout(() => {
-        console.log("Auto-navigating to next step...");
-        nextStep();
-      }, 0);
-    }
+  if (
+  !autoNextRef.current &&
+  step === completedStep + 1
+) {
+  autoNextRef.current = true;
+  nextStep();
+}
+
 
     setSuccessMessage("Family background loaded successfully");
     setTimeout(() => setSuccessMessage(""), 3000);
   }, [isSuccess, apiData, step, completedStep, nextStep, setData]);
 
   // 404 = new user
-  useEffect(() => {
-    if (familyError?.status === 404 && !dataLoaded) {
-      apiLoadedRef.current = true;
-      setHasExistingFamily(false);
-      setDataLoaded(true);
-      setSuccessMessage(
-        "No existing family background found. Please create new ones."
-      );
-      setTimeout(() => setSuccessMessage(""), 3000);
-    }
-  }, [familyError, dataLoaded]);
+useEffect(() => {
+  if (familyError?.status === 404 && !apiLoadedRef.current) {
+    apiLoadedRef.current = true;
+    setHasExistingFamily(false);
+    setSuccessMessage(
+      "No existing family background found. Please create new ones."
+    );
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }
+}, [familyError]);
+
 
   const validateField = (name, value) => {
     let err = "";
@@ -338,14 +333,6 @@ const Step4FamilyBackground = ({
       return;
     }
 
-    // Check authentication
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setErrorMessage("Please login to save family background data");
-      return;
-    }
-
     try {
       setIsLoading(true);
       setErrorMessage("");
@@ -521,45 +508,9 @@ const Step4FamilyBackground = ({
     return options;
   };
 
-  // Check authentication first
-  const token = localStorage.getItem("authToken");
-
-  if (!token) {
-    return (
-      <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
-        <div
-          className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl overflow-x-auto"
-          style={{ backgroundColor: "#FF8C4426" }}
-        >
-          <Stepper
-            step={step}
-            completedStep={completedStep}
-            goToStep={goToStep}
-          />
-        </div>
-        <div
-          className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center"
-          style={{ backgroundColor: "#FF8C4405" }}
-        >
-          <div className="text-red-500 text-lg mb-4">
-            Authentication Required
-          </div>
-          <p className="text-gray-600 mb-6">
-            Please login to access your family background data.
-          </p>
-          <button
-            onClick={() => (window.location.href = "/signin")}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Show loading state
-  if (isFetching && !dataLoaded) {
+if (isFetching && !apiLoadedRef.current) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
         <div

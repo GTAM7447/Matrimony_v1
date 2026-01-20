@@ -53,7 +53,7 @@ const ProfileFilters = () => {
         `}
       >
         {/* ================= HEADER ================= */}
-        <div className="px-5 py-4 border-b flex items-center justify-between">
+        <div className="px-5 py-4 border-b flex items-center justify-between mt-14">
           <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
             Filter
           </h3>

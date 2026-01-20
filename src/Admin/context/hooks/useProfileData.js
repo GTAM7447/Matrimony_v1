@@ -192,6 +192,8 @@
 import { useState, useEffect } from "react";
 import { useGetAllProfilesQuery } from "../adminApi";
 import { useToggleUserActivationStatusMutation } from "../adminActivationApi";
+import { useNavigate } from "react-router-dom";
+
  
 export const useAdminProfiles = () => {
   const [page, setPage] = useState(0);
@@ -200,8 +202,8 @@ export const useAdminProfiles = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const [transformedData, setTransformedData] = useState([]);
   const [loadingStatuses, setLoadingStatuses] = useState({});
-  const [selectedProfile, setSelectedProfile] = useState(null);
-  const [profileToEdit, setProfileToEdit] = useState(null); // New state for edit profile
+  const navigate = useNavigate();
+
  
   // Get all profiles from main API
   const {
@@ -220,7 +222,7 @@ export const useAdminProfiles = () => {
   // Transform API data when it arrives
   useEffect(() => {
     if (apiResponse?.content && Array.isArray(apiResponse.content)) {
-      console.log("Transforming API data...");
+      // console.log("Transforming API data...");
      
       const transformed = apiResponse.content.map((user, index) => {
         // Determine if user is active based on backend status field
@@ -311,29 +313,20 @@ export const useAdminProfiles = () => {
   };
  
   // Handle View Profile - Set selected profile for modal/drawer
-  const handleViewProfile = (userId) => {
-    if (userId) {
-      const profile = transformedData.find(item => item.userId === userId);
-      setSelectedProfile(profile);
-      console.log("View profile clicked for:", userId);
-      // Optional: You could fetch detailed profile data here
-    }
-  };
- 
+ //  Route-based view (same as RegistrationsTable)
+const handleViewProfile = (userId) => {
+  if (userId) {
+    navigate(`/admin/profile/${userId}`);
+  }
+};
+
   // Handle Edit Profile - Set profile to edit for modal/drawer
-  const handleEditProfile = (userId) => {
-    if (userId) {
-      const profile = transformedData.find(item => item.userId === userId);
-      setProfileToEdit(profile);
-      console.log("Edit profile clicked for:", userId);
-      // Optional: You could fetch detailed profile data for editing here
-    }
-  };
- 
-  // Close view modal/drawer
-  const closeProfileView = () => {
-    setSelectedProfile(null);
-  };
+const handleEditProfile = (userId) => {
+  if (userId) {
+    navigate(`/admin/edit-profile/${userId}`);
+  }
+};
+
  
   // Close edit modal/drawer
   const closeProfileEdit = () => {
@@ -394,11 +387,6 @@ export const useAdminProfiles = () => {
     activeProfiles,
     handleViewProfile,
     handleEditProfile,
-    closeProfileView,
-    closeProfileEdit,
-    saveProfileEdit,
-    selectedProfile,
-    profileToEdit,
     refetch,
     loadingStatuses
   };

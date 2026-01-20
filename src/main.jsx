@@ -14,18 +14,18 @@ import { configureStore } from "@reduxjs/toolkit";
 // User API
 import { apiSlice as userApi } from "./context/api.js";
 
-// Admin API
-import { adminBaseApi } from "./Admin/context/apiSlice.js";
+// Admin API - CHANGE THIS LINE:
+import { adminApi } from "./Admin/context/apiSlice.js"; // ✅ Changed from adminBaseApi
 
 const store = configureStore({
   reducer: {
     [userApi.reducerPath]: userApi.reducer,
-    [adminBaseApi.reducerPath]: adminBaseApi.reducer
+    [adminApi.reducerPath]: adminApi.reducer // ✅ Changed here too
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       userApi.middleware,
-      adminBaseApi.middleware
+      adminApi.middleware // ✅ Changed here too
     )
 });
 

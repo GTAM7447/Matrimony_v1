@@ -2,13 +2,12 @@
 import React, { useState, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { Bell, Menu, X, User } from "lucide-react";
-
 import NotificationSidebar from "../../components/NotificationPanel/NotificationPanel";
 import LogoutPanel from "../../components/LogoutPanel/LogoutPanel";
 import { useAuth } from "../../context/AuthContext";
 import { profileApi } from "../../context/profileApi";
 import { useDispatch } from "react-redux";
-
+import Cookies from "js-cookie";
 
 import {
   useGetOwnProfileQuery,
@@ -19,15 +18,11 @@ import {
 
 import { mapNavbarProfile } from "../../context/mapNavbarProfile";
 
-
 const NAV_ITEMS = [
   { name: "HOME", path: "/", public: true },
-
-  // Protected (middle)
   { name: "SEARCH PROFILES", path: "/search-profiles", protected: true },
   { name: "BRIDES", path: "/brides", protected: true },
   { name: "GROOMS", path: "/grooms", protected: true },
-
   { name: "SUCCESS STORIES", path: "/success-stories", public: true },
   { name: "MEMBERSHIP PLANS", path: "/plans", public: true },
   { name: "CONTACT US", path: "/contact", public: true },
@@ -36,7 +31,10 @@ const NAV_ITEMS = [
 /*  COMPONENT  */
 const Navbar = () => {
   const { isLoggedIn, logout } = useAuth();
-  const loggedIn = isLoggedIn || !!localStorage.getItem("authToken");
+
+  /* ===================== COOKIE BASED LOGIN CHECK ===================== */
+  const tokenFromCookie = Cookies.get("authToken");
+  const loggedIn = isLoggedIn || !!tokenFromCookie;
 
   const [openNotify, setOpenNotify] = useState(false);
   const [openLogout, setOpenLogout] = useState(false);
@@ -46,9 +44,11 @@ const Navbar = () => {
   const { data: ownProfile } = useGetOwnProfileQuery(undefined, {
     skip: !loggedIn,
   });
+
   const { data: sentData } = useGetSentInterestsQuery(undefined, {
     skip: !loggedIn,
   });
+
   const { data: receivedData } = useGetReceivedInterestsQuery(undefined, {
     skip: !loggedIn,
   });
@@ -60,46 +60,48 @@ const Navbar = () => {
 
   const dispatch = useDispatch();
 
-React.useEffect(() => {
-  if (loggedIn) {
-    dispatch(
-      profileApi.util.prefetch("getOwnProfile", undefined, {
-        force: false,
-      })
-    );
+  React.useEffect(() => {
+    if (loggedIn) {
+      dispatch(
+        profileApi.util.prefetch("getOwnProfile", undefined, {
+          force: false,
+        })
+      );
 
-    dispatch(
-      profileApi.util.prefetch("getProfilePhoto", undefined, {
-        force: false,
-      })
-    );
-  }
-}, [loggedIn, dispatch]);
+      dispatch(
+        profileApi.util.prefetch("getProfilePhoto", undefined, {
+          force: false,
+        })
+      );
+    }
+  }, [loggedIn, dispatch]);
 
-const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
-  skip: !loggedIn,
-});
+  const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
+    skip: !loggedIn,
+  });
 
-const avatarInitial = useMemo(() => {
-  const p = ownProfile?.data?.userProfile;
-  const firstName = p?.firstName;
-  return firstName ? firstName.charAt(0).toUpperCase() : <User size={16} />;
-}, [ownProfile]);
+  const avatarInitial = useMemo(() => {
+    const p = ownProfile?.data?.userProfile;
+    const firstName = p?.firstName;
+    return firstName ? firstName.charAt(0).toUpperCase() : <User size={16} />;
+  }, [ownProfile]);
 
+  /* ===================== LOGOUT HANDLER (COOKIE) ===================== */
+  const handleLogout = () => {
+    Cookies.remove("authToken", { path: "/" });
+    logout();
+  };
 
   /*  RENDER  */
-
   return (
     <>
       <nav className="w-full sticky top-0 z-[200] bg-[#FF8C4426] backdrop-blur-md shadow-md">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between h-[64px] px-4 md:px-10">
 
-          {/* LOGO */}
           <div className="text-xl font-bold text-[#FF8A41]">
             MATRIMONY
           </div>
 
-          {/*  DESKTOP MENU  */}
           <ul className="hidden md:flex items-center gap-6 text-sm font-medium">
             {NAV_ITEMS.map((item) => {
               if (item.protected && !loggedIn) return null;
@@ -121,7 +123,6 @@ const avatarInitial = useMemo(() => {
             })}
           </ul>
 
-          {/*  RIGHT ACTIONS  */}
           <div className="flex items-center gap-3">
             {loggedIn && (
               <button
@@ -141,7 +142,6 @@ const avatarInitial = useMemo(() => {
                 className="w-9 h-9 bg-[#FF8A41] text-white flex items-center justify-center rounded-full font-semibold cursor-pointer"
               >
                 {avatarInitial}
-
               </div>
             ) : (
               <div className="hidden md:flex gap-3">
@@ -160,7 +160,6 @@ const avatarInitial = useMemo(() => {
               </div>
             )}
 
-            {/* MOBILE TOGGLE */}
             <button
               className="md:hidden p-2 rounded-full hover:bg-white/40"
               onClick={() => setMenuOpen((v) => !v)}
@@ -174,7 +173,6 @@ const avatarInitial = useMemo(() => {
           </div>
         </div>
 
-        {/*  MOBILE MENU  */}
         {menuOpen && (
           <div className="md:hidden bg-[#FF8C4426] backdrop-blur border-t border-orange-300">
             <ul className="flex flex-col px-4 py-4 text-base font-medium">
@@ -195,7 +193,6 @@ const avatarInitial = useMemo(() => {
                 );
               })}
 
-              {/* AUTH ACTIONS */}
               <div className="mt-4 pt-4 border-t border-gray-300">
                 {!loggedIn ? (
                   <>
@@ -217,7 +214,7 @@ const avatarInitial = useMemo(() => {
                 ) : (
                   <button
                     onClick={() => {
-                      logout();
+                      handleLogout();
                       setMenuOpen(false);
                     }}
                     className="w-full bg-red-500 text-white py-3 rounded-full"
@@ -231,24 +228,22 @@ const avatarInitial = useMemo(() => {
         )}
       </nav>
 
-      {/*  PANELS  */}
       <NotificationSidebar
         open={openNotify}
         onClose={() => setOpenNotify(false)}
       />
 
       <LogoutPanel
-  open={openLogout}
-  onClose={() => setOpenLogout(false)}
-  sentCount={navbarProfile?.sentCount || 0}
-  receivedCount={navbarProfile?.receivedCount || 0}
-  profile={ownProfile?.data}
-  photoData={photoResponse?.data}
-/>
-
+        open={openLogout}
+        onClose={() => setOpenLogout(false)}
+        sentCount={navbarProfile?.sentCount || 0}
+        receivedCount={navbarProfile?.receivedCount || 0}
+        profile={ownProfile?.data}
+        photoData={photoResponse?.data}
+        onLogout={handleLogout}
+      />
     </>
   );
 };
 
 export default Navbar;
-

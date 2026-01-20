@@ -890,7 +890,6 @@ const Step5PartnerExpectations = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [hasExistingPartner, setHasExistingPartner] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [version, setVersion] = useState(0);
 
   // RTK Query hooks
@@ -981,12 +980,11 @@ const Step5PartnerExpectations = ({
 
       console.log("Transformed Form Data:", transformedData);
       
-      // ✅ ALWAYS load data
+      //  ALWAYS load data
       setFormData(transformedData);
       setData(transformedData);
-      setDataLoaded(true);
       
-      // ✅ auto-next only once and only in sequence
+      // auto-next only once and only in sequence
       if (
         !autoNextRef.current &&
         Object.keys(transformedData).length > 0 &&
@@ -1004,16 +1002,17 @@ const Step5PartnerExpectations = ({
     }
   }, [isSuccess, apiData, step, completedStep, nextStep, setData]);
 
-  // 404 = new user
-  useEffect(() => {
-    if (partnerError?.status === 404 && !dataLoaded) {
-      apiLoadedRef.current = true;
-      setHasExistingPartner(false);
-      setDataLoaded(true);
-      setSuccessMessage("No existing partner preferences found. Please create new ones.");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    }
-  }, [partnerError, dataLoaded]);
+useEffect(() => {
+  if (partnerError?.status === 404 && !apiLoadedRef.current) {
+    apiLoadedRef.current = true;
+    setHasExistingPartner(false);
+    setSuccessMessage(
+      "No existing partner preferences found. Please create new ones."
+    );
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }
+}, [partnerError]);
+
 
   const validateField = (name, value) => {
     let err = "";
@@ -1210,13 +1209,6 @@ const Step5PartnerExpectations = ({
       return;
     }
     
-    // Check authentication
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setErrorMessage("Please login to save partner preferences");
-      return;
-    }
     
     try {
       setIsLoading(true);
@@ -1320,28 +1312,8 @@ const Step5PartnerExpectations = ({
     marginBottom: "4px",
   };
 
-  // Check authentication
-  const token = localStorage.getItem("authToken");
-
-  if (!token) {
-    return (
-      <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
-        <div className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl overflow-x-auto" style={{ backgroundColor: "#FF8C4426" }}>
-          <Stepper step={step} completedStep={completedStep} goToStep={goToStep} />
-        </div>
-        <div className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center" style={{ backgroundColor: "#FF8C4405" }}>
-          <div className="text-red-500 text-lg mb-4">Authentication Required</div>
-          <p className="text-gray-600 mb-6">Please login to access your partner preferences.</p>
-          <button onClick={() => (window.location.href = "/signin")} className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Show loading state
-  if (isFetching && !dataLoaded) {
+  if (isFetching && !apiLoadedRef.current) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
         <div className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl overflow-x-auto" style={{ backgroundColor: "#FF8C4426" }}>

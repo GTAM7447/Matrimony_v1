@@ -1332,6 +1332,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { City } from "country-state-city";
 import Stepper from "./Stepper";
+import Cookies from "js-cookie";
+
 import {
   useCreatePersonalDetailsMutation,
   useGetPersonalDetailsQuery,
@@ -1693,12 +1695,8 @@ const Step1PersonalDetails = ({
       return;
     }
 
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setErrorMessage("Please login to save profile data");
-      return;
-    }
+  const token = Cookies.get("authToken");
+  
 
     try {
       setIsLoading(true);
@@ -1806,42 +1804,6 @@ const Step1PersonalDetails = ({
     marginBottom: "4px",
   };
 
-  // Check authentication
-  const token = localStorage.getItem("authToken");
-
-  if (!token) {
-    return (
-      <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
-        <div
-          className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl overflow-x-auto"
-          style={{ backgroundColor: "#FF8C4426" }}
-        >
-          <Stepper
-            step={step}
-            completedStep={completedStep}
-            goToStep={goToStep}
-          />
-        </div>
-        <div
-          className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center"
-          style={{ backgroundColor: "#FF8C4405" }}
-        >
-          <div className="text-red-500 text-lg mb-4">
-            Authentication Required
-          </div>
-          <p className="text-gray-600 mb-6">
-            Please login to access your profile data.
-          </p>
-          <button
-            onClick={() => (window.location.href = "/signin")}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Show loading state
   if (isFetching && !dataLoaded) {

@@ -1131,7 +1131,6 @@ const Step3EducationDetails = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [hasExistingEducation, setHasExistingEducation] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [showRequiredAlert, setShowRequiredAlert] = useState(false);
   const [missingFieldsList, setMissingFieldsList] = useState([]);
   const [version, setVersion] = useState(0);
@@ -1140,16 +1139,15 @@ const Step3EducationDetails = ({
   const [createEducationDetails] = useCreateEducationDetailsMutation();
   const [updateEducationDetails] = useUpdateEducationDetailsMutation();
 
-  // GET API hook - Auto fetches on mount
-  const {
-    data: res,
-    isLoading: isFetching,
-    error: educationError,
-    isSuccess,
-    refetch,
-  } = useGetEducationDetailsQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+ const {
+  data: res,
+  isLoading: isFetching,
+  error: educationError,
+  isSuccess,
+} = useGetEducationDetailsQuery(undefined, {
+  refetchOnMountOrArgChange: false,
+});
+
 
   const apiData = res?.data;
 
@@ -1246,8 +1244,11 @@ const Step3EducationDetails = ({
   };
 
   const isFormValid = requiredKeys.every(
-    (key) => formData[key] !== undefined && formData[key] !== ""
-  );
+  (key) =>
+    formData[key] !== undefined &&
+    formData[key].toString().trim() !== ""
+);
+
 
   const [validationErrors, setValidationErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
@@ -1280,40 +1281,35 @@ const Step3EducationDetails = ({
 
     console.log("Education form data populated:", transformedData);
 
-    // ✅ ALWAYS load data
+    // ALWAYS load data
     setFormData(transformedData);
     setData(transformedData);
-    setDataLoaded(true);
 
-    // ✅ auto-next only once and only in sequence
-    if (
-      !autoNextRef.current &&
-      Object.keys(transformedData).length > 0 &&
-      step === completedStep + 1
-    ) {
-      autoNextRef.current = true;
-      setTimeout(() => {
-        console.log("Auto-navigating to next step...");
-        nextStep();
-      }, 0);
-    }
+  // auto-next only when data exists
+if (
+  !autoNextRef.current &&
+  step === completedStep + 1
+) {
+  autoNextRef.current = true;
+  nextStep();
+}
+
 
     setSuccessMessage("Education details loaded successfully");
     setTimeout(() => setSuccessMessage(""), 3000);
   }, [isSuccess, apiData, step, completedStep, nextStep, setData]);
 
-  // 404 = new user
-  useEffect(() => {
-    if (educationError?.status === 404 && !dataLoaded) {
-      apiLoadedRef.current = true;
-      setHasExistingEducation(false);
-      setDataLoaded(true);
-      setSuccessMessage(
-        "No existing education details found. Please create new ones."
-      );
-      setTimeout(() => setSuccessMessage(""), 3000);
-    }
-  }, [educationError, dataLoaded]);
+useEffect(() => {
+  if (educationError?.status === 404 && !apiLoadedRef.current) {
+    apiLoadedRef.current = true;
+    setHasExistingEducation(false);
+    setSuccessMessage(
+      "No existing education details found. Please create new ones."
+    );
+    setTimeout(() => setSuccessMessage(""), 3000);
+  }
+}, [educationError]);
+
 
   const validateField = (name, value) => {
     let err = "";
@@ -1595,8 +1591,9 @@ const Step3EducationDetails = ({
     }
 
     // Validate income with experience (backend business rule)
-    const incomeNum = parseInt(formData.incomePerYear) || 0;
-    const experienceNum = parseInt(formData.experienceYears) || 0;
+const incomeNum = Number(formData.incomePerYear ?? 0);
+const experienceNum = Number(formData.experienceYears ?? 0);
+
     if (!validateIncomeWithExperience(incomeNum, experienceNum)) {
       setErrorMessage("Income above ₹50,00,000 requires minimum 2 years of experience");
       return;
@@ -1608,13 +1605,6 @@ const Step3EducationDetails = ({
       return;
     }
 
-    // Check authentication
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setErrorMessage("Please login to save education data");
-      return;
-    }
 
     try {
       setIsLoading(true);
@@ -1658,8 +1648,6 @@ const Step3EducationDetails = ({
         if (response.data?.version) {
           setVersion(response.data.version);
         }
-
-        await refetch();
         
         // Move to next step after short delay
         setTimeout(() => {
@@ -1759,44 +1747,8 @@ const Step3EducationDetails = ({
     marginBottom: "4px",
   };
 
-  // Check authentication first
-  const token = localStorage.getItem("authToken");
 
-  if (!token) {
-    return (
-      <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
-        <div
-          className="px-4 sm:px-6 md:px-10 py-1 rounded-t-xl overflow-x-auto"
-          style={{ backgroundColor: "#FF8C4426" }}
-        >
-          <Stepper
-            step={step}
-            completedStep={completedStep}
-            goToStep={goToStep}
-          />
-        </div>
-        <div
-          className="px-4 sm:px-6 md:px-10 py-20 flex flex-col items-center justify-center"
-          style={{ backgroundColor: "#FF8C4405" }}
-        >
-          <div className="text-red-500 text-lg mb-4">
-            Authentication Required
-          </div>
-          <p className="text-gray-600 mb-6">
-            Please login to access your education data.
-          </p>
-          <button
-            onClick={() => (window.location.href = "/signin")}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (isFetching && !dataLoaded) {
+  if (isFetching && !apiLoadedRef.current) {
     return (
       <div className="w-full max-w-[95%] lg:max-w-[95%] xl:max-w-[90%] mx-auto font-[Inter] flex flex-col">
         <div

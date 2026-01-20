@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import Step1BasicDetails from "../components/ProfileCreation/Step1PersonalDetails";
 import Step2PersonalDetails from "../components/ProfileCreation/Step2HoroscopeDetails";
 import Step3ReligionDetails from "../components/ProfileCreation/Step3EducationDetails";
@@ -8,41 +7,154 @@ import Step5FamilyDetails from "../components/ProfileCreation/Step5PartnerExpect
 import Step6ResidentialDetails from "../components/ProfileCreation/Step6ResidentialDetails";
 import Step7UploadDocuments from "../components/ProfileCreation/Step7ProfilePasswordPhoto";
 import AdminUserInfo from "../components/ProfileCreation/AdminUserInfo.jsx";
+import Cookies from "js-cookie"; // ADD THIS IMPORT
 
 const RegistrationForm = () => {
-
   const [formData, setFormData] = useState({});
 
   const handleInputChange = (name, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /* ================= ADMIN REQUIRED VALIDATION ONLY ================= */
+  const validateAdminRequiredFields = () => {
+    if (!formData.email?.trim()) return "Email is required";
+    if (!formData.password?.trim()) return "Password is required";
+    if (!formData.mobileNumber) return "Mobile number is required";
+    if (!formData.gender) return "Gender is required";
+    return null;
+  };
+
+  /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     try {
-      const fd = new FormData();
+      // CHANGE: Get token from cookies instead of localStorage
+      const token = Cookies.get("authToken");
+      if (!token) {
+        alert("Please login first!");
+        return;
+      }
 
-      // Append non-file fields
-      Object.keys(formData).forEach((key) => {
-        if (
-          key !== "profilePhotoFile" &&
-          key !== "idProofFile" &&
-          key !== "otherDocsFile"
-        ) {
-          fd.append(key, formData[key]);
-        }
-      });
+      const validationError = validateAdminRequiredFields();
+      if (validationError) {
+        alert(validationError);
+        return;
+      }
 
-      // Append files
-      if (formData.profilePhotoFile) fd.append("profilePhoto", formData.profilePhotoFile);
-      if (formData.idProofFile) fd.append("idProof", formData.idProofFile);
-      if (formData.otherDocsFile) fd.append("otherDocs", formData.otherDocsFile);
+      /* ================= BASE PAYLOAD ================= */
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        mobileNumber: String(formData.mobileNumber),
+        gender: formData.gender,
+        autoActivate: true,
+        skipEmailVerification: true,
+        adminNotes: formData.adminNotes || "",
+      };
 
-      const token = localStorage.getItem("authToken")
+      /* ================= OPTIONAL SECTIONS (ADD ONLY IF FILLED) ================= */
 
-      console.log("TOKEN USED:", token);
+      if (formData.firstName || formData.lastName) {
+        payload.profileDetails = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          age: formData.age ? Number(formData.age) : null,
+          gender: formData.gender,
+          religion: formData.religion,
+          caste: formData.caste,
+          maritalStatus: formData.maritalStatus,
+          diet: formData.diet,
+          bloodGroup: formData.bloodGroup,
+          height: formData.height ? Number(formData.height) : null,
+          weight: formData.weight ? Number(formData.weight) : null,
+          complexion: formData.complexion,
+          address: formData.fullAddress,
+          currentCity: formData.city,
+          district: formData.district,
+          taluka: formData.taluka,
+          pinCode: formData.pinCode ? Number(formData.pinCode) : null,
+          physicallyChallenged: formData.physicallyChallenged === "Yes",
+          spectacle: formData.spectacle === "Yes",
+          lens: formData.lens === "Yes",
+        };
+      }
+
+      if (formData.dob) {
+        payload.horoscopeDetails = {
+          dob: formData.dob,
+          time: formData.time
+            ? {
+                hour: Number(formData.time.split(":")[0]),
+                minute: Number(formData.time.split(":")[1]),
+                second: 0,
+                nano: 0,
+              }
+            : null,
+          birthPlace: formData.birthPlace,
+          nakshatra: formData.nakshatra,
+          rashi: formData.rashi,
+          mangal: formData.mangal,
+          gotra: formData.gotra,
+        };
+      }
+
+      if (formData.education || formData.occupation) {
+        payload.educationDetails = {
+          education: formData.education,
+          degree: formData.degree,
+          occupation: formData.occupation,
+          occupationDetailsValid: formData.occupationDetails,
+          incomePerYear: formData.incomePerYear
+            ? Number(formData.incomePerYear)
+            : null,
+        };
+      }
+
+      if (formData.fathersName || formData.mothersName) {
+        payload.familyBackground = {
+          fathersName: formData.fathersName,
+          fatherOccupation: formData.fatherOccupation,
+          mothersName: formData.mothersName,
+          motherOccupation: formData.motherOccupation,
+          brother: Number(formData.brothers || 0),
+          sisters: Number(formData.sisters || 0),
+          marriedBrothers: Number(formData.marriedBrothers || 0),
+          marriedSisters: Number(formData.marriedSisters || 0),
+          interCasteInFamily: formData.interCasteInFamily === "Yes",
+        };
+      }
+
+      if (formData.country || formData.city) {
+        payload.contactDetails = {
+          mobileNumber: String(formData.mobileNumber),
+          email: formData.email,
+          address: formData.fullAddress,
+          city: formData.city,
+          state: formData.state,
+          country: formData.country,
+          pinCode: formData.pinCode ? Number(formData.pinCode) : null,
+          visibility: formData.contactVisibility,
+        };
+      }
+
+      if (formData.lookingFor) {
+        payload.partnerPreferences = {
+          lookingFor: formData.lookingFor,
+          ageRange: formData.ageRange,
+          heightRange: formData.heightRange,
+          religion: formData.partnerReligion,
+          caste: formData.partnerCaste,
+          education: formData.partnerEducation,
+          occupation: formData.partnerOccupation,
+          incomeRange: formData.incomeRange,
+          maritalStatus: formData.partnerMaritalStatus,
+          eatingHabits: formData.eatingHabits,
+          drinkingHabits: formData.drinkingHabits,
+          smokingHabits: formData.smokingHabits,
+        };
+      }
+
+      console.log("FINAL PAYLOAD", payload);
 
       const res = await fetch(
         "https://mttlprv1.digiledge.info/api/v1/admin/registration/complete",
@@ -50,99 +162,44 @@ const RegistrationForm = () => {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-          body: fd,
-          redirect: "manual",
+          body: JSON.stringify(payload),
         }
       );
 
-      console.log("RAW RESPONSE:", res.status, res.statusText);
-
-      // Log all raw headers
-      for (let [key, value] of res.headers.entries()) {
-        console.log(`${key}: ${value}`);
-      }
-
-      // If backend returned an error
       if (!res.ok) {
-        const text = await res.text();
-        console.error("BACKEND ERROR RAW:", text);
-        alert(text || "Submission failed");
-        return;
+        const err = await res.text();
+        throw new Error(err);
       }
 
-      const data = await res.json();
-      console.log("Success:", data);
       alert("Registration Successful!");
-
     } catch (err) {
-      console.error("Error submitting:", err);
-      alert("Error submitting form");
+      console.error(err);
+      alert("Error: " + err.message);
     }
   };
 
   return (
     <div className="w-full min-h-screen bg-[#F4F9FF] px-4 py-6">
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm p-6 space-y-12">
-
-        {/* ================= ADMIN USER INFO ================= */}
-        <AdminUserInfo
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 1 ================= */}
-        <Step1BasicDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 2 ================= */}
-        <Step2PersonalDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 3 ================= */}
-        <Step3ReligionDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 4 ================= */}
-        <Step4EducationDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 5 ================= */}
-        <Step5FamilyDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 6 ================= */}
-        <Step6ResidentialDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 7 ================= */}
-        <Step7UploadDocuments
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= FINAL SUBMIT ================= */}
+        <AdminUserInfo formData={formData} onInputChange={handleInputChange} />
+        <Step1BasicDetails formData={formData} onInputChange={handleInputChange} />
+        <Step2PersonalDetails formData={formData} onInputChange={handleInputChange} />
+        <Step3ReligionDetails formData={formData} onInputChange={handleInputChange} />
+        <Step4EducationDetails formData={formData} onInputChange={handleInputChange} />
+        <Step5FamilyDetails formData={formData} onInputChange={handleInputChange} />
+        <Step6ResidentialDetails formData={formData} onInputChange={handleInputChange} />
+        <Step7UploadDocuments formData={formData} onInputChange={handleInputChange} />
+        
         <div className="flex justify-end pt-6 border-t">
           <button
             onClick={handleSubmit}
             className="bg-[#991CDD] hover:opacity-90 text-white px-8 py-3 rounded-lg text-sm font-medium"
-          >
+          > 
             Submit Registration
           </button>
         </div>
-
       </div>
     </div>
   );
