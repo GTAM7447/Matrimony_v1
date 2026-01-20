@@ -336,13 +336,13 @@ const SignIn = () => {
       const decoded = jwtDecode(token);
       const roles = decoded?.authorities || [];
 
-      // If ADMIN → bypass me API and go direct
+      // If ADMIN - bypass me API and go direct
       if (roles.some((r) => r.toUpperCase().includes("ADMIN"))) {
         navigate("/admin/dashboard", { replace: true });
         return;
       }
 
-      // Normal users → Check Profile Completion via ME API
+      // Normal users - Check Profile Completion via ME API
       try {
         const meRes = await axios.get(
           "https://mttlprv1.digiledge.info/api/v1/complete-profile/me",

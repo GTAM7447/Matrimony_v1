@@ -2,13 +2,12 @@
 import React, { useState, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { Bell, Menu, X, User } from "lucide-react";
-
 import NotificationSidebar from "../../components/NotificationPanel/NotificationPanel";
+
 import LogoutPanel from "../../components/LogoutPanel/LogoutPanel";
 import { useAuth } from "../../context/AuthContext";
 import { profileApi } from "../../context/profileApi";
 import { useDispatch } from "react-redux";
-
 
 import {
   useGetOwnProfileQuery,
@@ -18,7 +17,6 @@ import {
 } from "../../context/profileApi";
 
 import { mapNavbarProfile } from "../../context/mapNavbarProfile";
-
 
 const NAV_ITEMS = [
   { name: "HOME", path: "/", public: true },
@@ -60,35 +58,34 @@ const Navbar = () => {
 
   const dispatch = useDispatch();
 
-React.useEffect(() => {
-  if (loggedIn) {
-    dispatch(
-      profileApi.util.prefetch("getOwnProfile", undefined, {
-        force: false,
-      })
-    );
+  React.useEffect(() => {
+    if (loggedIn) {
+      dispatch(
+        profileApi.util.prefetch("getOwnProfile", undefined, {
+          force: false,
+        })
+      );
 
-    dispatch(
-      profileApi.util.prefetch("getProfilePhoto", undefined, {
-        force: false,
-      })
-    );
-  }
-}, [loggedIn, dispatch]);
+      dispatch(
+        profileApi.util.prefetch("getProfilePhoto", undefined, {
+          force: false,
+        })
+      );
+    }
+  }, [loggedIn, dispatch]);
 
-const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
-  skip: !loggedIn,
-});
+  const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
+    skip: !loggedIn,
+  });
 
-const avatarInitial = useMemo(() => {
-  const p = ownProfile?.data?.userProfile;
-  const firstName = p?.firstName;
-  return firstName ? firstName.charAt(0).toUpperCase() : <User size={16} />;
-}, [ownProfile]);
+  const avatarInitial = useMemo(() => {
+    const p = ownProfile?.data?.userProfile;
+    const firstName = p?.firstName;
+    return firstName ? firstName.charAt(0).toUpperCase() : <User size={16} />;
+  }, [ownProfile]);
 
 
   /*  RENDER  */
-
   return (
     <>
       <nav className="w-full sticky top-0 z-[200] bg-[#FF8C4426] backdrop-blur-md shadow-md">
@@ -238,17 +235,15 @@ const avatarInitial = useMemo(() => {
       />
 
       <LogoutPanel
-  open={openLogout}
-  onClose={() => setOpenLogout(false)}
-  sentCount={navbarProfile?.sentCount || 0}
-  receivedCount={navbarProfile?.receivedCount || 0}
-  profile={ownProfile?.data}
-  photoData={photoResponse?.data}
-/>
-
+        open={openLogout}
+        onClose={() => setOpenLogout(false)}
+        sentCount={navbarProfile?.sentCount || 0}
+        receivedCount={navbarProfile?.receivedCount || 0}
+        profile={ownProfile?.data}
+        photoData={photoResponse?.data}
+      />
     </>
   );
 };
 
 export default Navbar;
-
