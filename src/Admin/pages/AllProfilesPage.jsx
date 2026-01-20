@@ -157,9 +157,9 @@ const AllProfilesPage = () => {
           </span>
         </div>
 
-        <button className="bg-[#7C68FF] text-white px-4 py-2 rounded-lg text-sm font-medium">
+        {/* <button className="bg-[#7C68FF] text-white px-4 py-2 rounded-lg text-sm font-medium">
           Create Profile
-        </button>
+        </button> */}
       </div>
 
       {/* CONTENT */}

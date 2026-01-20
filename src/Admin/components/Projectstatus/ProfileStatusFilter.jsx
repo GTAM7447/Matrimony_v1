@@ -43,7 +43,7 @@ export default function ProfileStatusFilter({
         `}
       >
         {/* HEADER (Mobile) */}
-        <div className="flex items-center justify-between mb-6 lg:hidden">
+        <div className="flex items-center justify-between mb-6 lg:hidden mt-12">
           <h3 className="text-sm font-semibold text-gray-800">
             FILTER
           </h3>

@@ -233,112 +233,112 @@
 
 
 
-/* eslint-disable no-unused-vars */
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+// /* eslint-disable no-unused-vars */
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
 
-const AdminLogin = () => {
-  const navigate = useNavigate();
+// const AdminLogin = () => {
+//   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+//   const [formData, setFormData] = useState({
+//     email: "",
+//     password: "",
+//   });
 
-  const [loading, setLoading] = useState(false);
-  const [apiMessage, setApiMessage] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const [apiMessage, setApiMessage] = useState("");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setApiMessage("");
-  };
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.name]: e.target.value });
+//     setApiMessage("");
+//   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
 
-    try {
-      const res = await axios.post(
-        "https://mttlprv1.digiledge.info/jwt/login",
-        {
-          email: formData.email,
-          password: formData.password,
-        }
-      );
+//     try {
+//       const res = await axios.post(
+//         "https://mttlprv1.digiledge.info/jwt/login",
+//         {
+//           email: formData.email,
+//           password: formData.password,
+//         }
+//       );
 
-      const token = res?.data?.token || res?.data?.accessToken;
+//       const token = res?.data?.token || res?.data?.accessToken;
 
-      if (!token) {
-        setApiMessage("Login failed. No token received.");
-        return;
-      }
+//       if (!token) {
+//         setApiMessage("Login failed. No token received.");
+//         return;
+//       }
 
-      localStorage.setItem("adminToken", token);
-      localStorage.setItem("adminEmail", formData.email);
+//       localStorage.setItem("adminToken", token);
+//       localStorage.setItem("adminEmail", formData.email);
 
-      setApiMessage("Login Successful! Redirecting...");
-      setTimeout(() => navigate("/admin/create-profile"), 1200);
-    } catch (error) {
-      const msg =
-        error?.response?.data?.message || "Invalid credentials. Try again.";
-      setApiMessage(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+//       setApiMessage("Login Successful! Redirecting...");
+//       setTimeout(() => navigate("/admin/create-profile"), 1200);
+//     } catch (error) {
+//       const msg =
+//         error?.response?.data?.message || "Invalid credentials. Try again.";
+//       setApiMessage(msg);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4">
-      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-[#7C68FF] mb-4">
-          Admin Login
-        </h2>
+//   return (
+//     <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4">
+//       <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
+//         <h2 className="text-2xl font-bold text-center text-[#7C68FF] mb-4">
+//           Admin Login
+//         </h2>
 
-        {apiMessage && (
-          <p
-            className={`text-center text-sm mb-3 ${
-              apiMessage.includes("Successful")
-                ? "text-green-600"
-                : "text-red-600"
-            }`}
-          >
-            {apiMessage}
-          </p>
-        )}
+//         {apiMessage && (
+//           <p
+//             className={`text-center text-sm mb-3 ${
+//               apiMessage.includes("Successful")
+//                 ? "text-green-600"
+//                 : "text-red-600"
+//             }`}
+//           >
+//             {apiMessage}
+//           </p>
+//         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            name="email"
-            placeholder="Admin email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#7C68FF] outline-none"
-          />
+//         <form onSubmit={handleSubmit} className="space-y-4">
+//           <input
+//             type="email"
+//             name="email"
+//             placeholder="Admin email"
+//             value={formData.email}
+//             onChange={handleChange}
+//             className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#7C68FF] outline-none"
+//           />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Admin password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#7C68FF] outline-none"
-          />
+//           <input
+//             type="password"
+//             name="password"
+//             placeholder="Admin password"
+//             value={formData.password}
+//             onChange={handleChange}
+//             className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#7C68FF] outline-none"
+//           />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full bg-[#7C68FF] text-white py-2 rounded-lg font-medium hover:opacity-90 transition ${
-              loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
+//           <button
+//             type="submit"
+//             disabled={loading}
+//             className={`w-full bg-[#7C68FF] text-white py-2 rounded-lg font-medium hover:opacity-90 transition ${
+//               loading ? "opacity-70 cursor-not-allowed" : ""
+//             }`}
+//           >
+//             {loading ? "Logging in..." : "Login"}
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
 
-export default AdminLogin;
+// export default AdminLogin;

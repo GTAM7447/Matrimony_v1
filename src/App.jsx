@@ -175,8 +175,8 @@ import AdminProtectedRoute from "./Admin/context/AdminProtectedRoute";
 import AdminLayout from "./Admin/components/layout/AdminLayout";
 
 /* ADMIN PAGES */
-import AdminSignIn from "./Admin/pages/SignIn";
-import AdminSignUp from "./Admin/pages/SignUp";
+// import AdminSignIn from "./Admin/pages/SignIn";
+// import AdminSignUp from "./Admin/pages/SignUp";
 import AdminHomePage from "./Admin/pages/AdminHomePage";
 import AllProfilesPage from "./Admin/pages/AllProfilesPage";
 import EditProfilePage from "./Admin/components/AllProfilesPage/EditProfilePage/EditProfilePage";
@@ -233,8 +233,8 @@ function App() {
         <Route path="/reset" element={<ResetPasswordPage />} />
 
         {/* ADMIN PUBLIC */}
-        <Route path="/admin/login" element={<AdminSignIn />} />
-        <Route path="/admin/register" element={<AdminSignUp />} />
+        {/* <Route path="/admin/login" element={<AdminSignIn />} /> */}
+        {/* <Route path="/admin/register" element={<AdminSignUp />} /> */}
 
         {/* ADMIN PROTECTED */}
         <Route
@@ -259,7 +259,7 @@ function App() {
         </Route>
 
         {/* OPTIONAL 404 */}
-        <Route path="*" element={<AdminSignIn />} />
+        {/* <Route path="*" element={<AdminSignIn />} /> */}
       </Routes>
     </>
   );

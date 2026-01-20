@@ -65,7 +65,7 @@ const MatchesFilter = () => {
         `}
       >
         {/* HEADER (Mobile Close) */}
-        <div className="flex items-center justify-between mb-3 lg:hidden">
+        <div className="flex items-center justify-between mb-3 lg:hidden mt-14">
           <h3 className="text-sm font-semibold text-gray-700">FILTER</h3>
           <button
             onClick={() => setIsOpen(false)}
