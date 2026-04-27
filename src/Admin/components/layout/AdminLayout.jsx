@@ -11,7 +11,7 @@ const AdminLayout = () => {
       <AdminNavbar />
 
       {/* ADMIN CONTENT */}
-      <main className="flex-grow px-4 py-6">
+      <main className="flex-grow px-4 pt-24 pb-6">
         <Outlet />
       </main>
 

@@ -1,4 +1,4 @@
-// import React, { useEffect, useState } from "react";
+﻿// import React, { useEffect, useState } from "react";
 // import Stepper from "./Stepper";
 // import {
 //   useCreateEducationDetailsMutation,
@@ -281,7 +281,7 @@
 //         if (isNaN(incomeNum) || incomeNum < 0) {
 //           err = "Income must be a positive number";
 //         } else if (incomeNum > 100000000) {
-//           err = "Income cannot exceed ₹10,00,00,000 (100 million)";
+//           err = "Income cannot exceed â‚¹10,00,00,000 (100 million)";
 //         }
 //       }
       
@@ -304,7 +304,7 @@
 //       if (!validateIncomeWithExperience(formData.incomePerYear, formData.experienceYears)) {
 //         setValidationErrors(prev => ({
 //           ...prev,
-//           incomePerYear: "Income > ₹50L requires minimum 2 years experience"
+//           incomePerYear: "Income > â‚¹50L requires minimum 2 years experience"
 //         }));
 //       } else {
 //         // Clear the error if validation passes
@@ -496,7 +496,7 @@
 //     const incomeNum = parseInt(formData.incomePerYear) || 0;
 //     const experienceNum = parseInt(formData.experienceYears) || 0;
 //     if (!validateIncomeWithExperience(incomeNum, experienceNum)) {
-//       setErrorMessage("Income above ₹50,00,000 requires minimum 2 years of experience");
+//       setErrorMessage("Income above â‚¹50,00,000 requires minimum 2 years of experience");
 //       return;
 //     }
 
@@ -599,7 +599,7 @@
 //           if (errorMsg.includes("Education level should be a recognized qualification")) {
 //             errorMsg = "Please select a recognized qualification from the dropdown list. Do not enter custom values.";
 //           } else if (errorMsg.includes("Experience and income combination seems unrealistic")) {
-//             errorMsg = "Income above ₹50,00,000 requires minimum 2 years of experience. Please adjust your income or experience.";
+//             errorMsg = "Income above â‚¹50,00,000 requires minimum 2 years of experience. Please adjust your income or experience.";
 //           } else if (errorMsg.includes("Occupation details are required")) {
 //             errorMsg = "Please provide occupation details for Engineer/Manager/Consultant/Developer roles.";
 //           } else if (errorMsg.includes("Education field cannot be blank")) {
@@ -928,7 +928,7 @@
 
 //           {/* INCOME PER YEAR */}
 //           <div>
-//             <label style={labelStyle}>Annual Income (₹) <span style={{ color: "red" }}>*</span></label>
+//             <label style={labelStyle}>Annual Income (â‚¹) <span style={{ color: "red" }}>*</span></label>
 //             <select
 //               required
 //               name="incomePerYear"
@@ -970,7 +970,7 @@
 //             )}
 //             {formData.experienceYears && formData.incomePerYear && parseInt(formData.incomePerYear) > 5000000 && (
 //               <p className="text-xs text-yellow-600 mt-1">
-//                 Note: Income &gt; ₹50L requires minimum 2 years experience
+//                 Note: Income &gt; â‚¹50L requires minimum 2 years experience
 //               </p>
 //             )}
 //           </div>
@@ -1240,7 +1240,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
           if (isNaN(incomeNum) || incomeNum < 0) {
             error = "Income must be a positive number";
           } else if (incomeNum > 100000000) {
-            error = "Income cannot exceed ₹10,00,00,000";
+            error = "Income cannot exceed â‚¹10,00,00,000";
           }
           break;
           
@@ -1280,7 +1280,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
     const experienceNum = parseInt(experience) || 0;
     
     if (incomeNum > 5000000 && experienceNum < 2) {
-      return "Income > ₹50L requires minimum 2 years experience";
+      return "Income > â‚¹50L requires minimum 2 years experience";
     }
     return "";
   };
@@ -1463,7 +1463,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* EDUCATION */}
         <div>
           <label style={labelStyle}>
-            Education Level <span className="text-red-500">*</span>
+            Education Level
           </label>
           <select
             name="education"
@@ -1488,7 +1488,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* DEGREE */}
         <div className="sm:col-span-2">
           <label style={labelStyle}>
-            Degree / Specialization <span className="text-red-500">*</span>
+            Degree / Specialization
           </label>
           <input
             type="text"
@@ -1514,7 +1514,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* OCCUPATION */}
         <div>
           <label style={labelStyle}>
-            Occupation <span className="text-red-500">*</span>
+            Occupation
           </label>
           <input
             type="text"
@@ -1592,7 +1592,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* INCOME PER YEAR */}
         <div>
           <label style={labelStyle}>
-            Annual Income (₹) <span className="text-red-500">*</span>
+            Annual Income (â‚¹)
           </label>
           <select
             name="incomePerYear"

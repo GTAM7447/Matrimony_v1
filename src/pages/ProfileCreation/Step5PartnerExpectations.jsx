@@ -1,3 +1,4 @@
+import { getAuthToken } from '../../utils/auth';
 // import React, { useState, useEffect } from "react";
 // import { Country } from "country-state-city";
 // import Stepper from "./Stepper";
@@ -1211,7 +1212,7 @@ const Step5PartnerExpectations = ({
     }
     
     // Check authentication
-    const token = localStorage.getItem("authToken");
+    const token = getAuthToken();
 
     if (!token) {
       setErrorMessage("Please login to save partner preferences");
@@ -1321,7 +1322,7 @@ const Step5PartnerExpectations = ({
   };
 
   // Check authentication
-  const token = localStorage.getItem("authToken");
+  const token = getAuthToken();
 
   if (!token) {
     return (

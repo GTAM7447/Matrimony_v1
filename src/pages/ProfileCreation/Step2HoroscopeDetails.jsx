@@ -1,3 +1,4 @@
+import { getAuthToken } from '../../utils/auth';
 // import React, { useEffect, useRef, useState } from "react";
 // import Stepper from "./Stepper";
 // import { City } from "country-state-city";
@@ -229,7 +230,7 @@
 //     marginBottom: "4px",
 //   };
 
-//   const token = localStorage.getItem("authToken");
+//   const token = getAuthToken();
 
 //   if (!token) {
 //     return (
@@ -918,7 +919,7 @@ const Step2HoroscopeDetails = ({
     marginBottom: "4px",
   };
 
-  const token = localStorage.getItem("authToken");
+  const token = getAuthToken();
 
   if (!token) {
     return (

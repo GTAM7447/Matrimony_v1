@@ -1,4 +1,4 @@
-// import React, { useState, useEffect } from "react";
+﻿// import React, { useState, useEffect } from "react";
 // import { Country, State } from "country-state-city";
 // import Stepper from "./Stepper";
 // import {
@@ -1449,7 +1449,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         {/* FULL ADDRESS */}
         <div className="col-span-1 md:col-span-2 lg:col-span-3">
           <label style={labelStyle}>
-            Full Address <span className="text-red-500">*</span>
+            Full Address
           </label>
           <textarea
             name="fullAddress"
@@ -1503,7 +1503,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         {/* COUNTRY */}
         <div>
           <label style={labelStyle}>
-            Country <span className="text-red-500">*</span>
+            Country
           </label>
           <select
             name="country"
@@ -1561,7 +1561,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         {/* CITY */}
         <div>
           <label style={labelStyle}>
-            City <span className="text-red-500">*</span>
+            City
           </label>
           <select
             name="city"
@@ -1592,7 +1592,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         {/* PIN CODE */}
         <div>
           <label style={labelStyle}>
-            PIN Code <span className="text-red-500">*</span>
+            PIN Code
           </label>
           <input
             type="text"
@@ -1615,7 +1615,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         {/* MOBILE NUMBER */}
         <div>
           <label style={labelStyle}>
-            Mobile Number <span className="text-red-500">*</span>
+            Mobile Number
           </label>
           <input
             type="text"
@@ -1810,7 +1810,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         {/* CONTACT VISIBILITY */}
         <div>
           <label style={labelStyle}>
-            Contact Visibility <span className="text-red-500">*</span>
+            Contact Visibility
           </label>
           <select
             name="contactVisibility"

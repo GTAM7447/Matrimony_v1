@@ -1,4 +1,4 @@
-// import React, { useEffect, useState } from "react";
+﻿// import React, { useEffect, useState } from "react";
 // import Stepper from "./Stepper";
 // import { City } from "country-state-city";
 // import {
@@ -1042,7 +1042,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* BIRTH DATE */}
         <div>
           <label style={labelStyle}>
-            Birth Date <span className="text-red-500">*</span>
+            Birth Date
           </label>
           <input
             type="date"
@@ -1064,7 +1064,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* BIRTH TIME */}
         <div>
           <label style={labelStyle}>
-            Birth Time <span className="text-red-500">*</span>
+            Birth Time
           </label>
           <input
             type="text"
@@ -1089,7 +1089,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* BIRTH PLACE */}
         <div>
           <label style={labelStyle}>
-            Birth Place <span className="text-red-500">*</span>
+            Birth Place
           </label>
           <select
             name="birthPlace"
@@ -1116,7 +1116,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* RASHI */}
         <div>
           <label style={labelStyle}>
-            Rashi <span className="text-red-500">*</span>
+            Rashi
           </label>
           <select
             name="rashi"
@@ -1143,7 +1143,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* NAKSHATRA */}
         <div>
           <label style={labelStyle}>
-            Nakshatra <span className="text-red-500">*</span>
+            Nakshatra
           </label>
           <select
             name="nakshatra"
@@ -1170,7 +1170,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* CHARAN */}
         <div>
           <label style={labelStyle}>
-            Charan <span className="text-red-500">*</span>
+            Charan
           </label>
           <select
             name="charan"
@@ -1197,7 +1197,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* NADI */}
         <div>
           <label style={labelStyle}>
-            Nadi <span className="text-red-500">*</span>
+            Nadi
           </label>
           <select
             name="nadi"
@@ -1224,7 +1224,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* GAN */}
         <div>
           <label style={labelStyle}>
-            Gan <span className="text-red-500">*</span>
+            Gan
           </label>
           <select
             name="gan"
@@ -1251,7 +1251,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* MANGAL */}
         <div>
           <label style={labelStyle}>
-            Mangal <span className="text-red-500">*</span>
+            Mangal
           </label>
           <select
             name="mangal"
@@ -1278,7 +1278,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* GOTRA */}
         <div>
           <label style={labelStyle}>
-            Gotra <span className="text-red-500">*</span>
+            Gotra
           </label>
           <select
             name="gotra"
@@ -1305,7 +1305,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* DEVAK */}
         <div>
           <label style={labelStyle}>
-            Devak <span className="text-red-500">*</span>
+            Devak
           </label>
           <select
             name="devak"

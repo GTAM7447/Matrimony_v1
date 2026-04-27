@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import BackgroundSignIn from "../assets/SignIn/BackgroundSignIn.jpg";
 import axios from "axios";
+import { BASE_URL } from "../apiConfig";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ const SignUp = () => {
 
     try {
       const res = await axios.post(
-        "https://mttlprv1.digiledge.info/api/v1/users/register",
+        `${BASE_URL}/api/v1/users/register`,
         payload
       );
 
@@ -114,11 +115,10 @@ const SignUp = () => {
 
         {apiMessage && (
           <p
-            className={`text-center text-sm font-medium mb-3 ${
-              apiMessage.includes("Successful")
-                ? "text-green-600"
-                : "text-red-600"
-            }`}
+            className={`text-center text-sm font-medium mb-3 ${apiMessage.includes("Successful")
+              ? "text-green-600"
+              : "text-red-600"
+              }`}
           >
             {apiMessage}
           </p>
@@ -134,11 +134,10 @@ const SignUp = () => {
               name="profileFor"
               value={formData.profileFor}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${
-                errors.profileFor
-                  ? "border-red-500 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-orange-400"
-              }`}
+              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${errors.profileFor
+                ? "border-red-500 focus:ring-red-400"
+                : "border-gray-300 focus:ring-orange-400"
+                }`}
             >
               <option value="">Select</option>
               <option value="Son">Self</option>
@@ -164,11 +163,10 @@ const SignUp = () => {
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${
-                errors.gender
-                  ? "border-red-500 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-orange-400"
-              }`}
+              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${errors.gender
+                ? "border-red-500 focus:ring-red-400"
+                : "border-gray-300 focus:ring-orange-400"
+                }`}
             >
               <option value="">Select</option>
               <option value="MALE">Male</option>
@@ -190,11 +188,10 @@ const SignUp = () => {
               placeholder="email@example.com"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${
-                errors.email
-                  ? "border-red-500 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-orange-400"
-              }`}
+              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${errors.email
+                ? "border-red-500 focus:ring-red-400"
+                : "border-gray-300 focus:ring-orange-400"
+                }`}
             />
             {errors.email && (
               <p className="text-xs text-red-500 mt-1">{errors.email}</p>
@@ -212,11 +209,10 @@ const SignUp = () => {
               placeholder="0000000000"
               value={formData.phone}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${
-                errors.phone
-                  ? "border-red-500 focus:ring-red-400"
-                  : "border-gray-300 focus:ring-orange-400"
-              }`}
+              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${errors.phone
+                ? "border-red-500 focus:ring-red-400"
+                : "border-gray-300 focus:ring-orange-400"
+                }`}
             />
             {errors.phone && (
               <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
@@ -235,11 +231,10 @@ const SignUp = () => {
                 placeholder="Enter a password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${
-                  errors.password
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-orange-400"
-                } pr-10`}
+                className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 ${errors.password
+                  ? "border-red-500 focus:ring-red-400"
+                  : "border-gray-300 focus:ring-orange-400"
+                  } pr-10`}
               />
               <button
                 type="button"
@@ -299,11 +294,10 @@ const SignUp = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full ${
-              loading
-                ? "bg-orange-400 cursor-not-allowed"
-                : "bg-orange-500 hover:bg-orange-600"
-            } text-white py-2 rounded-md font-medium transition-all duration-300 mt-1 text-sm`}
+            className={`w-full ${loading
+              ? "bg-orange-400 cursor-not-allowed"
+              : "bg-orange-500 hover:bg-orange-600"
+              } text-white py-2 rounded-md font-medium transition-all duration-300 mt-1 text-sm`}
           >
             {loading ? "Registering..." : "Register"}
           </button>

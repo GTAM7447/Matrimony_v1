@@ -148,12 +148,12 @@ export const createProfileApi = apiSlice.injectEndpoints({
     }),
 
     /* STEP 7 : DOCUMENT UPLOAD  */
-     uploadDocument: builder.mutation({
+    uploadDocument: builder.mutation({
       query: ({ documentType, file, description = "" }) => {
         const formData = new FormData();
         formData.append("documentType", documentType);
         formData.append("file", file);
-        
+
         // Optional description parameter
         if (description && description.trim() !== "") {
           formData.append("description", description);
@@ -184,6 +184,71 @@ export const createProfileApi = apiSlice.injectEndpoints({
         method: "POST",
         body,
       }),
+    }),
+
+    /* ================= SUBSCRIPTIONS (ADMIN & PUBLIC) ================= */
+    getActiveSubscriptionPlans: builder.query({
+      query: () => "/api/v1/subscription-plans",
+      providesTags: ["SubscriptionPlans"],
+    }),
+
+    getAllSubscriptionPlans: builder.query({
+      query: () => "/api/admin/subscription-plans",
+      providesTags: ["SubscriptionPlans"],
+    }),
+
+    adminPurchaseSubscription: builder.mutation({
+      query: (body) => ({
+        url: "/api/admin/user-subscriptions/purchase-for-user",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["UserSubscription", "SubscriptionPlans"],
+    }),
+
+    getUserSubscription: builder.query({
+      query: (userId) => `/api/admin/user-subscriptions/user/${userId}`,
+      providesTags: (result, error, userId) => [{ type: "UserSubscription", id: userId }],
+    }),
+
+    /* ================= USER MANAGEMENT (ADMIN) ================= */
+    getAllUsers: builder.query({
+      query: ({ page = 0, size = 10, search = "" }) => {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          size: size.toString(),
+        });
+        if (search) params.append("search", search);
+        return `/api/v1/admin/users/all?${params.toString()}`;
+      },
+      providesTags: ["Users"],
+    }),
+
+    /* ================= PLAN MANAGEMENT (ADMIN) ================= */
+    createSubscriptionPlan: builder.mutation({
+      query: (body) => ({
+        url: "/api/admin/subscription-plans",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["SubscriptionPlans"],
+    }),
+
+    updateSubscriptionPlan: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/api/admin/subscription-plans/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["SubscriptionPlans"],
+    }),
+
+    deleteSubscriptionPlan: builder.mutation({
+      query: (id) => ({
+        url: `/api/admin/subscription-plans/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["SubscriptionPlans"],
     }),
   }),
 });
@@ -221,7 +286,7 @@ export const {
   useUpdateResidentialDetailsMutation,
 
   // Documents
-   useUploadDocumentMutation,
+  useUploadDocumentMutation,
 
   // Profile Completion
   useGetProfileCompletionQuery,
@@ -229,4 +294,16 @@ export const {
 
   // Password Change
   useChangePasswordMutation,
+
+  // Subscription Hooks
+  useGetActiveSubscriptionPlansQuery,
+  useGetAllSubscriptionPlansQuery,
+  useAdminPurchaseSubscriptionMutation,
+  useGetUserSubscriptionQuery,
+  useCreateSubscriptionPlanMutation,
+  useUpdateSubscriptionPlanMutation,
+  useDeleteSubscriptionPlanMutation,
+
+  // User Management Hooks
+  useGetAllUsersQuery,
 } = createProfileApi;

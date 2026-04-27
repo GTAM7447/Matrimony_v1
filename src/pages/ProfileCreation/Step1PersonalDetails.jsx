@@ -1,3 +1,4 @@
+import { getAuthToken } from '../../utils/auth';
 // /* eslint-disable no-useless-escape */
 // import React, { useEffect, useState } from "react";
 // import { City } from "country-state-city";
@@ -1693,7 +1694,7 @@ const Step1PersonalDetails = ({
       return;
     }
 
-    const token = localStorage.getItem("authToken");
+    const token = getAuthToken();
 
     if (!token) {
       setErrorMessage("Please login to save profile data");
@@ -1807,7 +1808,7 @@ const Step1PersonalDetails = ({
   };
 
   // Check authentication
-  const token = localStorage.getItem("authToken");
+  const token = getAuthToken();
 
   if (!token) {
     return (

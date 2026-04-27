@@ -1,3 +1,4 @@
+import { getAuthToken } from '../../utils/auth';
 // import React, { useState, useEffect, useRef } from "react";
 // import { Country, State, City } from "country-state-city";
 // import Stepper from "./Stepper";
@@ -642,7 +643,7 @@
 //   };
 
 //   // Check authentication
-//   const token = localStorage.getItem("authToken");
+//   const token = getAuthToken();
 
 //   if (!token) {
 //     return (
@@ -1791,7 +1792,7 @@ const Step6ResidentialDetails = ({
   };
 
   // Check authentication
-  const token = localStorage.getItem("authToken");
+  const token = getAuthToken();
 
   if (!token) {
     return (

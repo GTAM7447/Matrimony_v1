@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { FiMoreVertical, FiEye, FiEdit, FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
 import { HiUserGroup } from "react-icons/hi";
-import { useAdminProfiles } from "../../context/hooks/useProfileData";
- 
+import { useAdminProfiles } from "../../../hooks";
+
 const headers = [
   "",
   "Sr No.",
@@ -21,7 +21,7 @@ const headers = [
   "Status",
   "Actions",
 ];
- 
+
 export default function ProfileStatusTable() {
   const {
     data,
@@ -43,12 +43,12 @@ export default function ProfileStatusTable() {
     refetch,
     loadingStatuses
   } = useAdminProfiles();
- 
+
   // State for confirmation popup
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [pendingToggleIndex, setPendingToggleIndex] = useState(null);
   const [pendingUserInfo, setPendingUserInfo] = useState({ name: "", currentStatus: false });
- 
+
   // Helper function to safely display data
   const displayData = (value) => {
     if (value === undefined || value === null || value === "") {
@@ -56,7 +56,7 @@ export default function ProfileStatusTable() {
     }
     return value;
   };
- 
+
   // Format gender display
   const formatGender = (gender) => {
     if (!gender || gender === "--") return "--";
@@ -64,12 +64,12 @@ export default function ProfileStatusTable() {
     if (gender.toLowerCase() === "female" || gender.toLowerCase() === "f") return "Female";
     return gender;
   };
- 
+
   // Handle toggle click - show confirmation popup
   const handleToggleClick = (index) => {
     const user = data[index];
     const currentStatus = statusMap[index] !== undefined ? statusMap[index] : false;
-   
+
     setPendingToggleIndex(index);
     setPendingUserInfo({
       name: user.name || "User",
@@ -77,7 +77,7 @@ export default function ProfileStatusTable() {
     });
     setShowConfirmPopup(true);
   };
- 
+
   // Confirm toggle
   const confirmToggle = () => {
     if (pendingToggleIndex !== null) {
@@ -87,14 +87,14 @@ export default function ProfileStatusTable() {
       setPendingUserInfo({ name: "", currentStatus: false });
     }
   };
- 
+
   // Cancel toggle
   const cancelToggle = () => {
     setShowConfirmPopup(false);
     setPendingToggleIndex(null);
     setPendingUserInfo({ name: "", currentStatus: false });
   };
- 
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl overflow-hidden p-8 text-center">
@@ -103,7 +103,7 @@ export default function ProfileStatusTable() {
       </div>
     );
   }
- 
+
   if (error) {
     return (
       <div className="bg-white rounded-xl overflow-hidden p-8 text-center">
@@ -118,7 +118,7 @@ export default function ProfileStatusTable() {
       </div>
     );
   }
- 
+
   return (
     <>
       {/* Confirmation Popup */}
@@ -130,18 +130,18 @@ export default function ProfileStatusTable() {
                 <FiAlertTriangle className="text-yellow-600 text-2xl" />
               </div>
             </div>
-           
+
             <h3 className="text-lg font-semibold text-center text-gray-800 mb-2">
               Confirm Status Change
             </h3>
-           
+
             <p className="text-gray-600 text-center mb-1">
               Are you sure you want to {pendingUserInfo.currentStatus ? "deactivate" : "activate"}
             </p>
             <p className="font-medium text-center text-purple-600 mb-4">
               "{pendingUserInfo.name}"?
             </p>
-           
+
             <div className="bg-gray-50 p-3 rounded-lg mb-6">
               <div className="flex justify-between items-center">
                 <span className="text-gray-700">Current Status:</span>
@@ -156,7 +156,7 @@ export default function ProfileStatusTable() {
                 </span>
               </div>
             </div>
-           
+
             <div className="flex gap-3">
               <button
                 onClick={cancelToggle}
@@ -174,30 +174,30 @@ export default function ProfileStatusTable() {
           </div>
         </div>
       )}
- 
+
       <div className="bg-white rounded-xl overflow-hidden">
         {/* TOP BAR */}
         <div className="px-5 py-4 flex flex-wrap gap-6 items-center border-b border-gray-200 text-sm">
           <span className="font-medium text-gray-800 border-b-2 border-purple-600 pb-1">
             All Profiles ({totalProfiles})
           </span>
- 
+
           <span className="flex items-center gap-2 text-green-600">
             <FiCheckCircle />
             {activeProfiles} Active Profiles
           </span>
- 
+
           <span className="flex items-center gap-2 text-purple-600">
             <HiUserGroup />
             {bridesCount} Brides
           </span>
- 
+
           <span className="flex items-center gap-2 text-orange-500">
             <HiUserGroup />
             {groomsCount} Grooms
           </span>
         </div>
- 
+
         {/* TABLE */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1500px] text-sm whitespace-nowrap">
@@ -210,12 +210,12 @@ export default function ProfileStatusTable() {
                 ))}
               </tr>
             </thead>
- 
+
             <tbody>
               {data.map((row, index) => {
                 const isActive = statusMap[index] !== undefined ? statusMap[index] : false;
                 const isStatusLoading = loadingStatuses[index] === true;
- 
+
                 return (
                   <tr
                     key={index}
@@ -224,7 +224,7 @@ export default function ProfileStatusTable() {
                     <td className="px-4 py-3">
                       <input type="checkbox" />
                     </td>
-                   
+
                     <td className="px-4 py-3">{index + 1 + page * 20}</td>
                     <td className="px-4 py-3 font-medium">{displayData(row.profileId)}</td>
                     <td className="px-4 py-3">{displayData(row.name)}</td>
@@ -234,37 +234,35 @@ export default function ProfileStatusTable() {
                     <td className="px-4 py-3">{displayData(row.religion)}</td>
                     <td className="px-4 py-3">{displayData(row.caste)}</td>
                     <td className="px-4 py-3">{displayData(row.profession)}</td>
- 
+
                     <td className="px-4 py-3">
-                      <span className={`font-medium ${
-                        row.membership === "Premium" ? "text-purple-600" :
+                      <span className={`font-medium ${row.membership === "Premium" ? "text-purple-600" :
                         row.membership === "Gold" ? "text-yellow-600" :
-                        "text-gray-600"
-                      }`}>
+                          "text-gray-600"
+                        }`}>
                         {displayData(row.membership)}
                       </span>
                     </td>
- 
+
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        row.verification === "Verified"
-                          ? "bg-green-100 text-green-600"
-                          : row.verification === "Pending"
+                      <span className={`px-2 py-1 rounded-full text-xs ${row.verification === "Verified"
+                        ? "bg-green-100 text-green-600"
+                        : row.verification === "Pending"
                           ? "bg-yellow-100 text-yellow-600"
                           : "bg-gray-100 text-gray-600"
-                      }`}>
+                        }`}>
                         {displayData(row.verification)}
                       </span>
                     </td>
- 
+
                     <td className="px-4 py-3 text-center text-blue-600 font-medium">
                       {displayData(row.sendRequests)}
                     </td>
- 
+
                     <td className="px-4 py-3 text-center text-blue-600 font-medium">
                       {displayData(row.receiveRequests)}
                     </td>
- 
+
                     {/* STATUS */}
                     <td className="px-4 py-3">
                       {isStatusLoading ? (
@@ -282,17 +280,15 @@ export default function ProfileStatusTable() {
                           }}
                         >
                           <span
-                            className={`absolute w-5 h-5 rounded-full transition-all duration-300 ${
-                              isActive ? "right-1" : "left-1"
-                            }`}
+                            className={`absolute w-5 h-5 rounded-full transition-all duration-300 ${isActive ? "right-1" : "left-1"
+                              }`}
                             style={{
                               backgroundColor: isActive ? "#1BA96B" : "#FF0000",
                             }}
                           />
                           <span
-                            className={`w-full text-[10px] font-semibold ${
-                              isActive ? "text-left pl-2" : "text-right pr-2"
-                            }`}
+                            className={`w-full text-[10px] font-semibold ${isActive ? "text-left pl-2" : "text-right pr-2"
+                              }`}
                             style={{
                               color: isActive ? "#1BA96B" : "#FF0000",
                             }}
@@ -302,7 +298,7 @@ export default function ProfileStatusTable() {
                         </button>
                       )}
                     </td>
- 
+
                     {/* ACTIONS */}
                     <td className="px-4 py-3 relative">
                       <button
@@ -313,7 +309,7 @@ export default function ProfileStatusTable() {
                       >
                         <FiMoreVertical />
                       </button>
- 
+
                       {openMenu === index && (
                         <div className="absolute right-0 mt-2 w-28 bg-white border rounded-md shadow-md z-20">
                           <button
@@ -343,13 +339,13 @@ export default function ProfileStatusTable() {
             </tbody>
           </table>
         </div>
- 
+
         {/* PAGINATION */}
         <div className="flex items-center justify-between py-4 px-5 border-t border-gray-200">
           <div className="text-sm text-gray-600">
             Showing {Math.min(page * 20 + 1, totalProfiles)} to {Math.min((page + 1) * 20, totalProfiles)} of {totalProfiles} entries
           </div>
-         
+
           <div className="flex items-center gap-2">
             {/* Previous button */}
             {page > 0 && (
@@ -360,7 +356,7 @@ export default function ProfileStatusTable() {
                 ←
               </button>
             )}
-           
+
             {/* Page numbers */}
             {Array.from({ length: Math.min(3, Math.ceil(totalProfiles / 20)) }, (_, i) => {
               const pageNum = i + 1;
@@ -368,17 +364,16 @@ export default function ProfileStatusTable() {
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum - 1)}
-                  className={`w-8 h-8 rounded text-sm border ${
-                    page === pageNum - 1
-                      ? "bg-purple-600 text-white border-purple-600"
-                      : "border-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
+                  className={`w-8 h-8 rounded text-sm border ${page === pageNum - 1
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "border-gray-300 hover:bg-gray-800 hover:text-white"
+                    }`}
                 >
                   {pageNum}
                 </button>
               );
             })}
-           
+
             {/* Next button */}
             {(page + 1) * 20 < totalProfiles && (
               <button
@@ -394,4 +389,3 @@ export default function ProfileStatusTable() {
     </>
   );
 }
- 

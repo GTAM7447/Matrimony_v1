@@ -1,4 +1,4 @@
-// /* eslint-disable no-useless-escape */
+﻿// /* eslint-disable no-useless-escape */
 // import React, { useEffect, useState } from "react";
 // import { City } from "country-state-city";
 // import Stepper from "./Stepper";
@@ -1557,7 +1557,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* FIRST NAME */}
         <div>
           <label style={labelStyle}>
-            First Name <span className="text-red-500">*</span>
+            First Name
           </label>
           <input
             type="text"
@@ -1580,7 +1580,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* MIDDLE NAME */}
         <div>
           <label style={labelStyle}>
-            Middle Name <span className="text-red-500">*</span>
+            Middle Name
           </label>
           <input
             type="text"
@@ -1603,7 +1603,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* LAST NAME */}
         <div>
           <label style={labelStyle}>
-            Last Name <span className="text-red-500">*</span>
+            Last Name
           </label>
           <input
             type="text"
@@ -1626,7 +1626,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* AGE */}
         <div>
           <label style={labelStyle}>
-            Age <span className="text-red-500">*</span>
+            Age
           </label>
           <input
             type="number"
@@ -1650,7 +1650,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* GENDER */}
         <div>
           <label style={labelStyle}>
-            Gender <span className="text-red-500">*</span>
+            Gender
           </label>
           <select
             name="gender"
@@ -1677,7 +1677,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* STATUS */}
         <div>
           <label style={labelStyle}>
-            Status <span className="text-red-500">*</span>
+            Status
           </label>
           <select
             name="status"
@@ -1704,7 +1704,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* CASTE */}
         <div>
           <label style={labelStyle}>
-            Caste <span className="text-red-500">*</span>
+            Caste
           </label>
           <input
             type="text"
@@ -1726,7 +1726,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* MARITAL STATUS */}
         <div>
           <label style={labelStyle}>
-            Marital Status <span className="text-red-500">*</span>
+            Marital Status
           </label>
           <select
             name="maritalStatus"
@@ -1753,7 +1753,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* HEIGHT */}
         <div>
           <label style={labelStyle}>
-            Height <span className="text-red-500">*</span>
+            Height
           </label>
           <div className="flex gap-2">
             <select
@@ -1798,7 +1798,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* WEIGHT */}
         <div>
           <label style={labelStyle}>
-            Weight <span className="text-red-500">*</span>
+            Weight
           </label>
           <div className="relative">
             <input
@@ -1826,7 +1826,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* BLOOD GROUP */}
         <div>
           <label style={labelStyle}>
-            Blood Group <span className="text-red-500">*</span>
+            Blood Group
           </label>
           <select
             name="bloodGroup"
@@ -1853,7 +1853,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* COMPLEXION */}
         <div>
           <label style={labelStyle}>
-            Complexion <span className="text-red-500">*</span>
+            Complexion
           </label>
           <select
             name="complexion"
@@ -1880,7 +1880,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* DIET */}
         <div>
           <label style={labelStyle}>
-            Diet <span className="text-red-500">*</span>
+            Diet
           </label>
           <select
             name="diet"
@@ -1907,7 +1907,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* SPECTACLE */}
         <div>
           <label style={labelStyle}>
-            Spectacle <span className="text-red-500">*</span>
+            Spectacle
           </label>
           <select
             name="spectacle"
@@ -1934,7 +1934,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* LENS */}
         <div>
           <label style={labelStyle}>
-            Lens <span className="text-red-500">*</span>
+            Lens
           </label>
           <select
             name="lens"
@@ -1961,7 +1961,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* PHYSICALLY CHALLENGED */}
         <div>
           <label style={labelStyle}>
-            Physically Challenged <span className="text-red-500">*</span>
+            Physically Challenged
           </label>
           <select
             name="physicallyChallenged"
@@ -1988,7 +1988,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* HOMETOWN DISTRICT */}
         <div>
           <label style={labelStyle}>
-            Home Town District <span className="text-red-500">*</span>
+            Home Town District
           </label>
           <select
             name="homeTownDistrict"
@@ -2015,7 +2015,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* PIN CODE */}
         <div>
           <label style={labelStyle}>
-            Pin Code <span className="text-red-500">*</span>
+            Pin Code
           </label>
           <input
             type="text"
@@ -2038,7 +2038,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* TALUKA */}
         <div>
           <label style={labelStyle}>
-            Taluka <span className="text-red-500">*</span>
+            Taluka
           </label>
           <select
             name="taluka"
@@ -2065,7 +2065,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* NATIVE TALUKA */}
         <div>
           <label style={labelStyle}>
-            Native Taluka <span className="text-red-500">*</span>
+            Native Taluka
           </label>
           <select
             name="nativeTaluka"
@@ -2092,7 +2092,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* DISTRICT */}
         <div>
           <label style={labelStyle}>
-            District <span className="text-red-500">*</span>
+            District
           </label>
           <select
             name="district"
@@ -2119,7 +2119,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* RELIGION */}
         <div>
           <label style={labelStyle}>
-            Religion <span className="text-red-500">*</span>
+            Religion
           </label>
           <select
             name="religion"
@@ -2146,7 +2146,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* CURRENT CITY */}
         <div>
           <label style={labelStyle}>
-            Current City <span className="text-red-500">*</span>
+            Current City
           </label>
           <select
             name="currentCity"
@@ -2173,7 +2173,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         {/* ADDRESS - Full width */}
         <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4">
           <label style={labelStyle}>
-            Address <span className="text-red-500">*</span>
+            Address
           </label>
           <input
             type="text"

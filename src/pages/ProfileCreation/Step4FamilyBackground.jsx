@@ -1,3 +1,4 @@
+import { getAuthToken } from '../../utils/auth';
 import React, { useState, useEffect, useRef } from "react";
 import Stepper from "./Stepper";
 import {
@@ -339,7 +340,7 @@ const Step4FamilyBackground = ({
     }
 
     // Check authentication
-    const token = localStorage.getItem("authToken");
+    const token = getAuthToken();
 
     if (!token) {
       setErrorMessage("Please login to save family background data");
@@ -522,7 +523,7 @@ const Step4FamilyBackground = ({
   };
 
   // Check authentication first
-  const token = localStorage.getItem("authToken");
+  const token = getAuthToken();
 
   if (!token) {
     return (

@@ -5,9 +5,11 @@ import { Bell, Menu, X, User } from "lucide-react";
 
 import NotificationSidebar from "../../components/NotificationPanel/NotificationPanel";
 import LogoutPanel from "../../components/LogoutPanel/LogoutPanel";
+import CreditWidget from "../../components/CreditWidget/CreditWidget";
 import { useAuth } from "../../context/AuthContext";
 import { profileApi } from "../../context/profileApi";
 import { useDispatch } from "react-redux";
+import { isAuthenticated } from "../../utils/auth";
 
 
 import {
@@ -35,22 +37,25 @@ const NAV_ITEMS = [
 
 /*  COMPONENT  */
 const Navbar = () => {
-  const { isLoggedIn, logout } = useAuth();
-  const loggedIn = isLoggedIn || !!localStorage.getItem("authToken");
+  const { isLoggedIn, logout, isAdmin } = useAuth();
+  const loggedIn = isLoggedIn || isAuthenticated();
 
   const [openNotify, setOpenNotify] = useState(false);
   const [openLogout, setOpenLogout] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  /* API CALLS (SAFE) */
+  // Skip user-specific API calls for admins (they don't have user profiles/interests)
+  const skipUserAPIs = !loggedIn || isAdmin;
+
+  /* API CALLS (SAFE) - Skip for admin users */
   const { data: ownProfile } = useGetOwnProfileQuery(undefined, {
-    skip: !loggedIn,
+    skip: skipUserAPIs,
   });
   const { data: sentData } = useGetSentInterestsQuery(undefined, {
-    skip: !loggedIn,
+    skip: skipUserAPIs,
   });
   const { data: receivedData } = useGetReceivedInterestsQuery(undefined, {
-    skip: !loggedIn,
+    skip: skipUserAPIs,
   });
 
   const navbarProfile = useMemo(
@@ -60,31 +65,32 @@ const Navbar = () => {
 
   const dispatch = useDispatch();
 
-React.useEffect(() => {
-  if (loggedIn) {
-    dispatch(
-      profileApi.util.prefetch("getOwnProfile", undefined, {
-        force: false,
-      })
-    );
+  React.useEffect(() => {
+    // Only prefetch for regular users, not admins
+    if (loggedIn && !isAdmin) {
+      dispatch(
+        profileApi.util.prefetch("getOwnProfile", undefined, {
+          force: false,
+        })
+      );
 
-    dispatch(
-      profileApi.util.prefetch("getProfilePhoto", undefined, {
-        force: false,
-      })
-    );
-  }
-}, [loggedIn, dispatch]);
+      dispatch(
+        profileApi.util.prefetch("getProfilePhoto", undefined, {
+          force: false,
+        })
+      );
+    }
+  }, [loggedIn, isAdmin, dispatch]);
 
-const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
-  skip: !loggedIn,
-});
+  const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
+    skip: skipUserAPIs,
+  });
 
-const avatarInitial = useMemo(() => {
-  const p = ownProfile?.data?.userProfile;
-  const firstName = p?.firstName;
-  return firstName ? firstName.charAt(0).toUpperCase() : <User size={16} />;
-}, [ownProfile]);
+  const avatarInitial = useMemo(() => {
+    const p = ownProfile?.data?.userProfile;
+    const firstName = p?.firstName;
+    return firstName ? firstName.charAt(0).toUpperCase() : <User size={16} />;
+  }, [ownProfile]);
 
 
   /*  RENDER  */
@@ -101,6 +107,20 @@ const avatarInitial = useMemo(() => {
 
           {/*  DESKTOP MENU  */}
           <ul className="hidden md:flex items-center gap-6 text-sm font-medium">
+            {isAdmin && (
+              <li>
+                <NavLink
+                  to="/admin/dashboard"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "text-[#FF8A41] font-semibold"
+                      : "text-purple-600 font-bold hover:text-purple-800"
+                  }
+                >
+                  DASHBOARD
+                </NavLink>
+              </li>
+            )}
             {NAV_ITEMS.map((item) => {
               if (item.protected && !loggedIn) return null;
 
@@ -123,7 +143,15 @@ const avatarInitial = useMemo(() => {
 
           {/*  RIGHT ACTIONS  */}
           <div className="flex items-center gap-3">
-            {loggedIn && (
+            {/* Credit Widget - show for logged in non-admin users */}
+            {loggedIn && !isAdmin && (
+              <div className="hidden md:block">
+                <CreditWidget compact />
+              </div>
+            )}
+
+            {/* Hide notification bell for admins - they don't have interests */}
+            {loggedIn && !isAdmin && (
               <button
                 onClick={() => setOpenNotify(true)}
                 className="relative p-2 rounded-full hover:bg-white/40"
@@ -178,6 +206,19 @@ const avatarInitial = useMemo(() => {
         {menuOpen && (
           <div className="md:hidden bg-[#FF8C4426] backdrop-blur border-t border-orange-300">
             <ul className="flex flex-col px-4 py-4 text-base font-medium">
+
+              {/* Admin Dashboard Link for Mobile */}
+              {isAdmin && (
+                <li>
+                  <NavLink
+                    to="/admin/dashboard"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-3 px-3 rounded text-purple-600 font-bold hover:bg-white/40"
+                  >
+                    DASHBOARD
+                  </NavLink>
+                </li>
+              )}
 
               {NAV_ITEMS.map((item) => {
                 if (item.protected && !loggedIn) return null;
@@ -238,13 +279,13 @@ const avatarInitial = useMemo(() => {
       />
 
       <LogoutPanel
-  open={openLogout}
-  onClose={() => setOpenLogout(false)}
-  sentCount={navbarProfile?.sentCount || 0}
-  receivedCount={navbarProfile?.receivedCount || 0}
-  profile={ownProfile?.data}
-  photoData={photoResponse?.data}
-/>
+        open={openLogout}
+        onClose={() => setOpenLogout(false)}
+        sentCount={navbarProfile?.sentCount || 0}
+        receivedCount={navbarProfile?.receivedCount || 0}
+        profile={ownProfile?.data}
+        photoData={photoResponse?.data}
+      />
 
     </>
   );

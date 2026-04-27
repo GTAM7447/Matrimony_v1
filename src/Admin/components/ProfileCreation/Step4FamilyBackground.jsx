@@ -1,4 +1,4 @@
-// import React, { useState, useEffect } from "react";
+﻿// import React, { useState, useEffect } from "react";
 // import Stepper from "./Stepper";
 // import { 
 //   useCreateFamilyBackgroundMutation, 
@@ -283,7 +283,7 @@
 //   };
 
 //   const prepareApiData = () => {
-//     // Convert Yes/No → boolean
+//     // Convert Yes/No â†’ boolean
 //     const interCasteBool = formData.interCasteInFamily === "Yes";
 
 //    const parseNumber = (value) => {
@@ -1344,7 +1344,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* FATHER'S NAME */}
         <div>
           <label style={labelStyle}>
-            Father's Name <span className="text-red-500">*</span>
+            Father's Name
           </label>
           <input
             type="text"
@@ -1370,7 +1370,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* FATHER OCCUPATION */}
         <div>
           <label style={labelStyle}>
-            Father Occupation <span className="text-red-500">*</span>
+            Father Occupation
           </label>
           <input
             type="text"
@@ -1396,7 +1396,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* MOTHER'S NAME */}
         <div>
           <label style={labelStyle}>
-            Mother's Name <span className="text-red-500">*</span>
+            Mother's Name
           </label>
           <input
             type="text"
@@ -1422,7 +1422,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* MOTHER OCCUPATION */}
         <div>
           <label style={labelStyle}>
-            Mother Occupation <span className="text-red-500">*</span>
+            Mother Occupation
           </label>
           <input
             type="text"
@@ -1448,7 +1448,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* BROTHERS */}
         <div>
           <label style={labelStyle}>
-            Brothers <span className="text-red-500">*</span>
+            Brothers
           </label>
           <select
             name="brothers"
@@ -1475,7 +1475,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* MARRIED BROTHERS */}
         <div>
           <label style={labelStyle}>
-            Married Brothers <span className="text-red-500">*</span>
+            Married Brothers
           </label>
           <select
             name="marriedBrothers"
@@ -1499,7 +1499,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* SISTERS */}
         <div>
           <label style={labelStyle}>
-            Sisters <span className="text-red-500">*</span>
+            Sisters
           </label>
           <select
             name="sisters"
@@ -1526,7 +1526,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* MARRIED SISTERS */}
         <div>
           <label style={labelStyle}>
-            Married Sisters <span className="text-red-500">*</span>
+            Married Sisters
           </label>
           <select
             name="marriedSisters"
@@ -1550,7 +1550,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* INTER-CASTE IN FAMILY */}
         <div>
           <label style={labelStyle}>
-            Inter-caste in Family <span className="text-red-500">*</span>
+            Inter-caste in Family
           </label>
           <select
             name="interCasteInFamily"
@@ -1574,7 +1574,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* PARENT RESIDING */}
         <div>
           <label style={labelStyle}>
-            Parent Residing In <span className="text-red-500">*</span>
+            Parent Residing In
           </label>
           <input
             type="text"
@@ -1600,7 +1600,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* MAMA SURNAME */}
         <div>
           <label style={labelStyle}>
-            Mama Surname <span className="text-red-500">*</span>
+            Mama Surname
           </label>
           <input
             type="text"
@@ -1626,7 +1626,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* MAMA PLACE */}
         <div>
           <label style={labelStyle}>
-            Mama Place <span className="text-red-500">*</span>
+            Mama Place
           </label>
           <input
             type="text"
@@ -1652,7 +1652,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* FAMILY WEALTH */}
         <div>
           <label style={labelStyle}>
-            Family Wealth <span className="text-red-500">*</span>
+            Family Wealth
           </label>
           <input
             type="text"
@@ -1678,7 +1678,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         {/* RELATIVE SURNAMES */}
         <div>
           <label style={labelStyle}>
-            Relative Surnames <span className="text-red-500">*</span>
+            Relative Surnames
           </label>
           <input
             type="text"

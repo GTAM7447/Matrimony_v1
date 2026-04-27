@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:fresh": "rimraf node_modules/.vite && vite --force",
+    "clean": "rimraf node_modules/.vite dist",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -15,6 +17,7 @@
     "axios": "^1.13.2",
     "country-state-city": "^3.2.1",
     "framer-motion": "^12.23.24",
+    "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.552.0",
     "react": "^19.2.0",
@@ -24,6 +27,7 @@
     "react-router-dom": "^7.9.5",
     "react-select": "^5.10.2",
     "react-simple-captcha": "^9.3.1",
+    "react-toastify": "^11.0.5",
     "recharts": "^3.6.0",
     "tailwindcss": "^4.1.16"
   },
@@ -36,10 +40,12 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
     "babel-loader": "^10.0.0",
+    "baseline-browser-mapping": "^2.9.17",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "rimraf": "^6.1.2",
     "vite": "^7.1.7"
   }
 }

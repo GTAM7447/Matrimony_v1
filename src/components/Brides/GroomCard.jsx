@@ -130,17 +130,26 @@
 
 
 
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useAddToFavoriteMutation } from "../../context/profileApi";
+import { isAuthenticated } from "../../utils/auth";
+import SubscriptionModal from "../SubscriptionModal/SubscriptionModal";
 import defaultProfileImg from "../../assets/DefaultImage/AvtarImg.avif";
 
 const GroomCard = ({ profile }) => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [addToFavorite, { isLoading }] = useAddToFavoriteMutation();
+
+  // Use both AuthContext and utility function for login check
+  const userIsLoggedIn = isLoggedIn || isAuthenticated();
+
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("no_subscription");
 
   if (!profile) return null;
 
@@ -170,74 +179,103 @@ const GroomCard = ({ profile }) => {
 
   /* FAVORITE HANDLER */
   const handleFavorite = useCallback(async () => {
-    if (!isLoggedIn) {
+    if (!userIsLoggedIn) {
       navigate("/signin");
       return;
     }
     await addToFavorite(userProfileId);
-  }, [isLoggedIn, navigate, addToFavorite, userProfileId]);
+  }, [userIsLoggedIn, navigate, addToFavorite, userProfileId]);
+
+  /* VIEW PROFILE HANDLER */
+  const handleViewProfile = useCallback(() => {
+    if (!userIsLoggedIn) {
+      navigate("/signin");
+      return;
+    }
+
+    // Get the profile ID to use (prefer completeProfileId, fallback to userProfileId)
+    const profileIdToView = completeProfileId || userProfileId;
+
+    if (!profileIdToView) {
+      console.error("No profile ID available");
+      return;
+    }
+
+    // Navigate to profile page
+    // Credit deduction will happen on the backend when profile is fetched
+    navigate(`/profile/${profileIdToView}`);
+  }, [userIsLoggedIn, navigate, completeProfileId, userProfileId]);
 
   return (
-    <div className="flex bg-white rounded-xl shadow-md overflow-hidden">
-      {/* IMAGE */}
-      <img
-        src={profileImageSrc}
-        alt="profile"
-        className="w-40 h-48 object-cover"
-        loading="lazy"
-        onError={(e) => (e.currentTarget.src = defaultProfileImg)}
-      />
+    <>
+      <div className="flex bg-white rounded-xl shadow-md overflow-hidden">
+        {/* IMAGE */}
+        <img
+          src={profileImageSrc}
+          alt="profile"
+          className="w-40 h-48 object-cover"
+          loading="lazy"
+          onError={(e) => (e.currentTarget.src = defaultProfileImg)}
+        />
 
-      {/* DETAILS */}
-      <div className="p-4 flex-1">
-        <div className="flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800">
-            {firstName || "Profile"}
-          </h3>
+        {/* DETAILS */}
+        <div className="p-4 flex-1">
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold text-gray-800">
+              {firstName || "Profile"}
+            </h3>
 
-          {isLoggedIn && (
-            <div className="flex items-center gap-2">
-              {/* PROFILE ID BADGE */}
-              <span className="text-xs font-semibold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md">
-                ID: {userProfileId}
-              </span>
+            {userIsLoggedIn && (
+              <div className="flex items-center gap-2">
+                {/* PROFILE ID BADGE */}
+                <span className="text-xs font-semibold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md">
+                  ID: {userProfileId}
+                </span>
 
-              {/* FAVORITE BUTTON */}
-              <button
-                onClick={handleFavorite}
-                disabled={isFavorited || isLoading}
-                className={`p-2 rounded-full transition ${
-                  isFavorited
+                {/* FAVORITE BUTTON */}
+                <button
+                  onClick={handleFavorite}
+                  disabled={isFavorited || isLoading}
+                  className={`p-2 rounded-full transition ${isFavorited
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-red-500 text-white hover:bg-red-600"
-                }`}
-                title={isFavorited ? "Added to Favorites" : "Add to Favorites"}
-              >
-                <Heart size={16} fill={isFavorited ? "gray" : "white"} />
-              </button>
-            </div>
-          )}
+                    }`}
+                  title={isFavorited ? "Added to Favorites" : "Add to Favorites"}
+                >
+                  <Heart size={16} fill={isFavorited ? "gray" : "white"} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* INFO */}
+          <ul className="mt-2 text-sm space-y-0.5 text-gray-700">
+            {age && <li>Age: {age}</li>}
+            {gender && <li>Gender: {gender}</li>}
+            {religion && <li>Religion: {religion}</li>}
+            {caste && <li>Caste: {caste}</li>}
+            {currentCity && <li>City: {currentCity}</li>}
+            {maritalStatus && <li>Status: {maritalStatus}</li>}
+          </ul>
+
+          {/* VIEW PROFILE - with credit gating */}
+          <button
+            onClick={handleViewProfile}
+            className="mt-3 bg-orange-500 text-white px-4 py-1.5 rounded-md hover:bg-orange-600"
+          >
+            View Profile
+          </button>
         </div>
-
-        {/* INFO */}
-        <ul className="mt-2 text-sm space-y-0.5 text-gray-700">
-          {age && <li>Age: {age}</li>}
-          {gender && <li>Gender: {gender}</li>}
-          {religion && <li>Religion: {religion}</li>}
-          {caste && <li>Caste: {caste}</li>}
-          {currentCity && <li>City: {currentCity}</li>}
-          {maritalStatus && <li>Status: {maritalStatus}</li>}
-        </ul>
-
-        {/* VIEW PROFILE */}
-        <button
-          onClick={() => navigate(`/profile/${completeProfileId}`)}
-          className="mt-3 bg-orange-500 text-white px-4 py-1.5 rounded-md hover:bg-orange-600"
-        >
-          View Profile
-        </button>
       </div>
-    </div>
+
+      {/* Subscription Modal */}
+      <SubscriptionModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        type={modalType}
+        actionType="view this profile"
+      />
+    </>
   );
 };
 

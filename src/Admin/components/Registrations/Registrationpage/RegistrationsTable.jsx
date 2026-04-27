@@ -481,7 +481,7 @@
 import React, { useState, useMemo } from "react";
 import { FiEye, FiCheckCircle, FiCalendar } from "react-icons/fi";
 import { HiUserGroup } from "react-icons/hi";
-import { useAdminProfiles } from "../../../context/hooks/useProfileData";
+import { useAdminProfiles } from "../../../../hooks";
 import { useNavigate } from "react-router-dom";
 
 
@@ -673,8 +673,8 @@ export default function RegistrationsTable() {
 
                   <td className="px-4 py-3">
                     <span className={`font-medium ${row.membership === "Premium" ? "text-purple-600" :
-                        row.membership === "Gold" ? "text-yellow-600" :
-                          "text-gray-600"
+                      row.membership === "Gold" ? "text-yellow-600" :
+                        "text-gray-600"
                       }`}>
                       {displayData(row.membership)}
                     </span>
@@ -682,8 +682,8 @@ export default function RegistrationsTable() {
 
                   <td className="px-4 py-3">
                     <span className={`px-3 py-1 text-xs rounded-full ${row.verification === "Verified"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-yellow-100 text-yellow-600"
+                      ? "bg-green-100 text-green-600"
+                      : "bg-yellow-100 text-yellow-600"
                       }`}>
                       {displayData(row.verification)}
                     </span>
@@ -692,10 +692,10 @@ export default function RegistrationsTable() {
                   {/* Status Column - Added after Verification */}
                   <td className="px-4 py-3">
                     <span className={`px-3 py-1 text-xs rounded-full ${row.status === "Active"
-                        ? "bg-green-100 text-green-600"
-                        : row.status === "Inactive"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-gray-100 text-gray-600"
+                      ? "bg-green-100 text-green-600"
+                      : row.status === "Inactive"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600"
                       }`}>
                       {displayData(row.status)}
                     </span>
@@ -757,8 +757,8 @@ export default function RegistrationsTable() {
                 key={pageNum}
                 onClick={() => handlePageClick(pageNum - 1)}
                 className={`w-8 h-8 rounded text-sm border ${page === pageNum - 1
-                    ? "bg-purple-600 text-white border-purple-600"
-                    : "border-gray-300 hover:bg-gray-800 hover:text-white"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "border-gray-300 hover:bg-gray-800 hover:text-white"
                   }`}
               >
                 {pageNum}

@@ -33,7 +33,7 @@
 //           .filter((i) => i.toUserCompleteProfileId)
 //           .map((interest) =>
 //             fetch(
-//               `https://mttlprv1.digiledge.info/api/v1/profiles/${interest.toUserCompleteProfileId}/public`,
+//               `${BASE_URL}/api/v1/profiles/${interest.toUserCompleteProfileId}/public`,
 //               {
 //                 headers: {
 //                   Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -191,6 +191,7 @@ import {
   useGetSentInterestsQuery,
   useGetPublicProfileByIdV2Query,
 } from "../context/profileApi";
+import { BASE_URL } from "../apiConfig";
 
 /* ============================= */
 /* INNER ITEM COMPONENT ONLY */
@@ -308,11 +309,10 @@ const RequestsPage = () => {
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("pending")}
-            className={`px-4 py-2 rounded-full border ${
-              activeTab === "pending"
-                ? "bg-orange-500 text-white"
-                : "bg-gray-100 hover:bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded-full border ${activeTab === "pending"
+              ? "bg-orange-500 text-white"
+              : "bg-gray-100 hover:bg-gray-200"
+              }`}
           >
             Pending Request
           </button>

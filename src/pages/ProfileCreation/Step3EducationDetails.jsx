@@ -1,3 +1,4 @@
+import { getAuthToken } from '../../utils/auth';
 // import React, { useEffect, useState } from "react";
 // import Stepper from "./Stepper";
 // import {
@@ -1609,7 +1610,7 @@ const Step3EducationDetails = ({
     }
 
     // Check authentication
-    const token = localStorage.getItem("authToken");
+    const token = getAuthToken();
 
     if (!token) {
       setErrorMessage("Please login to save education data");
@@ -1760,7 +1761,7 @@ const Step3EducationDetails = ({
   };
 
   // Check authentication first
-  const token = localStorage.getItem("authToken");
+  const token = getAuthToken();
 
   if (!token) {
     return (

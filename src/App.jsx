@@ -185,6 +185,7 @@ import AdminRegistrationdashboard from "./Admin/pages/AdminRegistrationdashboard
 import AdminProfileStatus from "./Admin/pages/AdminProfilestatus";
 import AdminMatchesPage from "./Admin/pages/AdminMatchesPage";
 import AdminDashboard from "./Admin/pages/Admindashboard";
+import SubscriptionManagement from "./Admin/pages/SubscriptionManagement";
 
 /* NEW PAGE YOU REQUESTED */
 import AdminProfileDetailsPage from "./Admin/components/Registrations/AdminProfileDetailsPage/AdminProfileDetailsPage";
@@ -247,6 +248,7 @@ function App() {
           <Route path="/admin" element={<AdminHomePage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/all-profiles" element={<AllProfilesPage />} />
+          <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
 
           {/* NEW PROFILE VIEW PAGE */}
           <Route path="/admin/profile/:userId" element={<AdminProfileDetailsPage />} />

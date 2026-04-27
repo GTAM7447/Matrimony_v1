@@ -1,4 +1,4 @@
-// import React, { useState, useEffect } from "react";
+﻿// import React, { useState, useEffect } from "react";
 // import { Country } from "country-state-city";
 // import Stepper from "./Stepper";
 // import {
@@ -192,7 +192,7 @@
 //       if (name === "partnerIncome") {
 //         const income = parseInt(value);
 //         if (isNaN(income) || income < 100000 || income > 50000000) {
-//           err = "Income should be between ₹1,00,000 and ₹5,00,00,000";
+//           err = "Income should be between â‚¹1,00,000 and â‚¹5,00,00,000";
 //         }
 //       }
 //     }
@@ -615,7 +615,7 @@
 //               min="100000"
 //               max="50000000"
 //             />
-//             <p className="text-xs text-gray-500 mt-1">Annual income (₹1,00,000 - ₹5,00,00,000)</p>
+//             <p className="text-xs text-gray-500 mt-1">Annual income (â‚¹1,00,000 - â‚¹5,00,00,000)</p>
 //             {validationErrors.partnerIncome && <p className="text-red-500 text-xs mt-1">{validationErrors.partnerIncome}</p>}
 //           </div>
 
@@ -989,9 +989,9 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         case "partnerIncome":
           const income = parseInt(value);
           if (isNaN(income) || income < 100000) {
-            error = "Income must be at least ₹1,00,000";
+            error = "Income must be at least â‚¹1,00,000";
           } else if (income > 50000000) {
-            error = "Income cannot exceed ₹5,00,00,000";
+            error = "Income cannot exceed â‚¹5,00,00,000";
           }
           break;
           
@@ -1187,7 +1187,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* AGE RANGE */}
         <div>
           <label style={labelStyle}>
-            Age Range <span className="text-red-500">*</span>
+            Age Range
           </label>
           <input
             type="text"
@@ -1213,7 +1213,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* LOOKING FOR */}
         <div>
           <label style={labelStyle}>
-            Looking For <span className="text-red-500">*</span>
+            Looking For
           </label>
           <select
             name="lookingFor"
@@ -1238,7 +1238,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* HEIGHT RANGE */}
         <div>
           <label style={labelStyle}>
-            Height Range <span className="text-red-500">*</span>
+            Height Range
           </label>
           <input
             type="text"
@@ -1264,7 +1264,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* COMPLEXION */}
         <div>
           <label style={labelStyle}>
-            Complexion <span className="text-red-500">*</span>
+            Complexion
           </label>
           <select
             name="partnerComplexion"
@@ -1289,7 +1289,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* RELIGION */}
         <div>
           <label style={labelStyle}>
-            Religion <span className="text-red-500">*</span>
+            Religion
           </label>
           <select
             name="partnerReligion"
@@ -1314,7 +1314,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* CASTE */}
         <div>
           <label style={labelStyle}>
-            Caste <span className="text-red-500">*</span>
+            Caste
           </label>
           <input
             type="text"
@@ -1366,7 +1366,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* EDUCATION */}
         <div>
           <label style={labelStyle}>
-            Education <span className="text-red-500">*</span>
+            Education
           </label>
           <input
             type="text"
@@ -1392,7 +1392,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* RESIDENT STATUS */}
         <div>
           <label style={labelStyle}>
-            Resident Status <span className="text-red-500">*</span>
+            Resident Status
           </label>
           <select
             name="residentStatus"
@@ -1417,7 +1417,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* OCCUPATION */}
         <div>
           <label style={labelStyle}>
-            Occupation <span className="text-red-500">*</span>
+            Occupation
           </label>
           <input
             type="text"
@@ -1443,7 +1443,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* INCOME */}
         <div>
           <label style={labelStyle}>
-            Income (per year) <span className="text-red-500">*</span>
+            Income (per year)
           </label>
           <input
             type="text"
@@ -1462,14 +1462,14 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             </p>
           )}
           <p className="text-xs text-gray-500 mt-1">
-            Annual income (₹1,00,000 - ₹5,00,00,000)
+            Annual income (â‚¹1,00,000 - â‚¹5,00,00,000)
           </p>
         </div>
 
         {/* COUNTRY */}
         <div>
           <label style={labelStyle}>
-            Country Living in <span className="text-red-500">*</span>
+            Country Living in
           </label>
           <select
             name="countryLivingIn"
@@ -1496,7 +1496,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* CITY */}
         <div>
           <label style={labelStyle}>
-            City Living in <span className="text-red-500">*</span>
+            City Living in
           </label>
           <input
             type="text"
@@ -1548,7 +1548,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* EATING HABITS */}
         <div>
           <label style={labelStyle}>
-            Eating Habits <span className="text-red-500">*</span>
+            Eating Habits
           </label>
           <select
             name="eatingHabits"
@@ -1623,7 +1623,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         {/* MANGAL */}
         <div>
           <label style={labelStyle}>
-            Mangal (Kuja Dosha) <span className="text-red-500">*</span>
+            Mangal (Kuja Dosha)
           </label>
           <select
             name="mangal"

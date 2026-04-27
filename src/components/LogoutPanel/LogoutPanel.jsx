@@ -47,36 +47,29 @@ const LogoutPanel = ({
   }, [e.education, e.degree]);
 
 
-const handleViewProfile = useCallback(() => {
-  navigate("/ViewProfilePage");
+  const handleViewProfile = useCallback(() => {
+    navigate("/ViewProfilePage");
 
-  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      onClose();
+    });
+  }, [navigate, onClose]);
+
+
+  const handleViewRequests = useCallback(() => {
+    navigate("/RequestsPage");
+
+    requestAnimationFrame(() => {
+      onClose();
+    });
+  }, [navigate, onClose]);
+
+
+  const handleLogout = useCallback(() => {
     onClose();
-  });
-}, [navigate, onClose]);
-
-
-const handleViewRequests = useCallback(() => {
-  navigate("/RequestsPage");
-
-  requestAnimationFrame(() => {
-    onClose();
-  });
-}, [navigate, onClose]);
-
-
-const handleLogout = useCallback(() => {
-  onClose();
-
-  requestAnimationFrame(() => {
+    // AuthContext logout will call backend API, clear state, and navigate to /signin
     logout();
-
-    // Force hard refresh after logout 
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
-  });
-}, [logout, onClose]);
+  }, [logout, onClose]);
 
 
 
