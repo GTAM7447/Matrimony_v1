@@ -485,7 +485,6 @@ const RegistrationForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-<<<<<<< HEAD
   const validateForm = () => {
     const errors = [];
 
@@ -614,168 +613,6 @@ const RegistrationForm = () => {
 
       setErrorMessage(errorMsg);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-=======
-  /* ================= ADMIN REQUIRED VALIDATION ONLY ================= */
-  const validateAdminRequiredFields = () => {
-    if (!formData.email?.trim()) return "Email is required";
-    if (!formData.password?.trim()) return "Password is required";
-    if (!formData.mobileNumber) return "Mobile number is required";
-    if (!formData.gender) return "Gender is required";
-    return null;
-  };
-
-  /* ================= SUBMIT ================= */
-  const handleSubmit = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        alert("Please login first!");
-        return;
-      }
-
-      const validationError = validateAdminRequiredFields();
-      if (validationError) {
-        alert(validationError);
-        return;
-      }
-
-      /* ================= BASE PAYLOAD ================= */
-      const payload = {
-        email: formData.email,
-        password: formData.password,
-        mobileNumber: String(formData.mobileNumber),
-        gender: formData.gender,
-        autoActivate: true,
-        skipEmailVerification: true,
-        adminNotes: formData.adminNotes || "",
-      };
-
-      /* ================= OPTIONAL SECTIONS (ADD ONLY IF FILLED) ================= */
-
-      if (formData.firstName || formData.lastName) {
-        payload.profileDetails = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          age: formData.age ? Number(formData.age) : null,
-          gender: formData.gender,
-          religion: formData.religion,
-          caste: formData.caste,
-          maritalStatus: formData.maritalStatus,
-          diet: formData.diet,
-          bloodGroup: formData.bloodGroup,
-          height: formData.height ? Number(formData.height) : null,
-          weight: formData.weight ? Number(formData.weight) : null,
-          complexion: formData.complexion,
-          address: formData.fullAddress,
-          currentCity: formData.city,
-          district: formData.district,
-          taluka: formData.taluka,
-          pinCode: formData.pinCode ? Number(formData.pinCode) : null,
-          physicallyChallenged: formData.physicallyChallenged === "Yes",
-          spectacle: formData.spectacle === "Yes",
-          lens: formData.lens === "Yes",
-        };
-      }
-
-      if (formData.dob) {
-        payload.horoscopeDetails = {
-          dob: formData.dob,
-          time: formData.time
-            ? {
-                hour: Number(formData.time.split(":")[0]),
-                minute: Number(formData.time.split(":")[1]),
-                second: 0,
-                nano: 0,
-              }
-            : null,
-          birthPlace: formData.birthPlace,
-          nakshatra: formData.nakshatra,
-          rashi: formData.rashi,
-          mangal: formData.mangal,
-          gotra: formData.gotra,
-        };
-      }
-
-      if (formData.education || formData.occupation) {
-        payload.educationDetails = {
-          education: formData.education,
-          degree: formData.degree,
-          occupation: formData.occupation,
-          occupationDetailsValid: formData.occupationDetails,
-          incomePerYear: formData.incomePerYear
-            ? Number(formData.incomePerYear)
-            : null,
-        };
-      }
-
-      if (formData.fathersName || formData.mothersName) {
-        payload.familyBackground = {
-          fathersName: formData.fathersName,
-          fatherOccupation: formData.fatherOccupation,
-          mothersName: formData.mothersName,
-          motherOccupation: formData.motherOccupation,
-          brother: Number(formData.brothers || 0),
-          sisters: Number(formData.sisters || 0),
-          marriedBrothers: Number(formData.marriedBrothers || 0),
-          marriedSisters: Number(formData.marriedSisters || 0),
-          interCasteInFamily: formData.interCasteInFamily === "Yes",
-        };
-      }
-
-      if (formData.country || formData.city) {
-        payload.contactDetails = {
-          mobileNumber: String(formData.mobileNumber),
-          email: formData.email,
-          address: formData.fullAddress,
-          city: formData.city,
-          state: formData.state,
-          country: formData.country,
-          pinCode: formData.pinCode ? Number(formData.pinCode) : null,
-          visibility: formData.contactVisibility,
-        };
-      }
-
-      if (formData.lookingFor) {
-        payload.partnerPreferences = {
-          lookingFor: formData.lookingFor,
-          ageRange: formData.ageRange,
-          heightRange: formData.heightRange,
-          religion: formData.partnerReligion,
-          caste: formData.partnerCaste,
-          education: formData.partnerEducation,
-          occupation: formData.partnerOccupation,
-          incomeRange: formData.incomeRange,
-          maritalStatus: formData.partnerMaritalStatus,
-          eatingHabits: formData.eatingHabits,
-          drinkingHabits: formData.drinkingHabits,
-          smokingHabits: formData.smokingHabits,
-        };
-      }
-
-      console.log("FINAL PAYLOAD", payload);
-
-      const res = await fetch(
-        "https://mttlprv1.digiledge.info/api/v1/admin/registration/complete",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
-
-      alert("Registration Successful!");
-    } catch (err) {
-      console.error(err);
-      alert("Error: " + err.message);
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
     }
   };
 
@@ -791,7 +628,6 @@ const RegistrationForm = () => {
         <Step6ResidentialDetails formData={formData} onInputChange={handleInputChange} />
         <Step7UploadDocuments formData={formData} onInputChange={handleInputChange} />
 
-<<<<<<< HEAD
         {/* ERROR MESSAGE */}
         {errorMessage && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
@@ -817,57 +653,6 @@ const RegistrationForm = () => {
           </div>
         )}
 
-        {/* ================= ADMIN USER INFO ================= */}
-        <AdminUserInfo
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 1 ================= */}
-        <Step1BasicDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 2 ================= */}
-        <Step2PersonalDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 3 ================= */}
-        <Step3ReligionDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 4 ================= */}
-        <Step4EducationDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 5 ================= */}
-        <Step5FamilyDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 6 ================= */}
-        <Step6ResidentialDetails
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= STEP 7 ================= */}
-        <Step7UploadDocuments
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        {/* ================= FINAL SUBMIT ================= */}
-=======
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
         <div className="flex justify-end pt-6 border-t">
           <button
             onClick={handleSubmit}

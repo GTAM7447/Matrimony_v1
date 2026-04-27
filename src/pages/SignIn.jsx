@@ -93,7 +93,6 @@ const SignIn = () => {
         if (token && token !== "http_only_token") {
           const decoded = jwtDecode(token);
 
-<<<<<<< HEAD
           // Check all possible role field names
           roles = decoded?.authorities ||
             decoded?.roles ||
@@ -118,21 +117,18 @@ const SignIn = () => {
         console.warn("Could not extract roles", e);
       }
 
-      // If ADMIN → set status via context and redirect to dashboard
-      if (roles.some((r) => typeof r === "string" && r.toUpperCase().includes("ADMIN"))) {
+      // If ADMIN → set status via context, bypass profile ME API and go to dashboard
+      if (
+        roles.some(
+          (r) => typeof r === "string" && r.toUpperCase().includes("ADMIN")
+        )
+      ) {
         setAdminStatus(true);
-=======
-      // If ADMIN - bypass me API and go direct
-      if (roles.some((r) => r.toUpperCase().includes("ADMIN"))) {
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
         navigate("/admin/dashboard", { replace: true });
         return;
       }
 
-<<<<<<< HEAD
-=======
       // Normal users - Check Profile Completion via ME API
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
       try {
         const meRes = await axios.get(
           `${BASE_URL}/api/v1/complete-profile/me`,

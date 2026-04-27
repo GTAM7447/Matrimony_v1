@@ -64,12 +64,8 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   React.useEffect(() => {
-<<<<<<< HEAD
     // Only prefetch for regular users, not admins
     if (loggedIn && !isAdmin) {
-=======
-    if (loggedIn) {
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
       dispatch(
         profileApi.util.prefetch("getOwnProfile", undefined, {
           force: false,
@@ -82,17 +78,10 @@ const Navbar = () => {
         })
       );
     }
-<<<<<<< HEAD
   }, [loggedIn, isAdmin, dispatch]);
 
   const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
     skip: skipUserAPIs,
-=======
-  }, [loggedIn, dispatch]);
-
-  const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
-    skip: !loggedIn,
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
   });
 
   const avatarInitial = useMemo(() => {
@@ -294,10 +283,6 @@ const Navbar = () => {
         profile={ownProfile?.data}
         photoData={photoResponse?.data}
       />
-<<<<<<< HEAD
-
-=======
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
     </>
   );
 };

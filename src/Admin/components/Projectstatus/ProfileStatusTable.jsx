@@ -421,11 +421,7 @@
 import React, { useState } from "react";
 import { FiMoreVertical, FiEye, FiEdit, FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
 import { HiUserGroup } from "react-icons/hi";
-<<<<<<< HEAD
 import { useAdminProfiles } from "../../../hooks";
-=======
-import { useAdminProfiles } from "../../context/hooks/useProfileData";
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
 
 const headers = [
   "Sr No.",
@@ -644,13 +640,6 @@ export default function ProfileStatusTable() {
                     key={index}
                     className="border-t border-gray-100 hover:bg-gray-50"
                   >
-<<<<<<< HEAD
-                    <td className="px-4 py-3">
-                      <input type="checkbox" />
-                    </td>
-
-=======
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
                     <td className="px-4 py-3">{index + 1 + page * 20}</td>
                     <td className="px-4 py-3 font-medium">{displayData(row.profileId)}</td>
                     <td className="px-4 py-3">{displayData(row.name)}</td>
@@ -814,8 +803,4 @@ export default function ProfileStatusTable() {
       </div>
     </>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
