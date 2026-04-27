@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// /* eslint-disable no-useless-escape */
 // import React, { useEffect, useState } from "react";
 // import { City } from "country-state-city";
@@ -1321,6 +1322,8 @@
 
 
 
+=======
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
 // components/registration/steps/Step1BasicInfo.jsx
 import React, { useState } from "react";
 import { City } from "country-state-city";
@@ -1363,22 +1366,11 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
     setTalukas(sortedCities);
   }, []);
 
-  // Required fields
-  const requiredFields = [
-    "firstName", "middleName", "lastName", "age", "gender", "status",
-    "address", "taluka", "district", "pinCode", "religion", "caste",
-    "maritalStatus", "heightFt", "heightIn", "weight", "bloodGroup",
-    "complexion", "diet", "spectacle", "lens", "physicallyChallenged",
-    "homeTownDistrict", "nativeTaluka", "currentCity"
-  ];
-
-  // Validate a single field
+  // Validate a single field (only format validation, no required check)
   const validateField = (name, value) => {
     let error = "";
     
-    if (!value || value.toString().trim() === "") {
-      error = "This field is required";
-    } else {
+    if (value && value.toString().trim() !== "") {
       switch(name) {
         case "pinCode":
           if (!/^[1-9][0-9]{5}$/.test(value)) {
@@ -1438,12 +1430,13 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
     return error;
   };
 
-  // Validate all required fields
+  // Validate all fields (only format validation, not required check)
   const validateAllFields = () => {
     const newErrors = {};
     let isValid = true;
     
-    requiredFields.forEach(field => {
+    // Only validate fields that have values
+    Object.keys(formData).forEach(field => {
       const value = formData[field] || "";
       const error = validateField(field, value);
       
@@ -1454,13 +1447,6 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
     });
     
     setValidationErrors(newErrors);
-    
-    // Mark all fields as touched to show errors
-    const allTouched = {};
-    requiredFields.forEach(field => {
-      allTouched[field] = true;
-    });
-    setTouchedFields(allTouched);
     
     return isValid;
   };
@@ -1481,7 +1467,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
     // Update form data
     onInputChange(name, processedValue);
     
-    // Validate the field
+    // Validate the field (only if it has a value)
     const error = validateField(name, processedValue);
     setValidationErrors(prev => ({ ...prev, [name]: error }));
   };
@@ -1512,7 +1498,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
       width: "100%",
     };
 
-    // Highlight field with red border if it has an error AND has been touched
+    // Highlight field with red border only if it has a validation error AND has been touched
     if (touchedFields[fieldName] && validationErrors[fieldName]) {
       return {
         ...baseStyle,
@@ -1532,11 +1518,6 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
     display: "block",
   };
 
-  // Check if all required fields are filled
-  const isFormValid = requiredFields.every(
-    field => formData[field] && formData[field].toString().trim() !== ""
-  );
-
   return (
     <div className="w-full mx-auto font-[Inter]">
       {/* FORM HEADER */}
@@ -1545,10 +1526,8 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
         style={{ backgroundColor: "#991CDD26" }}
       >
         <h3 className="text-center text-[#991CDD] font-[Inter] font-semibold uppercase mb-4 mt-4 tracking-wide text-xl">
-  Personal Information
-</h3>
-
-        
+          Personal Information
+        </h3>
       </div>
 
       {/* FORM GRID */}
@@ -1790,7 +1769,7 @@ const Step1BasicInfo = ({ formData, onInputChange, onNext }) => {
           {(touchedFields.heightFt && validationErrors.heightFt) || 
            (touchedFields.heightIn && validationErrors.heightIn) ? (
             <p className="text-red-500 text-xs mt-1">
-              Please select both feet and inches
+              {validationErrors.heightFt || validationErrors.heightIn}
             </p>
           ) : null}
         </div>

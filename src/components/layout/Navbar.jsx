@@ -2,15 +2,14 @@
 import React, { useState, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { Bell, Menu, X, User } from "lucide-react";
-
 import NotificationSidebar from "../../components/NotificationPanel/NotificationPanel";
+
 import LogoutPanel from "../../components/LogoutPanel/LogoutPanel";
 import CreditWidget from "../../components/CreditWidget/CreditWidget";
 import { useAuth } from "../../context/AuthContext";
 import { profileApi } from "../../context/profileApi";
 import { useDispatch } from "react-redux";
 import { isAuthenticated } from "../../utils/auth";
-
 
 import {
   useGetOwnProfileQuery,
@@ -20,7 +19,6 @@ import {
 } from "../../context/profileApi";
 
 import { mapNavbarProfile } from "../../context/mapNavbarProfile";
-
 
 const NAV_ITEMS = [
   { name: "HOME", path: "/", public: true },
@@ -66,8 +64,12 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   React.useEffect(() => {
+<<<<<<< HEAD
     // Only prefetch for regular users, not admins
     if (loggedIn && !isAdmin) {
+=======
+    if (loggedIn) {
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
       dispatch(
         profileApi.util.prefetch("getOwnProfile", undefined, {
           force: false,
@@ -80,10 +82,17 @@ const Navbar = () => {
         })
       );
     }
+<<<<<<< HEAD
   }, [loggedIn, isAdmin, dispatch]);
 
   const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
     skip: skipUserAPIs,
+=======
+  }, [loggedIn, dispatch]);
+
+  const { data: photoResponse } = useGetProfilePhotoQuery(undefined, {
+    skip: !loggedIn,
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
   });
 
   const avatarInitial = useMemo(() => {
@@ -94,7 +103,6 @@ const Navbar = () => {
 
 
   /*  RENDER  */
-
   return (
     <>
       <nav className="w-full sticky top-0 z-[200] bg-[#FF8C4426] backdrop-blur-md shadow-md">
@@ -286,10 +294,12 @@ const Navbar = () => {
         profile={ownProfile?.data}
         photoData={photoResponse?.data}
       />
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
     </>
   );
 };
 
 export default Navbar;
-

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// import React, { useState, useEffect } from "react";
 // import { Country } from "country-state-city";
 // import Stepper from "./Stepper";
@@ -863,6 +864,8 @@
 
 
 
+=======
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
 // components/registration/steps/Step5PartnerExpectations.jsx
 import React, { useState, useEffect } from "react";
 import { Country } from "country-state-city";
@@ -872,23 +875,8 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
   const [touchedFields, setTouchedFields] = useState({});
   const [countries, setCountries] = useState([]);
 
-  // Required fields
-  const requiredFields = [
-    "ageRange",
-    "lookingFor",
-    "heightRange",
-    "partnerComplexion",
-    "partnerReligion",
-    "partnerCaste",
-    "partnerEducation",
-    "residentStatus",
-    "eatingHabits",
-    "countryLivingIn",
-    "cityLivingIn",
-    "mangal",
-    "partnerOccupation",
-    "partnerIncome"
-  ];
+  // No required fields - all are optional
+  const requiredFields = [];
 
   // Dropdown options
   const lookingForOptions = [
@@ -933,15 +921,11 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
     setCountries(sortedCountries);
   }, []);
 
-  // Validate a single field
+  // Validate a single field (only format validation, no required validation)
   const validateField = (name, value) => {
     let error = "";
     
-    if (!value || value.toString().trim() === "") {
-      if (requiredFields.includes(name)) {
-        error = "This field is required";
-      }
-    } else {
+    if (value && value.toString().trim() !== "") {
       switch(name) {
         case "ageRange":
           if (!/^\d{1,2}-\d{1,2}$/.test(value)) {
@@ -1019,34 +1003,37 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
     return error;
   };
 
-  // Validate all required fields
+  // Validate all fields (only format validation)
   const validateAllFields = () => {
     const newErrors = {};
     let isValid = true;
     
-    // Validate all required fields
-    requiredFields.forEach(field => {
-      const value = formData[field] || "";
-      const error = validateField(field, value);
-      
-      if (error) {
-        newErrors[field] = error;
-        isValid = false;
-      }
-    });
-
-    // Validate optional fields if they have value
-    const optionalFields = [
+    // Validate all fields if they have value
+    const allFields = [
+      "ageRange",
+      "lookingFor",
+      "heightRange",
+      "partnerComplexion",
+      "partnerReligion",
+      "partnerCaste",
       "partnerSubCaste",
+      "partnerEducation",
+      "residentStatus",
+      "partnerOccupation",
+      "partnerIncome",
+      "countryLivingIn",
+      "cityLivingIn",
       "stateLivingIn",
+      "eatingHabits",
+      "partnerDrinkingHabits",
+      "partnerSmokingHabits",
+      "mangal",
       "partnerMaritalStatus",
       "partnerMotherTongue",
-      "partnerAdditionalPreferences",
-      "partnerDrinkingHabits",
-      "partnerSmokingHabits"
+      "partnerAdditionalPreferences"
     ];
     
-    optionalFields.forEach(field => {
+    allFields.forEach(field => {
       const value = formData[field] || "";
       if (value && value.toString().trim() !== "") {
         const error = validateField(field, value);
@@ -1059,10 +1046,12 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
 
     setValidationErrors(newErrors);
     
-    // Mark all fields as touched to show errors
+    // Mark all filled fields as touched to show errors
     const allTouched = {};
-    [...requiredFields, ...optionalFields].forEach(field => {
-      allTouched[field] = true;
+    allFields.forEach(field => {
+      if (formData[field] && formData[field].toString().trim() !== "") {
+        allTouched[field] = true;
+      }
     });
     setTouchedFields(prev => ({ ...prev, ...allTouched }));
     
@@ -1072,8 +1061,10 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Mark field as touched
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    // Mark field as touched only if it has a value
+    if (value && value.toString().trim() !== "") {
+      setTouchedFields(prev => ({ ...prev, [name]: true }));
+    }
     
     let processedValue = value;
     
@@ -1113,17 +1104,26 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
     // Update form data
     onInputChange(name, processedValue);
     
-    // Validate the field
-    const error = validateField(name, processedValue);
-    setValidationErrors(prev => ({ ...prev, [name]: error }));
+    // Validate the field only if it has a value
+    if (processedValue && processedValue.toString().trim() !== "") {
+      const error = validateField(name, processedValue);
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
+    } else {
+      // Clear error if field is empty
+      setValidationErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
     
-    const error = validateField(name, value);
-    setValidationErrors(prev => ({ ...prev, [name]: error }));
+    // Mark as touched only if it has a value
+    if (value && value.toString().trim() !== "") {
+      setTouchedFields(prev => ({ ...prev, [name]: true }));
+      
+      const error = validateField(name, value);
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
+    }
   };
 
   const handleNextClick = () => {
@@ -1164,11 +1164,6 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
     display: "block",
   };
 
-  // Check if all required fields are filled
-  const isFormValid = requiredFields.every(
-    field => formData[field] && formData[field].toString().trim() !== ""
-  );
-
   return (
     <div className="w-full mx-auto font-[Inter]">
       {/* FORM HEADER */}
@@ -1177,7 +1172,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
         style={{ backgroundColor: "#991CDD26" }}
       >
         <h3 className="text-center text-[#991CDD] font-[Inter] font-semibold uppercase mb-4 mt-4 tracking-wide text-xl">
-          Partner Expectations
+          Partner Expectations (Optional)
         </h3>
       </div>
 
@@ -1223,7 +1218,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("lookingFor")}
           >
-            <option value="">Select</option>
+            <option value="">Select (optional)</option>
             {lookingForOptions.map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
@@ -1274,7 +1269,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("partnerComplexion")}
           >
-            <option value="">Select</option>
+            <option value="">Select (optional)</option>
             {complexionOptions.map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
@@ -1299,7 +1294,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("partnerReligion")}
           >
-            <option value="">Select</option>
+            <option value="">Select (optional)</option>
             {religionOptions.map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
@@ -1322,7 +1317,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             value={formData.partnerCaste || ""}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Enter caste"
+            placeholder="Enter caste (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("partnerCaste")}
             maxLength={50}
@@ -1337,7 +1332,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
           </p>
         </div>
 
-        {/* SUB-CASTE (Optional) */}
+        {/* SUB-CASTE */}
         <div>
           <label style={labelStyle}>
             Sub-Caste
@@ -1374,7 +1369,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             value={formData.partnerEducation || ""}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Enter Education"
+            placeholder="Enter Education (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("partnerEducation")}
             maxLength={100}
@@ -1402,7 +1397,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("residentStatus")}
           >
-            <option value="">Select</option>
+            <option value="">Select (optional)</option>
             {residentStatusOptions.map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
@@ -1425,7 +1420,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             value={formData.partnerOccupation || ""}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Enter Occupation"
+            placeholder="Enter Occupation (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("partnerOccupation")}
             maxLength={100}
@@ -1451,7 +1446,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             value={formData.partnerIncome || ""}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Enter income in rupees"
+            placeholder="Enter income in rupees (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("partnerIncome")}
             maxLength={9}
@@ -1479,7 +1474,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("countryLivingIn")}
           >
-            <option value="">Select Country</option>
+            <option value="">Select Country (optional)</option>
             {countries.map((country) => (
               <option key={country.isoCode} value={country.name}>
                 {country.name}
@@ -1504,7 +1499,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             value={formData.cityLivingIn || ""}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Enter city"
+            placeholder="Enter city (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("cityLivingIn")}
             maxLength={50}
@@ -1519,7 +1514,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
           </p>
         </div>
 
-        {/* STATE (Optional) */}
+        {/* STATE */}
         <div>
           <label style={labelStyle}>
             State Living in
@@ -1558,7 +1553,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("eatingHabits")}
           >
-            <option value="">Select</option>
+            <option value="">Select (optional)</option>
             {eatingHabitsOptions.map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
@@ -1570,7 +1565,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
           )}
         </div>
 
-        {/* DRINKING HABITS (Optional) */}
+        {/* DRINKING HABITS */}
         <div>
           <label style={labelStyle}>
             Drinking Habits
@@ -1595,7 +1590,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
           )}
         </div>
 
-        {/* SMOKING HABITS (Optional) */}
+        {/* SMOKING HABITS */}
         <div>
           <label style={labelStyle}>
             Smoking Habits
@@ -1633,7 +1628,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("mangal")}
           >
-            <option value="">Select</option>
+            <option value="">Select (optional)</option>
             {mangalOptions.map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
@@ -1645,7 +1640,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
           )}
         </div>
 
-        {/* MARITAL STATUS (Optional) */}
+        {/* MARITAL STATUS */}
         <div>
           <label style={labelStyle}>
             Marital Status
@@ -1670,7 +1665,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
           )}
         </div>
 
-        {/* MOTHER TONGUE (Optional) */}
+        {/* MOTHER TONGUE */}
         <div>
           <label style={labelStyle}>
             Mother Tongue
@@ -1696,7 +1691,7 @@ const Step5PartnerExpectations = ({ formData, onInputChange, onNext, onBack }) =
           </p>
         </div>
 
-        {/* ADDITIONAL PREFERENCES (Optional) */}
+        {/* ADDITIONAL PREFERENCES */}
         <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4">
           <label style={labelStyle}>
             Additional Preferences

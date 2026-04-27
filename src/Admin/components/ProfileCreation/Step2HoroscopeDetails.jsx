@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// import React, { useEffect, useState } from "react";
 // import Stepper from "./Stepper";
 // import { City } from "country-state-city";
@@ -814,6 +815,8 @@
 
 
 
+=======
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
 // components/registration/steps/Step2HoroscopeDetails.jsx
 import React, { useState, useEffect } from "react";
 import { City } from "country-state-city";
@@ -822,12 +825,6 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
   const [validationErrors, setValidationErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
   const [districts, setDistricts] = useState([]);
-
-  // Required fields
-  const requiredFields = [
-    "dob", "time", "birthPlace", "rashi", "nakshatra", "charan", 
-    "nadi", "gan", "mangal", "gotra", "devak"
-  ];
 
   // Rashi options
   const rashiOptions = [
@@ -880,13 +877,11 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
     setDistricts(sortedCities);
   }, []);
 
-  // Validate a single field
+  // Validate a single field (only format validation, no required check)
   const validateField = (name, value) => {
     let error = "";
     
-    if (!value || value.toString().trim() === "") {
-      error = "This field is required";
-    } else {
+    if (value && value.toString().trim() !== "") {
       switch(name) {
         case "dob":
           if (value) {
@@ -915,12 +910,13 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
     return error;
   };
 
-  // Validate all required fields
+  // Validate all fields (only format validation, not required check)
   const validateAllFields = () => {
     const newErrors = {};
     let isValid = true;
     
-    requiredFields.forEach(field => {
+    // Only validate fields that have values
+    Object.keys(formData).forEach(field => {
       const value = formData[field] || "";
       const error = validateField(field, value);
       
@@ -931,13 +927,6 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
     });
     
     setValidationErrors(newErrors);
-    
-    // Mark all fields as touched to show errors
-    const allTouched = {};
-    requiredFields.forEach(field => {
-      allTouched[field] = true;
-    });
-    setTouchedFields(allTouched);
     
     return isValid;
   };
@@ -968,7 +957,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
     // Update form data
     onInputChange(name, processedValue);
     
-    // Validate the field
+    // Validate the field (only if it has a value)
     const error = validateField(name, processedValue);
     setValidationErrors(prev => ({ ...prev, [name]: error }));
   };
@@ -999,7 +988,7 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
       width: "100%",
     };
 
-    // Highlight field with red border if it has an error AND has been touched
+    // Highlight field with red border only if it has a validation error AND has been touched
     if (touchedFields[fieldName] && validationErrors[fieldName]) {
       return {
         ...baseStyle,
@@ -1018,11 +1007,6 @@ const Step2HoroscopeDetails = ({ formData, onInputChange, onNext, onBack }) => {
     marginBottom: "4px",
     display: "block",
   };
-
-  // Check if all required fields are filled
-  const isFormValid = requiredFields.every(
-    field => formData[field] && formData[field].toString().trim() !== ""
-  );
 
   return (
     <div className="w-full mx-auto font-[Inter]">

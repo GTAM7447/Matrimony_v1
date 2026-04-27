@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// import React, { useEffect, useState } from "react";
 // import Stepper from "./Stepper";
 // import {
@@ -1106,6 +1107,8 @@
 
 
 
+=======
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
 // components/registration/steps/Step3EducationDetails.jsx
 import React, { useState } from "react";
 
@@ -1181,20 +1184,11 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
     { value: "100000000", label: "10 Crore" }
   ];
 
-  // Required fields
-  const requiredFields = [
-    "education", "degree", "occupation", "incomePerYear"
-  ];
-
-  // Validate a single field
+  // Validate a single field (only format validation, no required check)
   const validateField = (name, value) => {
     let error = "";
     
-    if (!value || value.toString().trim() === "") {
-      if (requiredFields.includes(name)) {
-        error = "This field is required";
-      }
-    } else {
+    if (value && value.toString().trim() !== "") {
       switch(name) {
         case "education":
           if (!validEducationOptions.includes(value)) {
@@ -1276,6 +1270,8 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
 
   // Validate income with experience
   const validateIncomeWithExperience = (income, experience) => {
+    if (!income || !experience) return "";
+    
     const incomeNum = parseInt(income) || 0;
     const experienceNum = parseInt(experience) || 0;
     
@@ -1287,7 +1283,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
 
   // Validate occupation details
   const validateOccupationDetails = (occupation, occupationDetails) => {
-    if (!occupation) return "";
+    if (!occupation || !occupationDetails) return "";
     
     const lowerOccupation = occupation.toLowerCase();
     const requiresDetails = 
@@ -1303,32 +1299,25 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
     return "";
   };
 
-  // Validate all required fields
+  // Validate all fields (only format validation, not required check)
   const validateAllFields = () => {
     const newErrors = {};
     let isValid = true;
     
-    // Validate required fields
-    requiredFields.forEach(field => {
-      const value = formData[field] || "";
-      const error = validateField(field, value);
-      
-      if (error) {
-        newErrors[field] = error;
-        isValid = false;
-      }
-    });
-
-    // Validate optional fields if they have value
-    const optionalFields = [
+    // Validate only fields that have values
+    const allFields = [
+      "education",
+      "degree",
+      "occupation",
       "occupationDetails",
       "experienceYears",
+      "incomePerYear",
       "companyName",
       "workLocation",
       "additionalDetails"
     ];
     
-    optionalFields.forEach(field => {
+    allFields.forEach(field => {
       const value = formData[field] || "";
       if (value && value.toString().trim() !== "") {
         const error = validateField(field, value);
@@ -1339,8 +1328,9 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
       }
     });
 
-    // Validate income-experience rule
-    if (formData.incomePerYear && formData.experienceYears) {
+    // Validate income-experience rule (only if both have values)
+    if (formData.incomePerYear && formData.incomePerYear.trim() !== "" && 
+        formData.experienceYears && formData.experienceYears.trim() !== "") {
       const incomeExpError = validateIncomeWithExperience(formData.incomePerYear, formData.experienceYears);
       if (incomeExpError) {
         newErrors.incomePerYear = incomeExpError;
@@ -1348,8 +1338,8 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
       }
     }
 
-    // Validate occupation details rule
-    if (formData.occupation) {
+    // Validate occupation details rule (only if occupation has value)
+    if (formData.occupation && formData.occupation.trim() !== "") {
       const occupationError = validateOccupationDetails(formData.occupation, formData.occupationDetails);
       if (occupationError) {
         newErrors.occupationDetails = occupationError;
@@ -1358,13 +1348,6 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
     }
 
     setValidationErrors(newErrors);
-    
-    // Mark all fields as touched to show errors
-    const allTouched = {};
-    [...requiredFields, ...optionalFields].forEach(field => {
-      allTouched[field] = true;
-    });
-    setTouchedFields(prev => ({ ...prev, ...allTouched }));
     
     return isValid;
   };
@@ -1389,7 +1372,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
     // Update form data
     onInputChange(name, processedValue);
     
-    // Validate the field
+    // Validate the field (only if it has a value)
     const error = validateField(name, processedValue);
     setValidationErrors(prev => ({ ...prev, [name]: error }));
   };
@@ -1420,7 +1403,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
       width: "100%",
     };
 
-    // Highlight field with red border if it has an error AND has been touched
+    // Highlight field with red border only if it has a validation error AND has been touched
     if (touchedFields[fieldName] && validationErrors[fieldName]) {
       return {
         ...baseStyle,
@@ -1439,11 +1422,6 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
     marginBottom: "4px",
     display: "block",
   };
-
-  // Check if all required fields are filled
-  const isFormValid = requiredFields.every(
-    field => formData[field] && formData[field].toString().trim() !== ""
-  );
 
   return (
     <div className="w-full mx-auto font-[Inter]">
@@ -1547,7 +1525,7 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
             value={formData.occupationDetails || ""}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Describe your role, responsibilities, etc. (Required for Engineer/Manager/Consultant/Developer)"
+            placeholder="Describe your role, responsibilities, etc."
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none resize-none"
             style={{
               ...getFieldStyle("occupationDetails"),
@@ -1592,7 +1570,11 @@ const Step3EducationDetails = ({ formData, onInputChange, onNext, onBack }) => {
         {/* INCOME PER YEAR */}
         <div>
           <label style={labelStyle}>
+<<<<<<< HEAD
             Annual Income (â‚¹)
+=======
+            Annual Income (₹)
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
           </label>
           <select
             name="incomePerYear"

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// import React, { useState, useEffect } from "react";
 // import Stepper from "./Stepper";
 // import { 
@@ -992,6 +993,8 @@
 
 
 
+=======
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
 // components/registration/steps/Step4FamilyBackground.jsx
 import React, { useState } from "react";
 
@@ -999,34 +1002,14 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
   const [validationErrors, setValidationErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
 
-  // Required fields
-  const requiredFields = [
-    "fathersName",
-    "fatherOccupation",
-    "mothersName",
-    "motherOccupation",
-    "brothers",
-    "marriedBrothers",
-    "sisters",
-    "marriedSisters",
-    "interCasteInFamily",
-    "parentResiding",
-    "mamaSurname",
-    "mamaPlace",
-    "familyWealth",
-    "relativeSurnames",
-  ];
-
   // Number options
   const numberOptions = ["0", "1", "2", "3", "4", "5", "6+"];
 
-  // Validate a single field
+  // Validate a single field (only format validation, no required check)
   const validateField = (name, value) => {
     let error = "";
     
-    if (!value || value.toString().trim() === "") {
-      error = "This field is required";
-    } else {
+    if (value && value.toString().trim() !== "") {
       switch(name) {
         case "fathersName":
         case "mothersName":
@@ -1087,11 +1070,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
           const brothersValue = formData.brothers || "0";
           const sistersValue = formData.sisters || "0";
           
-          if (name === "marriedBrothers" && !brothersValue) {
-            error = "Please select number of brothers first";
-          } else if (name === "marriedSisters" && !sistersValue) {
-            error = "Please select number of sisters first";
-          } else if (value) {
+          if (value) {
             const marriedNum = parseInt(value);
             let maxAllowed = 0;
             
@@ -1123,48 +1102,65 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
     return isNaN(num) ? 0 : num;
   };
 
-  // Validate all required fields
+  // Validate all fields (only format validation, not required check)
   const validateAllFields = () => {
     const newErrors = {};
     let isValid = true;
     
-    // Validate all required fields
-    requiredFields.forEach(field => {
+    // Validate only fields that have values
+    const allFields = [
+      "fathersName",
+      "fatherOccupation",
+      "mothersName",
+      "motherOccupation",
+      "brothers",
+      "marriedBrothers",
+      "sisters",
+      "marriedSisters",
+      "interCasteInFamily",
+      "parentResiding",
+      "mamaSurname",
+      "mamaPlace",
+      "familyWealth",
+      "relativeSurnames",
+    ];
+    
+    allFields.forEach(field => {
       const value = formData[field] || "";
-      const error = validateField(field, value);
-      
-      if (error) {
-        newErrors[field] = error;
-        isValid = false;
+      if (value && value.toString().trim() !== "") {
+        const error = validateField(field, value);
+        if (error) {
+          newErrors[field] = error;
+          isValid = false;
+        }
       }
     });
 
-    // Parse numbers for validation
-    const brothersCount = parseFormNumber(formData.brothers);
-    const marriedBrothersCount = parseFormNumber(formData.marriedBrothers);
-    const sistersCount = parseFormNumber(formData.sisters);
-    const marriedSistersCount = parseFormNumber(formData.marriedSisters);
+    // Parse numbers for validation only if they have values
+    const brothersCount = formData.brothers ? parseFormNumber(formData.brothers) : 0;
+    const marriedBrothersCount = formData.marriedBrothers ? parseFormNumber(formData.marriedBrothers) : 0;
+    const sistersCount = formData.sisters ? parseFormNumber(formData.sisters) : 0;
+    const marriedSistersCount = formData.marriedSisters ? parseFormNumber(formData.marriedSisters) : 0;
 
-    // Validate married brothers cannot exceed total brothers
-    if (marriedBrothersCount > brothersCount) {
-      newErrors.marriedBrothers = `Married brothers (${marriedBrothersCount}) cannot exceed total brothers (${brothersCount})`;
-      isValid = false;
+    // Validate married brothers cannot exceed total brothers (only if both have values)
+    if (formData.marriedBrothers && formData.marriedBrothers.trim() !== "" && 
+        formData.brothers && formData.brothers.trim() !== "") {
+      if (marriedBrothersCount > brothersCount) {
+        newErrors.marriedBrothers = `Married brothers (${marriedBrothersCount}) cannot exceed total brothers (${brothersCount})`;
+        isValid = false;
+      }
     }
 
-    // Validate married sisters cannot exceed total sisters
-    if (marriedSistersCount > sistersCount) {
-      newErrors.marriedSisters = `Married sisters (${marriedSistersCount}) cannot exceed total sisters (${sistersCount})`;
-      isValid = false;
+    // Validate married sisters cannot exceed total sisters (only if both have values)
+    if (formData.marriedSisters && formData.marriedSisters.trim() !== "" && 
+        formData.sisters && formData.sisters.trim() !== "") {
+      if (marriedSistersCount > sistersCount) {
+        newErrors.marriedSisters = `Married sisters (${marriedSistersCount}) cannot exceed total sisters (${sistersCount})`;
+        isValid = false;
+      }
     }
 
     setValidationErrors(newErrors);
-    
-    // Mark all fields as touched to show errors
-    const allTouched = {};
-    requiredFields.forEach(field => {
-      allTouched[field] = true;
-    });
-    setTouchedFields(prev => ({ ...prev, ...allTouched }));
     
     return isValid;
   };
@@ -1204,9 +1200,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
         break;
     }
     
-    const updatedData = { ...formData, [name]: processedValue };
-    
-    // Auto-reset married brothers/sisters when total is set to None or 0
+    // Auto-reset married brothers/sisters when total is set to 0
     if (name === "brothers") {
       if (value === "0") {
         onInputChange("marriedBrothers", "0");
@@ -1226,7 +1220,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
     // Update form data
     onInputChange(name, processedValue);
     
-    // Validate the field
+    // Validate the field (only if it has a value)
     const error = validateField(name, processedValue);
     setValidationErrors(prev => ({ ...prev, [name]: error }));
   };
@@ -1257,7 +1251,7 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
       width: "100%",
     };
 
-    // Highlight field with red border if it has an error AND has been touched
+    // Highlight field with red border only if it has a validation error AND has been touched
     if (touchedFields[fieldName] && validationErrors[fieldName]) {
       return {
         ...baseStyle,
@@ -1320,11 +1314,6 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
 
     return options;
   };
-
-  // Check if all required fields are filled
-  const isFormValid = requiredFields.every(
-    field => formData[field] && formData[field].toString().trim() !== ""
-  );
 
   return (
     <div className="w-full mx-auto font-[Inter]">
@@ -1484,7 +1473,6 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
             onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("marriedBrothers")}
-            disabled={!formData.brothers || formData.brothers === "0"}
           >
             <option value="">Select</option>
             {getMarriedBrothersOptions()}
@@ -1535,7 +1523,6 @@ const Step4FamilyBackground = ({ formData, onInputChange, onNext, onBack }) => {
             onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={getFieldStyle("marriedSisters")}
-            disabled={!formData.sisters || formData.sisters === "0"}
           >
             <option value="">Select</option>
             {getMarriedSistersOptions()}

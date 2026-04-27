@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// import React, { useState, useEffect } from "react";
 // import { Country, State } from "country-state-city";
 // import Stepper from "./Stepper";
@@ -1025,26 +1026,16 @@
 
 
 
+=======
+>>>>>>> 5a22e7dbca958a4e03acb42f137d3f10a9e70ea4
 // components/registration/steps/Step6ResidentialDetails.jsx
 import React, { useState, useEffect } from "react";
 import { Country, State } from "country-state-city";
 
 const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) => {
-  const [validationErrors, setValidationErrors] = useState({});
-  const [touchedFields, setTouchedFields] = useState({});
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-
-  // Required fields
-  const requiredFields = [
-    "fullAddress",
-    "city",
-    "country",
-    "pinCode",
-    "mobileNumber",
-    "contactVisibility"
-  ];
 
   // Hardcoded common Indian cities
   const commonIndianCities = [
@@ -1088,27 +1079,13 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
     "Mobile", "WhatsApp", "Email", "Alternate Number"
   ];
 
-  // Initialize countries and set default to India
+  // Initialize countries
   useEffect(() => {
     const allCountries = Country.getAllCountries();
     const sortedCountries = allCountries.sort((a, b) => 
       a.name.localeCompare(b.name)
     );
     setCountries(sortedCountries);
-    
-    // Set default country to India if not already set
-    if (!formData.country) {
-      const defaultCountry = sortedCountries.find(c => c.name === "India");
-      if (defaultCountry) {
-        onInputChange("country", "India");
-        onInputChange("countryCode", "IN");
-        
-        // Load Indian states
-        const indiaStates = State.getStatesOfCountry("IN");
-        const sortedStates = indiaStates.sort((a, b) => a.name.localeCompare(b.name));
-        setStates(sortedStates);
-      }
-    }
     
     // Set cities from hardcoded list
     const sortedCities = [...commonIndianCities].sort((a, b) => a.localeCompare(b));
@@ -1131,178 +1108,8 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
     }
   }, [formData.countryCode]);
 
-  // Validate a single field
-  const validateField = (name, value) => {
-    let error = "";
-    const trimmedValue = value ? value.toString().trim() : "";
-    
-    if (requiredFields.includes(name) && trimmedValue === "") {
-      error = "This field is required";
-    } else if (trimmedValue !== "") {
-      switch (name) {
-        case "fullAddress":
-          if (trimmedValue.length < 10) {
-            error = "Address must be at least 10 characters";
-          } else if (trimmedValue.length > 500) {
-            error = "Address cannot exceed 500 characters";
-          }
-          break;
-          
-        case "streetAddress":
-          if (!/^[A-Za-z0-9\s\-.,#]+$/.test(trimmedValue)) {
-            error = "Only letters, numbers, spaces, hyphens, dots, commas and # allowed";
-          } else if (trimmedValue.length > 200) {
-            error = "Cannot exceed 200 characters";
-          }
-          break;
-          
-        case "city":
-          if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
-            error = "Only alphabets, spaces, dots and hyphens allowed";
-          } else if (trimmedValue.length > 50) {
-            error = "Cannot exceed 50 characters";
-          }
-          break;
-          
-        case "state":
-          if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
-            error = "Only alphabets, spaces, dots and hyphens allowed";
-          } else if (trimmedValue.length > 50) {
-            error = "Cannot exceed 50 characters";
-          }
-          break;
-          
-        case "pinCode":
-          if (!/^\d{6}$/.test(trimmedValue)) {
-            error = "Enter valid 6-digit PIN code";
-          }
-          break;
-          
-        case "mobileNumber":
-          const cleanMobile = trimmedValue.replace(/[\s()-]/g, '');
-          if (!/^[+]?[0-9]{10,15}$/.test(cleanMobile)) {
-            error = "Enter valid 10-15 digit phone number";
-          }
-          break;
-          
-        case "alternateNumber":
-          const cleanAlt = trimmedValue.replace(/[\s()-]/g, '');
-          if (cleanAlt && !/^[+]?[0-9]{10,15}$/.test(cleanAlt)) {
-            error = "Enter valid 10-15 digit phone number";
-          }
-          break;
-          
-        case "whatsappNumber":
-          const cleanWhatsapp = trimmedValue.replace(/[\s()-]/g, '');
-          if (cleanWhatsapp && !/^[+]?[0-9]{10,15}$/.test(cleanWhatsapp)) {
-            error = "Enter valid 10-15 digit phone number";
-          }
-          break;
-          
-        case "emailAddress":
-          if (trimmedValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) {
-            error = "Enter valid email address";
-          }
-          break;
-          
-        case "emergencyContactName":
-          if (!/^[A-Za-z\s.-]+$/.test(trimmedValue)) {
-            error = "Only alphabets, spaces, dots and hyphens allowed";
-          } else if (trimmedValue.length > 50) {
-            error = "Cannot exceed 50 characters";
-          }
-          break;
-          
-        case "emergencyContactNumber":
-          const cleanEmergency = trimmedValue.replace(/[\s()-]/g, '');
-          if (cleanEmergency && !/^[+]?[0-9]{10,15}$/.test(cleanEmergency)) {
-            error = "Enter valid 10-15 digit phone number";
-          }
-          break;
-          
-        case "emergencyContactRelation":
-          if (trimmedValue && !/^[A-Za-z\s]+$/.test(trimmedValue)) {
-            error = "Only alphabets and spaces allowed";
-          }
-          break;
-          
-        case "preferredContactMethod":
-          if (trimmedValue && !/^[A-Za-z\s]+$/.test(trimmedValue)) {
-            error = "Only alphabets and spaces allowed";
-          }
-          break;
-          
-        case "contactVisibility":
-          if (!["PRIVATE", "MEMBERS_ONLY", "PUBLIC"].includes(trimmedValue)) {
-            error = "Please select a valid visibility option";
-          }
-          break;
-          
-        default:
-          break;
-      }
-    }
-    
-    return error;
-  };
-
-  // Validate all required fields
-  const validateAllFields = () => {
-    const newErrors = {};
-    let isValid = true;
-    
-    // Validate all required fields
-    requiredFields.forEach(field => {
-      const value = formData[field] || "";
-      const error = validateField(field, value);
-      
-      if (error) {
-        newErrors[field] = error;
-        isValid = false;
-      }
-    });
-
-    // Validate optional fields if they have value
-    const optionalFields = [
-      "streetAddress",
-      "state",
-      "alternateNumber",
-      "whatsappNumber",
-      "emailAddress",
-      "emergencyContactName",
-      "emergencyContactNumber",
-      "emergencyContactRelation",
-      "preferredContactMethod"
-    ];
-    
-    optionalFields.forEach(field => {
-      const value = formData[field] || "";
-      if (value && value.toString().trim() !== "") {
-        const error = validateField(field, value);
-        if (error) {
-          newErrors[field] = error;
-          isValid = false;
-        }
-      }
-    });
-
-    setValidationErrors(newErrors);
-    
-    // Mark all fields as touched to show errors
-    const allTouched = {};
-    [...requiredFields, ...optionalFields].forEach(field => {
-      allTouched[field] = true;
-    });
-    setTouchedFields(prev => ({ ...prev, ...allTouched }));
-    
-    return isValid;
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Mark field as touched
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
     
     let processedValue = value;
     
@@ -1320,10 +1127,6 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
         const sortedStates = countryStates.sort((a, b) => a.name.localeCompare(b.name));
         setStates(sortedStates);
-        
-        // Validate the country field
-        const error = validateField(name, selectedCountry.name);
-        setValidationErrors(prev => ({ ...prev, [name]: error }));
         return;
       }
     }
@@ -1335,28 +1138,12 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         onInputChange("state", selectedState.name);
         onInputChange("stateCode", selectedState.isoCode);
         onInputChange("city", "");
-        
-        // Validate the state field
-        const error = validateField(name, selectedState.name);
-        setValidationErrors(prev => ({ ...prev, [name]: error }));
         return;
       }
     }
     
     // Apply character restrictions based on field type
     switch(name) {
-      case "city":
-      case "state":
-      case "emergencyContactName":
-      case "emergencyContactRelation":
-      case "preferredContactMethod":
-        processedValue = value.replace(/[^A-Za-z\s.-]/g, '');
-        break;
-        
-      case "streetAddress":
-        processedValue = value.replace(/[^A-Za-z0-9\s\-.,#]/g, '');
-        break;
-        
       case "pinCode":
         processedValue = value.replace(/\D/g, '').slice(0, 6);
         break;
@@ -1374,28 +1161,10 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
     
     // Update form data
     onInputChange(name, processedValue);
-    
-    // Validate the field
-    const error = validateField(name, processedValue);
-    setValidationErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
-    const error = validateField(name, value);
-    setValidationErrors(prev => ({ ...prev, [name]: error }));
-  };
-
-  const handleNextClick = () => {
-    if (validateAllFields()) {
-      onNext();
-    }
-  };
-
-  const getFieldStyle = (fieldName) => {
-    const baseStyle = {
+  const getFieldStyle = () => {
+    return {
       backgroundColor: "#FDF8FF",
       border: "1px solid #8180801c",
       borderRadius: "6px",
@@ -1405,17 +1174,6 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
       padding: "14px 12px",
       width: "100%",
     };
-
-    // Highlight field with red border if it has an error AND has been touched
-    if (touchedFields[fieldName] && validationErrors[fieldName]) {
-      return {
-        ...baseStyle,
-        border: "2px solid #ef4444",
-        backgroundColor: "#fef2f2",
-      };
-    }
-
-    return baseStyle;
   };
 
   const labelStyle = {
@@ -1426,11 +1184,6 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
     display: "block",
   };
 
-  // Check if all required fields are filled
-  const isFormValid = requiredFields.every(
-    field => formData[field] && formData[field].toString().trim() !== ""
-  );
-
   return (
     <div className="w-full mx-auto font-[Inter]">
       {/* FORM HEADER */}
@@ -1439,7 +1192,7 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
         style={{ backgroundColor: "#991CDD26" }}
       >
         <h3 className="text-center text-[#991CDD] font-[Inter] font-semibold uppercase mb-4 mt-4 tracking-wide text-xl">
-          Residential Address / Contact Details
+          Residential Address / Contact Details (Optional)
         </h3>
       </div>
 
@@ -1455,20 +1208,14 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="fullAddress"
             value={formData.fullAddress || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Enter your complete address (minimum 10 characters)"
+            placeholder="Enter your complete address (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
             style={{
-              ...getFieldStyle("fullAddress"),
+              ...getFieldStyle(),
               minHeight: "80px"
             }}
             rows={3}
           />
-          {touchedFields.fullAddress && validationErrors.fullAddress && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.fullAddress}
-            </p>
-          )}
           <p className="text-xs text-gray-500 mt-1">
             {formData.fullAddress?.length || 0}/500 characters
           </p>
@@ -1484,17 +1231,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="streetAddress"
             value={formData.streetAddress || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="House number, street"
+            placeholder="House number, street (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("streetAddress")}
+            style={getFieldStyle()}
             maxLength={200}
           />
-          {touchedFields.streetAddress && validationErrors.streetAddress && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.streetAddress}
-            </p>
-          )}
           <p className="text-xs text-gray-500 mt-1">
             {formData.streetAddress?.length || 0}/200 characters
           </p>
@@ -1509,22 +1250,16 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="country"
             value={formData.country || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("country")}
+            style={getFieldStyle()}
           >
-            <option value="">Select Country</option>
+            <option value="">Select Country (optional)</option>
             {countries.map((country) => (
               <option key={country.isoCode} value={country.name}>
                 {country.name} ({country.isoCode})
               </option>
             ))}
           </select>
-          {touchedFields.country && validationErrors.country && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.country}
-            </p>
-          )}
         </div>
 
         {/* STATE */}
@@ -1536,23 +1271,17 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="state"
             value={formData.state || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("state")}
+            style={getFieldStyle()}
             disabled={!formData.country}
           >
-            <option value="">Select State</option>
+            <option value="">Select State (optional)</option>
             {states.map((state) => (
               <option key={state.isoCode} value={state.name}>
                 {state.name}
               </option>
             ))}
           </select>
-          {touchedFields.state && validationErrors.state && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.state}
-            </p>
-          )}
           <p className="text-xs text-gray-500 mt-1">
             {!formData.country ? "Select a country first" : `${states.length} states available`}
           </p>
@@ -1567,11 +1296,10 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="city"
             value={formData.city || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("city")}
+            style={getFieldStyle()}
           >
-            <option value="">Select City</option>
+            <option value="">Select City (optional)</option>
             {cities.map((city, index) => (
               <option key={index} value={city.name}>
                 {city.name}
@@ -1579,11 +1307,6 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             ))}
             <option value="Other">Other (Please specify in address)</option>
           </select>
-          {touchedFields.city && validationErrors.city && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.city}
-            </p>
-          )}
           <p className="text-xs text-gray-500 mt-1">
             {cities.length} Indian cities available
           </p>
@@ -1599,17 +1322,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="pinCode"
             value={formData.pinCode || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="6-digit PIN code"
+            placeholder="6-digit PIN code (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("pinCode")}
+            style={getFieldStyle()}
             maxLength={6}
           />
-          {touchedFields.pinCode && validationErrors.pinCode && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.pinCode}
-            </p>
-          )}
         </div>
 
         {/* MOBILE NUMBER */}
@@ -1622,17 +1339,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="mobileNumber"
             value={formData.mobileNumber || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="e.g., +91-9876543210"
+            placeholder="e.g., +91-9876543210 (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("mobileNumber")}
+            style={getFieldStyle()}
             maxLength={15}
           />
-          {touchedFields.mobileNumber && validationErrors.mobileNumber && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.mobileNumber}
-            </p>
-          )}
         </div>
 
         {/* ALTERNATE MOBILE NUMBER */}
@@ -1645,17 +1356,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="alternateNumber"
             value={formData.alternateNumber || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Alternative contact number"
+            placeholder="Alternative contact number (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("alternateNumber")}
+            style={getFieldStyle()}
             maxLength={15}
           />
-          {touchedFields.alternateNumber && validationErrors.alternateNumber && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.alternateNumber}
-            </p>
-          )}
         </div>
 
         {/* WHATSAPP NUMBER */}
@@ -1668,17 +1373,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="whatsappNumber"
             value={formData.whatsappNumber || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="WhatsApp number"
+            placeholder="WhatsApp number (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("whatsappNumber")}
+            style={getFieldStyle()}
             maxLength={15}
           />
-          {touchedFields.whatsappNumber && validationErrors.whatsappNumber && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.whatsappNumber}
-            </p>
-          )}
         </div>
 
         {/* EMAIL ADDRESS */}
@@ -1691,17 +1390,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="emailAddress"
             value={formData.emailAddress || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="your.email@example.com"
+            placeholder="your.email@example.com (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("emailAddress")}
+            style={getFieldStyle()}
             maxLength={100}
           />
-          {touchedFields.emailAddress && validationErrors.emailAddress && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.emailAddress}
-            </p>
-          )}
         </div>
 
         {/* EMERGENCY CONTACT NAME */}
@@ -1714,17 +1407,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="emergencyContactName"
             value={formData.emergencyContactName || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Name of emergency contact"
+            placeholder="Name of emergency contact (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("emergencyContactName")}
+            style={getFieldStyle()}
             maxLength={50}
           />
-          {touchedFields.emergencyContactName && validationErrors.emergencyContactName && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.emergencyContactName}
-            </p>
-          )}
           <p className="text-xs text-gray-500 mt-1">
             {formData.emergencyContactName?.length || 0}/50 characters
           </p>
@@ -1740,17 +1427,11 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="emergencyContactNumber"
             value={formData.emergencyContactNumber || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Emergency contact phone"
+            placeholder="Emergency contact phone (optional)"
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("emergencyContactNumber")}
+            style={getFieldStyle()}
             maxLength={15}
           />
-          {touchedFields.emergencyContactNumber && validationErrors.emergencyContactNumber && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.emergencyContactNumber}
-            </p>
-          )}
         </div>
 
         {/* EMERGENCY CONTACT RELATION */}
@@ -1762,22 +1443,16 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="emergencyContactRelation"
             value={formData.emergencyContactRelation || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("emergencyContactRelation")}
+            style={getFieldStyle()}
           >
-            <option value="">Select Relation</option>
+            <option value="">Select Relation (optional)</option>
             {emergencyContactRelationOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
             ))}
           </select>
-          {touchedFields.emergencyContactRelation && validationErrors.emergencyContactRelation && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.emergencyContactRelation}
-            </p>
-          )}
         </div>
 
         {/* PREFERRED CONTACT METHOD */}
@@ -1789,22 +1464,16 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="preferredContactMethod"
             value={formData.preferredContactMethod || ""}
             onChange={handleChange}
-            onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("preferredContactMethod")}
+            style={getFieldStyle()}
           >
-            <option value="">Select Method</option>
+            <option value="">Select Method (optional)</option>
             {preferredContactMethodOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
             ))}
           </select>
-          {touchedFields.preferredContactMethod && validationErrors.preferredContactMethod && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.preferredContactMethod}
-            </p>
-          )}
         </div>
 
         {/* CONTACT VISIBILITY */}
@@ -1816,10 +1485,10 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
             name="contactVisibility"
             value={formData.contactVisibility || "PRIVATE"}
             onChange={handleChange}
-            onBlur={handleBlur}
             className="w-full px-3 py-2 focus:ring-1 focus:ring-orange-400 outline-none"
-            style={getFieldStyle("contactVisibility")}
+            style={getFieldStyle()}
           >
+            <option value="">Select Visibility (optional)</option>
             {contactVisibilityOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -1829,11 +1498,6 @@ const Step6ResidentialDetails = ({ formData, onInputChange, onNext, onBack }) =>
           <p className="text-xs text-gray-500 mt-1">
             Who can see your contact information
           </p>
-          {touchedFields.contactVisibility && validationErrors.contactVisibility && (
-            <p className="text-red-500 text-xs mt-1">
-              {validationErrors.contactVisibility}
-            </p>
-          )}
         </div>
 
       </div>
